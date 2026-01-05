@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="900" prefHeight="550"
+            style="-fx-background-color: white;"
+            fx:controller="com.PruebaSimed2.controllers.LoginController">
+
+    <left>
+        <!--  SOLO EL LOGO GIGANTE - SIN TEXTO, SIN COLORES -->
+        <StackPane alignment="CENTER" style="-fx-padding: 20;">
+            <ImageView fitWidth="400" fitHeight="400" preserveRatio="true">
+                <Image url="@/assets/logo.png"/>
+            </ImageView>
+        </StackPane>
+    </left>
+
+    <center>
+        <!-- FORMULARIO A LA DERECHA -->
+        <VBox alignment="CENTER" spacing="25" style="-fx-padding: 60;">
+
+            <!-- Bienvenido -->
+            <VBox alignment="CENTER" spacing="8">
+                <Text text="Bienvenido"
+                      style="-fx-fill: #2c3e50; -fx-font-size: 36; -fx-font-weight: bold;"/>
+                <Text text="Inicie sesión en su cuenta"
+                      style="-fx-fill: #7f8c8d; -fx-font-size: 16;"/>
+            </VBox>
+
+            <!-- Formulario de Login -->
+            <VBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 40; -fx-background-color: #f8f9fa; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 20, 0, 0, 0);">
+
+                <Label text="Usuario" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 14;"/>
+                <TextField fx:id="txtUsuario" promptText="Ingrese su usuario"
+                           onKeyPressed="#handleEnter"
+                           style="-fx-pref-width: 320; -fx-pref-height: 50; -fx-background-radius: 8; -fx-border-color: #ddd; -fx-border-radius: 8; -fx-font-size: 14; -fx-padding: 0 15;"/>
+
+                <Label text="Contraseña" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 14;"/>
+                <PasswordField fx:id="txtPassword" promptText="Ingrese su contraseña"
+                               onKeyPressed="#handleEnter"
+                               style="-fx-pref-width: 320; -fx-pref-height: 50; -fx-background-radius: 8; -fx-border-color: #ddd; -fx-border-radius: 8; -fx-font-size: 14; -fx-padding: 0 15;"/>
+
+                <Button text="Iniciar Sesión"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-pref-width: 320; -fx-pref-height: 55; -fx-background-radius: 8; -fx-font-weight: bold; -fx-font-size: 16;"
+                        onAction="#handleLogin"/>
+
+                <Label fx:id="lblMensaje" style="-fx-font-weight: bold; -fx-alignment: center; -fx-text-fill: #e74c3c;"/>
+            </VBox>
+
+            <!-- Pie de página -->
+            <Text text="Sistema SIMED - Versión 2.0"
+                  style="-fx-fill: #bdc3c7; -fx-font-size: 12;"/>
+        </VBox>
+    </center>
+</BorderPane>

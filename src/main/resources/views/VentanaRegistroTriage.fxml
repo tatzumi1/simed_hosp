@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.PruebaSimed2.controllers.VentanaRegistroTriageController"
+      spacing="10"
+      alignment="TOP_CENTER"
+      style="-fx-background-color:#f9f9f9;"
+      VBox.vgrow="ALWAYS">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- TÍTULO -->
+    <Label text="Registro de Pacientes - TRIAGE"
+           style="-fx-font-size:22px; -fx-text-fill:#002366; -fx-font-weight:bold;"/>
+
+    <Label text="Para registrar un paciente, complete los campos y presione 'Registrar'."
+           style="-fx-text-fill:#002366; -fx-font-size:12px;"/>
+
+    <!-- PRIMERA LÍNEA: FECHA/HORA + TRIAGE + BOTONES -->
+    <GridPane hgap="10" vgap="8" alignment="CENTER_LEFT"
+              GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="12" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="10" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="10" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="28" halignment="LEFT"/>
+        </columnConstraints>
+
+        <!-- Fecha/Hora -->
+        <Label text="Fecha actual:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtFecha" editable="false"
+                   GridPane.rowIndex="0" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+        <Label text="Hora actual:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtHora" editable="false"
+                   GridPane.rowIndex="0" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- TRIAGE -->
+        <Label text="TRIAGE:" GridPane.rowIndex="0" GridPane.columnIndex="4"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="0" GridPane.columnIndex="5"
+              GridPane.hgrow="ALWAYS">
+            <ComboBox fx:id="comboTriage" promptText="Seleccione nivel"
+                      HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnTriageColor" text=" " prefWidth="40" prefHeight="26"
+                    style="-fx-background-color: lightgray; -fx-background-radius: 10;"/>
+        </HBox>
+
+        <!-- Botones -->
+        <HBox spacing="12" alignment="CENTER_RIGHT"
+              GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="6"
+              GridPane.hgrow="ALWAYS">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnRegistrar" text="Registrar" onAction="#registrarPaciente"
+                    style="-fx-background-color:#002366; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 20 8 20;"/>
+            <Button fx:id="btnSalir" text="Salir" onAction="#cerrarVentana"
+                    style="-fx-background-color:#b22222; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 20 8 20;"/>
+
+        </HBox>
+
+        <!-- Descripción TRIAGE -->
+        <Label fx:id="lblTriageDescripcion" text=""
+               GridPane.rowIndex="2" GridPane.columnIndex="5"
+               style="-fx-font-size:12px;"/>
+    </GridPane>
+
+    <!-- SESIÓN -->
+    <GridPane hgap="10" vgap="8" alignment="CENTER_LEFT"
+              GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="12" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="10" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="10" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="28" halignment="LEFT"/>
+        </columnConstraints>
+
+        <Label text="Sesión iniciada como:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="lblCapturista" text="(Nombre del capturista)"
+               GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Clave:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+        <Label fx:id="lblClave" text="(—)" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+        <Label text="Turno actual:" GridPane.rowIndex="0" GridPane.columnIndex="4"/>
+        <Label fx:id="lblTurno" text="(Turno)" GridPane.rowIndex="0" GridPane.columnIndex="5"/>
+    </GridPane>
+
+    <!-- DATOS DEL PACIENTE - SIN SCROLLPANE PARA EVITAR PROBLEMAS -->
+    <GridPane hgap="10" vgap="8" alignment="CENTER_LEFT"
+              GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="12" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="12" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="12" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="24" halignment="LEFT"/>
+        </columnConstraints>
+
+        <!-- Apellidos y Nombre -->
+        <Label text="Apellido paterno:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtApPaterno" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Apellido materno:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtApMaterno" GridPane.rowIndex="0" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Nombre:" GridPane.rowIndex="0" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtNombre" GridPane.rowIndex="0" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Edad / Fecha de Nac / Sexo -->
+        <Label text="Edad:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtEdad" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Fecha de nacimiento:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+        <DatePicker fx:id="dpFechaNac" GridPane.rowIndex="1" GridPane.columnIndex="3"
+                    GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Sexo:" GridPane.rowIndex="1" GridPane.columnIndex="4"/>
+        <ComboBox fx:id="comboSexo" GridPane.rowIndex="1" GridPane.columnIndex="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- Domicilio -->
+        <Label text="Domicilio:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtDomicilio" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Municipio / Entidad -->
+        <Label text="Municipio:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="1"
+              GridPane.hgrow="ALWAYS">
+            <TextField fx:id="txtMunicipioSel" editable="false" promptText="(sin seleccionar)"
+                       HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnMunicipio" text="Agregar Municipio" onAction="#seleccionarMunicipio"
+                    style="-fx-background-color:#002366; -fx-text-fill:white; -fx-background-radius:10;"/>
+        </HBox>
+
+        <Label text="Entidad:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="3"
+              GridPane.hgrow="ALWAYS">
+            <TextField fx:id="txtEntidadSel" editable="false" promptText="(sin seleccionar)"
+                       HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnEntidad" text="Agregar Entidad" onAction="#seleccionarEntidad"
+                    style="-fx-background-color:#002366; -fx-text-fill:white; -fx-background-radius:10;"/>
+        </HBox>
+
+        <!-- Teléfono -->
+        <Label text="Teléfono:" GridPane.rowIndex="3" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtTelefono" GridPane.rowIndex="3" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Ocupación / Religión / Estado civil -->
+        <Label text="Ocupación actual:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtOcupacion" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Religión:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtReligion" GridPane.rowIndex="4" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Estado civil:" GridPane.rowIndex="4" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtEstadoCivil" GridPane.rowIndex="4" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Derechohabiencia / No. afiliación -->
+        <Label text="Derechohabiencia:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="comboDerechohab"
+                  GridPane.rowIndex="5" GridPane.columnIndex="1"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <Label text="No. de afiliación:" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtNoAfiliacion" GridPane.rowIndex="5" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Referencia / Reingreso / Hospitalizado -->
+        <Label text="Referido de:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtReferencia" GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <CheckBox fx:id="chkReingreso" text="¿Es reingreso?"
+                  GridPane.rowIndex="6" GridPane.columnIndex="4"/>
+        <CheckBox fx:id="chkHospitalizado" text="¿Hospitalizado anteriormente?"
+                  GridPane.rowIndex="6" GridPane.columnIndex="5"/>
+
+        <!-- No. expediente / CURP -->
+        <Label text="No. de expediente:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtExpediente" GridPane.rowIndex="7" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Síntomas - TEXTAREA GRANDE Y SIN LÍMITES -->
+        <Label text="Síntomas que reporta el paciente:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtSintomas"
+                  wrapText="true"
+                  prefHeight="120"
+                  GridPane.rowIndex="8" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- Médico -->
+        <Label text="Médico que iniciará la atención médica:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="comboMedico"
+                  GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- Observaciones - TEXTAREA GRANDE Y SIN LÍMITES -->
+        <Label text="Observaciones:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtObservaciones"
+                  wrapText="true"
+                  prefHeight="120"
+                  GridPane.rowIndex="10" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- CURP en fila 20 - donde sabemos que funciona -->
+        <Label text="CURP:" GridPane.rowIndex="20" GridPane.columnIndex="0"/>
+
+        <TextField fx:id="txtCURP" GridPane.rowIndex="20" GridPane.columnIndex="1"/>
+        <Button text="🔄" onAction="#generarCURPAutomatica"
+                GridPane.rowIndex="20" GridPane.columnIndex="2"
+                style="-fx-background-color:#27ae60; -fx-text-fill:white;"/>
+
+    </GridPane>
+
+</VBox>

@@ -1,0 +1,145 @@
+@startuml
+' Estilo inspirado en tu diagrama manual: fondo azul oscuro, texto blanco, más espacio
+skinparam backgroundColor #0D1B2A
+skinparam usecase {
+  BackgroundColor #1B263B
+  BorderColor #778DA9
+  FontColor #E0E1DD
+  FontSize 13
+}
+skinparam actor {
+  BackgroundColor #415A77
+  BorderColor #778DA9
+  FontColor #E0E1DD
+  FontSize 14
+}
+skinparam arrowColor #E0E1DD
+skinparam package {
+  BackgroundColor #1B263B
+  BorderColor #778DA9
+  FontColor #E0E1DD
+  FontSize 16
+}
+skinparam shadowing false
+skinparam roundCorner 20
+skinparam padding 30
+skinparam nodesep 100
+skinparam ranksep 120
+top to bottom direction
+
+' Actores arriba como en tu imagen
+actor "ADMIN\nADMIN2\nADMIN3" as admin
+actor "MÉDICO-\nURGENCIAS" as medico
+actor "MÉDICO-\nESPECIALISTA" as especialista
+actor "TRIAGE" as triage
+actor "JEFATURA-\nURGENCIAS" as jefatura
+actor "ADMINISTRATIVO" as administrativo
+actor "TRABAJADOR-\nSOCIAL" as social
+
+' Módulo central como en tu diagrama
+package "MÓDULO DE ATENCIÓN MÉDICA DEL SERVICIO DE URGENCIAS" {
+
+  usecase "SESION USUARIO" as sesion
+
+  package "INICIAR CAPTURA" {
+    usecase "capturar" as capturar
+    usecase "guardar captura completa\nen observación" as guardar_obs
+    usecase "nueva nota medica" as nueva_nota
+    usecase "visualizar" as vis_nota
+    usecase "editar" as edit_nota
+    usecase "otorgar permiso" as permiso_nota
+    usecase "guardar captura completa\negresado" as egreso
+    usecase "sistema egreso" as sist_egreso
+  }
+
+  usecase "ACTUALIZAR LISTA" as actualizar_lista
+
+  package "MODULO TRIAGE" {
+    usecase "iniciar captura" as triage_iniciar
+    usecase "registrar" as triage_registrar
+    usecase "salir" as triage_salir
+  }
+
+  package "ESTADISTICA" {
+    usecase "indique fecha" as fecha_est
+    usecase "visualizar" as vis_est
+    usecase "ver folios del dia" as folios_dia
+    usecase "imprimir rango" as imprimir_rango
+    usecase "imprimir un folio" as imprimir_folio
+    usecase "visualizar relacion" as vis_relacion
+    usecase "visualizar grafica" as vis_grafica
+  }
+
+  package "PENDIENTES" {
+    usecase "modulo de\npendientes" as pendientes
+    usecase "editar" as edit_pend
+    usecase "guardar cambios" as guardar_pend
+    usecase "cancelar" as cancel_pend
+    usecase "retornar original" as ret_original
+  }
+
+  package "JEFATURA" {
+    usecase "export base a excel" as export_excel
+    usecase "visualizar nota" as vis_nota_jef
+  }
+
+  package "GESTION DE USUARIOS" {
+    usecase "busqueda" as busq_user
+    usecase "registrar nuevo" as reg_nuevo
+    usecase "actualizar lista" as act_lista_user
+    usecase "verificar datos" as verif_datos
+    usecase "configurar logos pdf" as conf_logos
+    usecase "resetear" as reset_pass
+    usecase "toggle" as toggle_activo
+    usecase "cambio de rol" as cambio_rol
+  }
+}
+
+' Conexiones como en tu diagrama
+admin --> sesion
+medico --> sesion
+especialista --> sesion
+triage --> sesion
+jefatura --> sesion
+administrativo --> sesion
+social --> sesion
+
+sesion --> actualizar_lista
+sesion --> capturar
+sesion --> triage_iniciar
+sesion --> fecha_est
+sesion --> pendientes
+sesion --> export_excel
+sesion --> busq_user
+
+capturar --> guardar_obs
+capturar --> nueva_nota
+nueva_nota --> vis_nota
+nueva_nota --> edit_nota
+nueva_nota --> permiso_nota
+capturar --> egreso
+egreso --> sist_egreso
+
+fecha_est --> vis_est
+vis_est --> folios_dia
+folios_dia --> imprimir_rango
+folios_dia --> imprimir_folio
+vis_est --> vis_relacion
+vis_est --> vis_grafica
+
+pendientes --> edit_pend
+edit_pend --> guardar_pend
+edit_pend --> cancel_pend
+edit_pend --> ret_original
+
+export_excel --> vis_nota_jef
+
+busq_user --> reg_nuevo
+busq_user --> act_lista_user
+busq_user --> verif_datos
+busq_user --> conf_logos
+busq_user --> reset_pass
+busq_user --> toggle_activo
+busq_user --> cambio_rol
+
+@enduml

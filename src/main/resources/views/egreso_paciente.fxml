@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.EgresoPacienteController"
+            prefWidth="1200" prefHeight="800" style="-fx-background-color: #f0f8ff;">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #87ceeb; -fx-padding: 20;">
+            <Label text="SISTEMA DE EGRESO HOSPITALARIO"
+                   style="-fx-text-fill: #2c5aa0; -fx-font-size: 24px; -fx-font-weight: bold; -fx-alignment: center;"/>
+            <Label text="REGISTRO DE ALTA MÉDICA - INFORMACIÓN REQUERIDA"
+                   style="-fx-text-fill: #4682b4; -fx-font-size: 14px; -fx-alignment: center;"/>
+            <Separator/>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <VBox spacing="15" alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+
+                <!-- INFORMACIÓN BÁSICA -->
+                <TitledPane text=" INFORMACIÓN BÁSICA DEL EGRESO" expanded="true"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="12">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <GridPane hgap="15" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50"/>
+                                <ColumnConstraints percentWidth="50"/>
+                            </columnConstraints>
+
+                            <!-- COLUMNA IZQUIERDA -->
+                            <Label text="Folio del Paciente:" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfFolio" promptText="Folio" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                                       editable="false"/>
+
+                            <Label text="Médico que Realiza el Alta:" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbMedicoAlta" promptText="Seleccione médico" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+
+                            <Label text="Tipo de Alta:" GridPane.columnIndex="0" GridPane.rowIndex="4"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbAltaPor" promptText="Seleccione tipo de alta" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+
+                            <!-- COLUMNA DERECHA -->
+                            <Label text="Fecha de Alta:" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1" alignment="CENTER_LEFT">
+                                <Label fx:id="lblFechaAlta" text="0000-00-00"
+                                       style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                                <Label text="Hora:" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                                <Label fx:id="lblHoraAlta" text="00:00:00"
+                                       style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                            </HBox>
+
+                            <Label text="Área Hospitalaria Destino:" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbAreaHosp" promptText="Seleccione área hospitalaria" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                            <Label text="Folio de Defunción (si aplica):" GridPane.columnIndex="1" GridPane.rowIndex="4"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfFolioDef" promptText="Solo en caso de defunción" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- DIAGNÓSTICOS Y PROCEDIMIENTOS -->
+                <HBox spacing="15" alignment="CENTER">
+
+                    <!-- DIAGNÓSTICOS -  AFECCIONES -->
+                    <TitledPane text=" DIAGNÓSTICOS PRINCIPALES (En orden de prioridad)" expanded="true" prefWidth="580"
+                                style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="12" right="12" bottom="12" left="12"/>
+                            </padding>
+
+                            <Label text="NOTA: Seleccione el código CIE10 correspondiente a cada afección"
+                                   wrapText="true" style="-fx-text-fill: #d9534f; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 5; -fx-background-color: #fff5f5; -fx-background-radius: 4;"/>
+
+                            <!-- AFECCIÓN 1 CON CÓDIGO CIE10 -->
+                            <Label text="1. Afección Principal (Prioridad 1):" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <VBox spacing="5" prefWidth="400">
+                                    <Label text="Descripción:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <TextArea fx:id="tfAfecc1" promptText="Descripción del diagnóstico principal"
+                                              prefRowCount="2" wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="Código CIE10:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <ComboBox fx:id="cbCodAfecc1" promptText="Buscar código" prefWidth="150"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- AFECCIÓN 2 CON CÓDIGO CIE10 -->
+                            <Label text="2. Afección Secundaria (Prioridad 2):" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <VBox spacing="5" prefWidth="400">
+                                    <Label text="Descripción:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <TextArea fx:id="tfAfecc2" promptText="Descripción del diagnóstico secundario"
+                                              prefRowCount="2" wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="Código CIE10:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <ComboBox fx:id="cbCodAfecc2" promptText="Buscar código" prefWidth="150"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- AFECCIÓN 3 CON CÓDIGO CIE10 -->
+                            <Label text="3. Afección Terciaria (Prioridad 3):" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <VBox spacing="5" prefWidth="400">
+                                    <Label text="Descripción:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <TextArea fx:id="tfAfecc3" promptText="Descripción del tercer diagnóstico"
+                                              prefRowCount="2" wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="Código CIE10:" style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                                    <ComboBox fx:id="cbCodAfecc3" promptText="Buscar código" prefWidth="150"/>
+                                </VBox>
+                            </HBox>
+
+                            <!-- CÓDIGO CIE10 PRINCIPAL (PARA TABLA tb_egresos)
+                            <Label text="Código CIE10 Principal (para estadística):" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbCodigoCie10" promptText="Seleccione el código CIE10 principal"
+                                      prefWidth="300"/>    -->
+
+                        </VBox>
+                    </TitledPane>
+
+                    <!-- PROCEDIMIENTOS -->
+                    <TitledPane text=" PROCEDIMIENTOS REALIZADOS" expanded="true" prefWidth="580"
+                                style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="12" right="12" bottom="12" left="12"/>
+                            </padding>
+
+                            <Label text="NOTA: Escriba los procedimientos en orden de importancia"
+                                   wrapText="true" style="-fx-text-fill: #d9534f; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 5; -fx-background-color: #fff5f5; -fx-background-radius: 4;"/>
+
+                            <Label text="Procedimiento Principal:" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfProc1" promptText="Procedimiento médico principal realizado"/>
+
+                            <Label text="Procedimiento Secundario:" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfProc2" promptText="Procedimiento adicional (opcional)"/>
+
+                            <Label text="Otro Procedimiento:" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfProc3" promptText="Tercer procedimiento (opcional)"/>
+                        </VBox>
+                    </TitledPane>
+                </HBox>
+
+                <!-- CAUSA EXTERNA -->
+                <TitledPane text=" CAUSA EXTERNA" expanded="true"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <Label text="Especifique los acontecimientos, circunstancias y condiciones que causan la lesión:"
+                               style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                        <TextArea fx:id="taCausaExterna" promptText="Describa la causa externa de la lesión o condición..."
+                                  prefRowCount="3" wrapText="true"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- TRATAMIENTO FARMACOLÓGICO -  MEDICAMENTOS -->
+                <TitledPane text=" TRATAMIENTO FARMACOLÓGICO (En orden de importancia)" expanded="true"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+
+                        <Label text="NOTA: Escriba los medicamentos en orden de importancia terapéutica"
+                               wrapText="true" style="-fx-text-fill: #d9534f; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 5; -fx-background-color: #fff5f5; -fx-background-radius: 4;"/>
+
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="33"/>
+                                <ColumnConstraints percentWidth="33"/>
+                                <ColumnConstraints percentWidth="34"/>
+                            </columnConstraints>
+
+                            <Label text="Medicamento 1 (Principal):" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic1" promptText="Medicamento principal" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+                            <Label text="Medicamento 2:" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic2" promptText="Medicamento secundario" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Medicamento 3:" GridPane.columnIndex="2" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic3" promptText="Otro medicamento" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+                            <!-- Segunda fila de medicamentos -->
+                            <Label text="Medicamento 4:" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic4" promptText="Medicamento adicional" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+
+                            <Label text="Medicamento 5:" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic5" promptText="Medicamento adicional" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                            <Label text="Medicamento 6:" GridPane.columnIndex="2" GridPane.rowIndex="2"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfMedic6" promptText="Medicamento adicional" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- IDENTIFICACIÓN ÉTNICA Y MIGRATORIA -->
+                <TitledPane text=" IDENTIFICACIÓN ÉTNICA Y MIGRATORIA" expanded="true"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="12">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <GridPane hgap="20" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="33"/>
+                                <ColumnConstraints percentWidth="33"/>
+                                <ColumnConstraints percentWidth="34"/>
+                            </columnConstraints>
+
+                            <Label text="¿Se considera indígena?" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbIndigena" promptText="Seleccione" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+                            <Label text="¿Se considera afromexicano?" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbAfromexicano" promptText="Seleccione" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <VBox spacing="5" GridPane.columnIndex="2" GridPane.rowIndex="0" GridPane.rowSpan="2">
+                                <Label text="¿Es migrante retornado?"
+                                       style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                                <ComboBox fx:id="cbMigrante" promptText="Seleccione"/>
+                                <Label text="Persona de nacionalidad mexicana que vive en el exterior y regresa del país"
+                                       wrapText="true" style="-fx-text-fill: #666; -fx-font-size: 10px; -fx-font-style: italic;"/>
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- MUJER EN EDAD FÉRTIL -->
+                <TitledPane text=" MUJER EN EDAD FÉRTIL" expanded="true"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="12">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <GridPane hgap="20" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="25"/>
+                                <ColumnConstraints percentWidth="35"/>
+                                <ColumnConstraints percentWidth="20"/>
+                                <ColumnConstraints percentWidth="20"/>
+                            </columnConstraints>
+
+                            <Label text="¿Mujer en edad fértil?" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbMujerFertil" promptText="Seleccione" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+                            <Label text="Situación:" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbSituacionEmbarazo" promptText="Seleccione situación" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Semanas de gestación:" GridPane.columnIndex="2" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <TextField fx:id="tfSemanasGestacion" promptText="Semanas" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+                            <VBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1" spacing="5">
+                                <Label text="(0-42 semanas)" style="-fx-text-fill: #666; -fx-font-size: 11px;"/>
+                                <Label text="Puerperio: 0-42 días después del evento obstétrico"
+                                       wrapText="true" style="-fx-text-fill: #666; -fx-font-size: 10px; -fx-font-style: italic;"/>
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ATENCIÓN PEDIÁTRICA -->
+                <TitledPane text=" ATENCIÓN PEDIÁTRICA (Menores de 5 años)" expanded="false"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="12">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <GridPane hgap="20" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="30"/>
+                                <ColumnConstraints percentWidth="30"/>
+                            </columnConstraints>
+
+                            <Label text="Infección Respiratoria Aguda (IRA):" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbIra" promptText="Seleccione tratamiento IRA" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+
+                            <Label text="Enfermedad Diarreica Aguda (EDA):" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <ComboBox fx:id="cbEda" promptText="Seleccione tratamiento EDA" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Sobres de Vida Suero Oral:" GridPane.columnIndex="2" GridPane.rowIndex="0"
+                                   style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
+                            <HBox spacing="5" GridPane.columnIndex="2" GridPane.rowIndex="1" alignment="CENTER_LEFT">
+                                <Spinner fx:id="spSobres" prefWidth="80"/>
+                                <Label text="sobres" style="-fx-text-fill: #666;"/>
+                            </HBox>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- CONTROL DE CALIDAD -->
+                <TitledPane text=" CONTROL DE CALIDAD" expanded="false"
+                            style="-fx-border-color: #87ceeb; -fx-border-radius: 6; -fx-background-color: #f8fdff;">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="12" right="12" bottom="12" left="12"/>
+                        </padding>
+                        <CheckBox fx:id="cbSoloJefatura"
+                                  text="REGISTRO REZAGADO - Solo para uso de jefatura médica"
+                                  style="-fx-text-fill: #d9534f; -fx-font-weight: bold;"/>
+                        <TextArea fx:id="taAviso" editable="false" prefRowCount="3" wrapText="true"
+                                  text="AVISO IMPORTANTE: Verifique que toda la información capturada sea correcta antes de guardar. Una vez guardado el egreso, el paciente será dado de alta del sistema y no podrá recibir atención adicional en urgencias por el mismo episodio."
+                                  style="-fx-background-color: #f0f8ff; -fx-border-color: #b0e0e6; -fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <HBox spacing="15" alignment="CENTER" style="-fx-padding: 20 0 10 0;">
+                    <Button text=" GUARDAR EGRESO" onAction="#onGuardarCerrar"
+                            style="-fx-background-color: #5cb85c; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 18;"
+                            prefWidth="160"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- FOOTER -->
+    <bottom>
+        <VBox spacing="5" alignment="CENTER" style="-fx-background-color: #b0e0e6; -fx-padding: 10;">
+            <Label text="Sistema SIMED - Módulo de Egresos Hospitalarios"
+                   style="-fx-text-fill: #2c5aa0; -fx-font-size: 12px;"/>
+            <Label text="© 2024 Institución de Salud - Todos los derechos reservados"
+                   style="-fx-text-fill: #4682b4; -fx-font-size: 10px;"/>
+        </VBox>
+    </bottom>
+</BorderPane>

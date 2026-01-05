@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.PruebaSimed2.controllers.InterconsultaController"
+      style="-fx-padding: 20; -fx-background-color: #f8f9fa;"
+      VBox.vgrow="ALWAYS">
+
+    <Label text="NOTA DE INTERCONSULTA MÉDICA" style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#002366;"/>
+
+    <Label fx:id="lblFolio" text="Folio: " style="-fx-font-weight:bold;"/>
+
+    <!-- GridPane principal que se expande -->
+    <GridPane hgap="10" vgap="10" VBox.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="30"/>
+            <ColumnConstraints percentWidth="70"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints percentHeight="15"/> <!-- Especialista -->
+            <RowConstraints percentHeight="20"/> <!-- Síntomas -->
+            <RowConstraints percentHeight="15"/> <!-- Signos Vitales -->
+            <RowConstraints percentHeight="15"/> <!-- Diagnóstico -->
+            <RowConstraints percentHeight="35"/> <!-- Indicaciones -->
+        </rowConstraints>
+
+        <Label text="Especialista:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+            <ComboBox fx:id="cmbEspecialistas" promptText="Seleccionar especialista" HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="txtCedula" promptText="Cédula" prefWidth="120" editable="false"/>
+            <!-- CAMBIO IMPORTANTE: ComboBox → TextField -->
+            <TextField fx:id="txtEspecialidad" promptText="Ej: CARDIOLOGÍA" prefWidth="150"/>
+        </HBox>
+
+        <!-- NUEVOS CAMPOS CON EXPANSIÓN VERTICAL -->
+        <Label text="Síntomas:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtSintomas" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                  promptText="Describa los síntomas del paciente..."
+                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+
+        <Label text="Signos Vitales:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtSignosVitales" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                  promptText="TA: ___/___ mmHg, FC: ___ lpm, FR: ___ rpm, Temp: ___ °C, SatO2: ___ %"
+                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+
+        <Label text="Diagnóstico:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtDiagnostico" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                  promptText="Diagnóstico principal..."
+                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+
+        <Label text="Indicaciones:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtIndicaciones" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                  promptText="Indicaciones y tratamiento..."
+                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+    </GridPane>
+
+    <!-- Botones al final -->
+    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+        <Button text=" Guardar Temporal" fx:id="btnGuardarTemporal" onAction="#guardarTemporal"
+                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-pref-width: 150;"/>
+        <Button text=" Guardar Definitivo" fx:id="btnGuardarDefinitivo" onAction="#guardarDefinitivo"
+                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-pref-width: 150;"/>
+        <!--    <Button text=" Vista Previa PDF" fx:id="btnImprimir" onAction="#imprimirNota"
+                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-pref-width: 150;"/>-->
+    </HBox>
+</VBox>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.GestionUsuariosController"
+            prefWidth="1000"
+            prefHeight="700">
+
+    <top>
+        <VBox spacing="10" style="-fx-padding: 15;">
+            <!-- Título -->
+            <Label text="GESTIÓN DE USUARIOS" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+            <Label fx:id="lblMensaje" text="Cargando..." style="-fx-text-fill: green; -fx-wrap-text: true;"/>
+
+            <!-- BARRA DE BÚSQUEDA -->
+            <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #e8f4fd; -fx-background-radius: 5;">
+                <Label text=" BUSCAR USUARIOS" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="txtBuscar" promptText="Buscar por usuario, email, rol..."
+                               style="-fx-pref-width: 300;"
+                               onKeyReleased="#handleBuscar"/>
+                    <ComboBox fx:id="cbFiltroRol" promptText="Todos los roles"
+                              style="-fx-pref-width: 150;"/>
+                    <ComboBox fx:id="cbFiltroEstado" promptText="Todos los estados"
+                              style="-fx-pref-width: 150;"/>
+                    <Button text=" Buscar" onAction="#handleBuscar"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                    <Button text=" Limpiar" onAction="#handleLimpiarBusqueda"
+                            style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+                </HBox>
+                <Label fx:id="lblResultados" text="" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11;"/>
+            </VBox>
+
+            <!-- Botones de acción -->
+            <HBox spacing="10">
+                <Button text=" Registrar Nuevo" onAction="#handleRegistrarUsuario"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Button text=" Actualizar Lista" onAction="#handleActualizarLista"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                <Button text=" Estadísticas" onAction="#handleEstadisticas"
+                        style="-fx-background-color: #9b59b6; -fx-text-fill: white;"/>
+                <Button text=" Volver" onAction="#handleVolver"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+                <Button text=" Verificar Datos" onAction="#handleVerificarDatos"
+                        style="-fx-background-color: #f39c12; -fx-text-fill: white;"/>
+                <Button text=" Configurar logos PDF"
+                        onAction="#abrirConfigurarLogos"
+                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold;
+               -fx-font-size: 13px; -fx-pref-width: 180px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <!-- Tabla que se expande completamente -->
+        <TableView fx:id="tablaUsuarios" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="colUsername" text=" Usuario" prefWidth="120"/>
+                <TableColumn fx:id="colEmail" text=" Email" prefWidth="180"/>
+                <TableColumn fx:id="colRol" text=" Rol" prefWidth="100"/>
+                <TableColumn fx:id="colActivo" text=" Activo" prefWidth="80"/>
+                <TableColumn fx:id="colPrimerLogin" text=" Primer Login" prefWidth="100"/>
+                <TableColumn fx:id="colUltimoLogin" text=" Último Login" prefWidth="140"/>
+                <TableColumn fx:id="colAcciones" text=" Acciones" prefWidth="250"/>
+            </columns>
+
+            <!-- Hacer que la tabla ocupe todo el espacio disponible -->
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+    </center>
+
+    <!-- Pie de página -->
+    <bottom>
+        <HBox style="-fx-padding: 10; -fx-background-color: #f8f9fa;" spacing="15">
+            <Label fx:id="lblContador" text="Total: 0 usuarios"
+                   style="-fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
+            <Label text="Puedes buscar por: usuario, email, rol o nombre"
+                   style="-fx-text-fill: #7f8c8d; -fx-font-size: 12;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

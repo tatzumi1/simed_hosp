@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.PruebaSimed2.controllers.EdicionPacienteController"
+      spacing="10"
+      alignment="TOP_CENTER"
+      style="-fx-background-color:#f9f9f9;"
+      VBox.vgrow="ALWAYS">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- TÍTULO -->
+    <Label fx:id="lblTitulo" text="EDITAR DATOS DE PACIENTE - Folio: "
+           style="-fx-font-size:22px; -fx-text-fill:#8B5FBF; -fx-font-weight:bold;"/>
+
+    <Label text="Complete o corrija los datos del paciente. Los campos marcados con * son obligatorios."
+           style="-fx-text-fill:#666; -fx-font-size:12px;"/>
+
+    <!-- INFORMACIÓN DE EDICIÓN -->
+    <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-background-color: #e8f4f8; -fx-padding: 10; -fx-background-radius: 5;">
+        <Label fx:id="lblInfoCapturista" text="Editando por: " style="-fx-font-weight: bold;"/>
+        <Label fx:id="lblInfoTurno" text="Turno: " style="-fx-font-weight: bold;"/>
+        <Label fx:id="lblInfoFecha" text="Fecha: " style="-fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- DATOS DEL PACIENTE -->
+    <GridPane hgap="10" vgap="8" alignment="CENTER_LEFT"
+              GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="15" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="15" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="20" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="15" halignment="LEFT"/>
+            <ColumnConstraints percentWidth="15" halignment="LEFT"/>
+        </columnConstraints>
+
+        <!-- Apellidos y Nombre -->
+        <Label text="* Apellido paterno:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtApPaterno" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Apellido materno:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtApMaterno" GridPane.rowIndex="0" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="* Nombre:" GridPane.rowIndex="0" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtNombre" GridPane.rowIndex="0" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Edad / Fecha de Nac / Sexo -->
+        <Label text="* Edad:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtEdad" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Fecha de nacimiento:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+        <DatePicker fx:id="dpFechaNac" GridPane.rowIndex="1" GridPane.columnIndex="3"
+                    GridPane.hgrow="ALWAYS"/>
+
+        <Label text="* Sexo:" GridPane.rowIndex="1" GridPane.columnIndex="4"/>
+        <ComboBox fx:id="comboSexo" GridPane.rowIndex="1" GridPane.columnIndex="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- Domicilio -->
+        <Label text="Domicilio:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtDomicilio" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Municipio / Entidad -->
+        <Label text="Municipio:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="1"
+              GridPane.hgrow="ALWAYS">
+            <TextField fx:id="txtMunicipioSel" editable="false" promptText="(sin seleccionar)"
+                       HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnMunicipio" text="Seleccionar Municipio" onAction="#seleccionarMunicipio"
+                    style="-fx-background-color:#8B5FBF; -fx-text-fill:white; -fx-background-radius:10;"/>
+        </HBox>
+
+        <Label text="Entidad:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="3"
+              GridPane.hgrow="ALWAYS">
+            <TextField fx:id="txtEntidadSel" editable="false" promptText="(sin seleccionar)"
+                       HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnEntidad" text="Seleccionar Entidad" onAction="#seleccionarEntidad"
+                    style="-fx-background-color:#8B5FBF; -fx-text-fill:white; -fx-background-radius:10;"/>
+        </HBox>
+
+        <!-- Teléfono -->
+        <Label text="Teléfono:" GridPane.rowIndex="3" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtTelefono" GridPane.rowIndex="3" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Ocupación / Religión / Estado civil -->
+        <Label text="Ocupación:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtOcupacion" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Religión:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtReligion" GridPane.rowIndex="4" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Estado civil:" GridPane.rowIndex="4" GridPane.columnIndex="4"/>
+        <TextField fx:id="txtEstadoCivil" GridPane.rowIndex="4" GridPane.columnIndex="5"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Derechohabiencia / No. afiliación -->
+        <Label text="Derechohabiencia:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="comboDerechohab"
+                  GridPane.rowIndex="5" GridPane.columnIndex="1"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <Label text="No. de afiliación:" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtNoAfiliacion" GridPane.rowIndex="5" GridPane.columnIndex="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <!-- Referencia / Reingreso / Hospitalizado -->
+        <Label text="Referido de:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtReferencia" GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="3"
+                   GridPane.hgrow="ALWAYS"/>
+
+        <CheckBox fx:id="chkReingreso" text="¿Es reingreso?"
+                  GridPane.rowIndex="6" GridPane.columnIndex="4"/>
+        <CheckBox fx:id="chkHospitalizado" text="¿Hospitalizado anteriormente?"
+                  GridPane.rowIndex="6" GridPane.columnIndex="5"/>
+
+        <!-- CURP -->
+        <Label text="CURP:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtCURP" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+        <Button text="🔄 Generar CURP" onAction="#generarCURPAutomatica"
+                GridPane.rowIndex="7" GridPane.columnIndex="2"
+                style="-fx-background-color:#9ACD32; -fx-text-fill:white;"/>
+
+        <!-- Síntomas -->
+        <Label text="Síntomas:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtSintomas"
+                  wrapText="true"
+                  prefRowCount="3"
+                  GridPane.rowIndex="8" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+        <!-- Observaciones -->
+        <Label text="Observaciones:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtObservaciones"
+                  wrapText="true"
+                  prefRowCount="3"
+                  GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="5"
+                  GridPane.hgrow="ALWAYS"/>
+
+    </GridPane>
+
+    <!-- BOTONES -->
+    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+        <Button fx:id="btnGuardar" text=" Guardar Cambios" onAction="#guardarCambios"
+                style="-fx-background-color:#8B5FBF; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 25 8 25; -fx-font-size:14px;"/>
+        <Button fx:id="btnCancelar" text=" Cancelar" onAction="#cancelar"
+                style="-fx-background-color:#b22222; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 25 8 25; -fx-font-size:14px;"/>
+        <Button fx:id="btnRestaurar" text=" Restaurar Original" onAction="#restaurarOriginal"
+                style="-fx-background-color:#FF69B4; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 25 8 25; -fx-font-size:14px;"/>
+    </HBox>
+
+</VBox>

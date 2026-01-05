@@ -1,0 +1,151 @@
+@startuml
+' Configuración general para que quede más bonito
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam dpi 300
+skinparam monochrome true
+skinparam packageStyle rectangle
+left to right direction
+
+package "controllers" #DDDDDD {
+
+  class VentanaInicialTriageController {
+    + initialize()
+    + setAdmin(boolean)
+    - iniciarCaptura()
+    - registrarAuditoria()
+  }
+
+  class LoginController {
+    - handleLogin()
+    - redirigirAVentanaPrincipal()
+  }
+
+  class MainController {
+    + setUsuarioLogueado(Usuario)
+    + initialize()
+    - cargarPacientesEnEspera()
+    - cargarPacientesEnObservacion()
+    - cargarPacientesEgresados()
+    - handleCapturar()
+    - handleAbrirTriage()
+    - handleAbrirEstadistica()
+  }
+
+  class VentanaRegistroTriageController {
+    + setTurno(String)
+    + initialize()
+    - registrarPaciente()
+    - generarCURPAutomatica()
+  }
+
+  class CapturaPrincipalController {
+    + setFolioPaciente(int)
+    + setUsuarioLogueado(String,String)
+    + initialize()
+    - cargarDatosPaciente()
+    - guardarGeneral()
+    - abrirNotaMedica()
+    - abrirInterconsulta()
+    - visualizarNotaMedica()
+  }
+
+  class NotaMedicaController {
+    + setFolioPaciente(int)
+    + setUsuarioLogueado(String,String)
+    + initialize()
+    + setModoEdicion()
+    - guardarTemporal()
+    - guardarDefinitivo()
+    - generarPDFAutomatico()
+  }
+
+  class InterconsultaController {
+    + setFolioPaciente(int)
+    + setUsuarioLogueado(String,String)
+    + initialize()
+    + setModoEdicion()
+    - guardarTemporal()
+    - guardarDefinitivo()
+    - generarPDFAutomatico()
+  }
+
+  class EgresoPacienteController {
+    + setFolioPaciente(int)
+    + setUsuarioLogueado(String,String)
+    + initialize()
+    - guardarEgreso()
+    - actualizarEstadoPaciente()
+  }
+
+  class ModuloEstadisticaController {
+    + setUsuarioLogueado(Usuario)
+    + initialize()
+    - obtenerEstadisticasDesdeBD()
+    - handleVisualizarGrafica()
+  }
+
+  class JefaturaController {
+    + initialize()
+    - cargarPacientesEgresados()
+    - handleVisualizarNota()
+    - handleExportarExcel()
+  }
+
+  class GestionUsuariosController {
+    + setUsuarioAdmin(Usuario)
+    + initialize()
+    - cargarUsuarios()
+    - resetearPassword()
+    - toggleActivo()
+  }
+
+  class RegistroUsuarioController {
+    + setUsuarioAdmin(Usuario)
+    + initialize()
+    - handleRegistrarUsuario()
+  }
+
+  class SeleccionEdicionPacienteController {
+    + initialize()
+    - cargarPacientes()
+    - abrirEdicionPaciente()
+  }
+
+  class EdicionPacienteController {
+    + cargarPacienteExistente(int)
+    - guardarCambios()
+  }
+}
+
+package "models / util" {
+  class AuthController {
+    + login()
+    + cambiarPassword()
+  }
+
+  class Usuario
+  class SesionUsuario
+}
+
+' Relaciones principales
+MainController --> CapturaPrincipalController : abre captura
+MainController --> VentanaRegistroTriageController : abre triage
+MainController --> ModuloEstadisticaController : abre estadísticas
+MainController --> JefaturaController : abre jefatura
+MainController --> GestionUsuariosController : gestión usuarios
+
+CapturaPrincipalController --> NotaMedicaController : abre nota
+CapturaPrincipalController --> InterconsultaController : abre interconsulta
+CapturaPrincipalController --> EgresoPacienteController : egreso
+
+LoginController --> MainController : redirige
+VentanaInicialTriageController --> VentanaRegistroTriageController : inicia triage
+
+NotaMedicaController --> AuthController : usa
+InterconsultaController --> AuthController : usa
+
+MainController --> Usuario : usa
+GestionUsuariosController --> Usuario : gestiona
+
+@enduml

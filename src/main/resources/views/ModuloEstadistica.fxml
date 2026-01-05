@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.ModuloEstadisticaController"
+            fitToWidth="true"
+            style="-fx-background: #f0f8ff;"
+            prefWidth="900" prefHeight="700">
+
+    <VBox spacing="20" style="-fx-background-color: #f0f8ff;">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <!-- Título -->
+        <Label text="MÓDULO DE URGENCIAS ESTADÍSTICA Y SUPERVISIÓN"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #002b5c; -fx-alignment: center;"/>
+
+        <Separator/>
+
+        <!-- Sección de Productividad Diaria -->
+        <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-border-color: #3498db; -fx-border-radius: 10; -fx-border-width: 2;">
+            <Label text="SECCIÓN DE PRODUCTIVIDAD DIARIA" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Indique la fecha para generar la hoja diaria de consulta (formato dd/mm/aaaa):"
+                       style="-fx-font-weight: bold;"/>
+                <TextField fx:id="txtFechaDiaria" promptText="dd/mm/aaaa"
+                           style="-fx-pref-width: 120; -fx-background-radius: 5;"/>
+            </HBox>
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="btnVisualizarDiaria" text=" Visualizar"
+                        onAction="#handleVisualizarDiaria"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold;"/>
+                <!--  <Button fx:id="btnImprimirDiaria" text=" Imprimir"
+                         onAction="#handleImprimirDiaria"
+                         style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold;"/>
+                 -->
+            </HBox>
+
+            <!-- NUEVA SECCIÓN: Herramientas avanzadas de impresión por folios -->
+            <Label text="Herramientas avanzadas de impresión por folios:"
+                   style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-weight: bold;"/>
+
+            <HBox spacing="15">
+                <Button fx:id="btnVerFoliosDia" text=" Ver Folios del Día"
+                        onAction="#handleVerFoliosDia"
+                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;"/>
+                <Button fx:id="btnImprimirRango" text=" Imprimir Rango"
+                        onAction="#handleImprimirRangoFolios"
+                        style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-background-radius: 8;"/>
+                <Button fx:id="btnImprimirUnFolio" text=" Imprimir Un Folio"
+                        onAction="#handleImprimirUnFolio"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 8;"/>
+            </HBox>
+        </VBox>
+
+        <!-- Sección de Productividad Mensual -->
+        <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 20; -fx-border-color: #3498db; -fx-border-radius: 10; -fx-border-width: 2;">
+            <Label text="SECCIÓN DE PRODUCTIVIDAD MENSUAL" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
+
+            <GridPane hgap="15" vgap="15">
+                <columnConstraints>
+                    <ColumnConstraints prefWidth="100"/>
+                    <ColumnConstraints prefWidth="200"/>
+                    <ColumnConstraints prefWidth="100"/>
+                    <ColumnConstraints prefWidth="200"/>
+                </columnConstraints>
+
+                <rowConstraints>
+                    <RowConstraints prefHeight="35"/>
+                    <RowConstraints prefHeight="35"/>
+                </rowConstraints>
+
+                <!-- Fila 1 -->
+                <Label text="Mes:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbMes" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                          style="-fx-background-radius: 5;"/>
+
+                <Label text="Año:" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbAnio" GridPane.rowIndex="0" GridPane.columnIndex="3"
+                          style="-fx-background-radius: 5;"/>
+
+                <!-- Fila 2 -->
+                <Label text="Tipo:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbTipoProductividad" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                          style="-fx-background-radius: 5;"/>
+            </GridPane>
+
+            <!-- Primera fila de botones - RELACIONES -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="btnVisualizarRelacion" text=" Visualizar Relación"
+                        onAction="#handleVisualizarRelacion"
+                        style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-min-width: 150;"/>
+            <!--     <Button fx:id="btnImprimirRelacion" text=" Imprimir Relación"
+                        onAction="#handleImprimirRelacion"
+                        style="-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-min-width: 150;"/>
+            -->
+            </HBox>
+
+            <!-- Segunda fila de botones - GRÁFICAS -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="btnVisualizarGrafica" text=" Visualizar Gráfica PDF"
+                        onAction="#handleVisualizarGrafica"
+                        style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-min-width: 160;"/>
+                <!--  <Button fx:id="btnImprimirGrafica" text=" Imprimir Gráfica PDF"
+                          onAction="#handleImprimirGrafica"
+                          style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-weight: bold; -fx-min-width: 160;"/>
+                  -->
+            </HBox>
+
+            <!-- Área para mostrar estadísticas -->
+            <VBox spacing="10" fx:id="panelEstadisticas" visible="false">
+                <Label text="Estadísticas Generadas:" style="-fx-font-weight: bold;"/>
+                <TableView fx:id="tablaEstadisticas" prefHeight="200" style="-fx-background-radius: 5;">
+                    <columns>
+                        <TableColumn text="Médico" prefWidth="250"/>
+                        <TableColumn text="Cantidad" prefWidth="150"/>
+                        <TableColumn text="Porcentaje" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+
+        <!-- Botones de acción -->
+        <HBox spacing="15" alignment="CENTER_RIGHT">
+            <Button text=" Limpiar" onAction="#handleLimpiar"
+                    style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 8;"/>
+            <Button text=" Cerrar" onAction="#handleCerrar"
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8;"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

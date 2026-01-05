@@ -1,0 +1,57 @@
+/* src/main/resources/styles/mainStyles.css */
+
+/* Fondo general */
+.root {
+    -fx-background-color: #ffffff;
+}
+
+/* Botones redondeados */
+.rounded-button {
+    -fx-background-color: linear-gradient(to bottom, #0055aa, #003d7a);
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 6 18 6 18;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.rounded-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #0077cc, #004c99);
+}
+
+/* Campos de texto normales */
+.text-field {
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Campos vacíos resaltados */
+.text-field:empty {
+    -fx-border-color: #cc0000;
+    -fx-border-width: 1.5;
+}
+
+/* Estilos para las tablas */
+.table-view {
+    -fx-border-color: #ddd;
+    -fx-border-radius: 5;
+}
+
+.table-view .column-header {
+    -fx-background-color: #e6f0ff;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: #f9f9f9;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: white;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="1200" prefHeight="800"
+            fx:controller="com.PruebaSimed2.controllers.MainController">
+
+    <top>
+        <VBox spacing="5" style="-fx-background-color: #e6f0ff;">
+            <padding>
+                <Insets top="10" right="15" bottom="10" left="15"/>
+            </padding>
+            <Label text="MÓDULO DE ATENCIÓN MÉDICA DEL SERVICIO DE URGENCIAS"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #002b5c;"/>
+            <Label text="LISTADO DE PACIENTES EN ESPERA DE ATENCIÓN O EN OBSERVACIÓN"
+                   style="-fx-font-size: 13px; -fx-text-fill: #003366;"/>
+
+            <!-- BARRA DE BÚSQUEDA Y FILTROS -->
+            <VBox spacing="8" style="-fx-padding: 10; -fx-background-color: #d4e6f1; -fx-background-radius: 5;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="🔍 Buscar:" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="txtBuscarGlobal" promptText="Buscar por folio, CURP, nombre..."
+                               style="-fx-pref-width: 250;" onKeyReleased="#handleBuscarGlobal"/>
+                    <ComboBox fx:id="cbTipoBusqueda" promptText="Buscar en..."
+                              style="-fx-pref-width: 150;"/>
+                    <Button text="🔍 Buscar" onAction="#handleBuscarGlobal"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                    <Button text="🗑️ Limpiar" onAction="#handleLimpiarBusqueda"
+                            style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+                    <Button text=" Ordenar A-Z" onAction="#handleOrdenar"
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                </HBox>
+                <Label fx:id="lblResultadosBusqueda" text="" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11;"/>
+            </VBox>
+
+            <Separator/>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="10" right="15" bottom="10" left="15"/>
+            </padding>
+
+            <!-- Botones de acción -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="Folio del paciente:" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="txtFolio" promptText="Ingrese el folio"
+                           onKeyReleased="#onKeyReleased"
+                           style="-fx-pref-width: 120;"/>
+                <Button fx:id="btnCapturar" text=" Capturar"
+                        onAction="#handleCapturar"
+                        styleClass="rounded-button"/>
+                <Button fx:id="btnActualizar" text=" Actualizar Lista"
+                        onAction="#handleActualizar"
+                        styleClass="rounded-button"/>
+                <Button fx:id="btnTriage" text=" Módulo TRIAGE"
+                        onAction="#handleAbrirTriage"
+                        styleClass="rounded-button"/>
+                <Button fx:id="btnEstadistica" text=" Estadística"
+                        onAction="#handleAbrirEstadistica"
+                        styleClass="rounded-button"/>
+                <Button fx:id="btnPendientes" text=" Pendientes"
+                        onAction="#handleAbrirPendientes"
+                        styleClass="rounded-button"/>
+                <Button fx:id="btnJefatura" text=" Jefatura"
+                        onAction="#handleAbrirJefatura"
+                        styleClass="rounded-button"/>
+            </HBox>
+
+            <!-- TABLA PRINCIPAL QUE SE EXPANDE -->
+            <TabPane fx:id="tabPanePacientes" tabClosingPolicy="UNAVAILABLE"
+                     VBox.vgrow="ALWAYS" BorderPane.alignment="CENTER">
+                <tabs>
+                    <!-- PESTAÑA 1 -->
+                    <Tab text=" Pacientes en Espera">
+                        <TableView fx:id="tablaEspera" VBox.vgrow="ALWAYS">
+                            <!-- ... columnas ... -->
+                            <columns>
+                                <TableColumn fx:id="colFolioEspera" text=" Folio" prefWidth="70"/>
+                                <TableColumn fx:id="colCurpEspera" text=" CURP" prefWidth="130"/>
+                                <TableColumn fx:id="colPaternoEspera" text=" Ap. Paterno" prefWidth="110"/>
+                                <TableColumn fx:id="colMaternoEspera" text=" Ap. Materno" prefWidth="110"/>
+                                <TableColumn fx:id="colNombreEspera" text=" Nombre" prefWidth="120"/>
+                                <TableColumn fx:id="colSintomasEspera" text=" Síntomas" prefWidth="150"/>
+                                <TableColumn fx:id="colPersonalIngresaEspera" text=" Personal que Ingresa" prefWidth="140"/>
+                                <TableColumn fx:id="colMedicoAsignadoEspera" text=" Médico Asignado" prefWidth="140"/>
+                                <TableColumn fx:id="colTriageEspera" text=" TRIAGE" prefWidth="80"/>
+                                <TableColumn fx:id="colHoraEspera" text="Fecha y Hora Registro" prefWidth="120"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </Tab>
+
+                    <!-- PESTAÑA 2: PACIENTES EN OBSERVACIÓN -->
+                    <Tab text=" Pacientes en Observación">
+                        <TableView fx:id="tablaObservacion" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colFolioObservacion" text=" Folio" prefWidth="70"/>
+                                <TableColumn fx:id="colCurpObservacion" text=" CURP" prefWidth="130"/>
+                                <TableColumn fx:id="colPaternoObservacion" text=" Ap. Paterno" prefWidth="110"/>
+                                <TableColumn fx:id="colMaternoObservacion" text=" Ap. Materno" prefWidth="110"/>
+                                <TableColumn fx:id="colNombreObservacion" text=" Nombre" prefWidth="120"/>
+                                <TableColumn fx:id="colSintomasObservacion" text=" Síntomas" prefWidth="150"/>
+                                <TableColumn fx:id="colPersonalIngresaObservacion" text=" Personal que Ingresa" prefWidth="140"/>
+                                <TableColumn fx:id="colMedicoAsignadoObservacion" text=" Médico Asignado" prefWidth="140"/>
+                                <TableColumn fx:id="colTriageObservacion" text=" TRIAGE" prefWidth="80"/>
+                                <TableColumn fx:id="colHoraAtencionObservacion" text="Fecha y Hora Atención" prefWidth="120"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </Tab>
+
+                    <!-- PESTAÑA 3: PACIENTES EGRESADOS -->
+                    <Tab text=" Pacientes Egresados">
+                        <TableView fx:id="tablaEgresados" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colFolioEgresados" text=" Folio" prefWidth="70"/>
+                                <TableColumn fx:id="colCurpEgresados" text=" CURP" prefWidth="130"/>
+                                <TableColumn fx:id="colPaternoEgresados" text=" Ap. Paterno" prefWidth="110"/>
+                                <TableColumn fx:id="colMaternoEgresados" text=" Ap. Materno" prefWidth="110"/>
+                                <TableColumn fx:id="colNombreEgresados" text=" Nombre" prefWidth="120"/>
+                                <TableColumn fx:id="colSintomasEgresados" text=" Síntomas" prefWidth="150"/>
+                                <TableColumn fx:id="colPersonalIngresaEgresados" text="Personal que Ingresa" prefWidth="140"/>
+                                <TableColumn fx:id="colMedicoAsignadoEgresados" text=" Médico Asignado" prefWidth="140"/>
+                                <TableColumn fx:id="colTipoAltaEgresados" text=" Tipo Alta" prefWidth="120"/>
+                                <TableColumn fx:id="colFechaAltaEgresados" text=" Fecha Alta" prefWidth="100"/>
+                                <TableColumn fx:id="colMedicoEgresados" text=" Médico Alta" prefWidth="120"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </Tab>
+                </tabs>
+            </TabPane>
+
+            <Label text=" Nota: Use el buscador para encontrar pacientes rápidamente por folio, CURP o nombre"
+                   wrapText="true"
+                   style="-fx-font-size: 11px; -fx-text-fill: #555;"/>
+        </VBox>
+    </center>
+
+    <!-- CONTADORES EN EL PIE -->
+    <bottom>
+        <HBox spacing="20" style="-fx-padding: 8 15 8 15; -fx-background-color: #f8f9fa;">
+            <Label fx:id="lblContadorEspera" text=" En espera: 0" style="-fx-font-weight: bold; -fx-text-fill: #e67e22;"/>
+            <Label fx:id="lblContadorObservacion" text=" En observación: 0" style="-fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+            <Label fx:id="lblContadorEgresados" text=" Egresados: 0" style="-fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+            <Label fx:id="lblTotalPacientes" text=" Total: 0" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

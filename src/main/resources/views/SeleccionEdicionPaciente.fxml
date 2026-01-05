@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.SeleccionEdicionPacienteController"
+            prefWidth="1000" prefHeight="700"
+            style="-fx-background-color: #f0f9ff;"> <!-- FONDO AZUL MUY CLARO -->
+
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #1e3a8a; -fx-padding: 15;"> <!-- AZUL MARINO-->
+            <Label text=" MÓDULO DE PENDIENTES - COMPLETAR DATOS"
+                   style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Label text="Seleccione un paciente para completar o corregir sus datos"
+                   style="-fx-text-fill: #e0f2fe; -fx-font-size: 12px;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <!-- Filtros -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Filtrar por estado:" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbFiltroEstado" prefWidth="150"
+                          style="-fx-background-color: white; -fx-border-color: #93c5fd; -fx-border-radius: 4;"/>
+
+                <Label text="Filtrar por completitud:" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbFiltroCompletitud" prefWidth="180"
+                          style="-fx-background-color: white; -fx-border-color: #93c5fd; -fx-border-radius: 4;"/>
+
+                <Button text=" Aplicar Filtros" onAction="#aplicarFiltros"
+                        style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+                <Button text=" Limpiar" onAction="#limpiarFiltros"
+                        style="-fx-background-color: #60a5fa; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+            </HBox>
+
+            <!-- BUSCADOR -->
+            <HBox spacing="15" alignment="CENTER_LEFT"
+                  style="-fx-background-color: #e0f2fe; -fx-padding: 10; -fx-background-radius: 5;">
+                <Label text="Buscar:" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                <TextField fx:id="txtBuscar" promptText="Buscar por folio, nombre, CURP..."
+                           style="-fx-pref-width: 300; -fx-background-color: white; -fx-border-color: #93c5fd; -fx-border-radius: 4;"
+                           onKeyReleased="#filtrarPorBusqueda"/>
+                <ComboBox fx:id="cbTipoBusqueda" promptText="Tipo de búsqueda" prefWidth="150"
+                          style="-fx-background-color: white; -fx-border-color: #93c5fd; -fx-border-radius: 4;"/>
+                <Button text="Buscar" onAction="#filtrarPorBusqueda"
+                        style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+                <Button text="Limpiar" onAction="#limpiarBusqueda"
+                        style="-fx-background-color: #60a5fa; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+            </HBox>
+
+            <!-- Tabla de pacientes -->
+            <TableView fx:id="tablaPacientes" VBox.vgrow="ALWAYS"
+                       style="-fx-border-color: #93c5fd; -fx-border-radius: 4; -fx-background-color: white;">
+                <columns>
+                    <TableColumn fx:id="colFolio" text="Folio" prefWidth="70"/>
+                    <TableColumn fx:id="colColor" text="Nivel" prefWidth="120"/>
+                    <TableColumn fx:id="colPaterno" text="Ap. Paterno" prefWidth="110"/>
+                    <TableColumn fx:id="colMaterno" text="Ap. Materno" prefWidth="110"/>
+                    <TableColumn fx:id="colNombre" text="Nombre" prefWidth="120"/>
+                    <TableColumn fx:id="colEdad" text="Edad" prefWidth="60"/>
+                    <TableColumn fx:id="colTriage" text="TRIAGE" prefWidth="80"/>
+                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
+                    <TableColumn fx:id="colFechaRegistro" text="Fecha Registro" prefWidth="120"/>
+                    <TableColumn fx:id="colAccion" text="Acción" prefWidth="100"/>
+                </columns>
+            </TableView>
+
+            <!-- Leyenda de colores - AZULES CLARITOS -->
+            <HBox spacing="25" alignment="CENTER">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Rectangle width="20" height="20" fill="#93c5fd" stroke="#666"/>
+                    <Label text="Muy Incompletos" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Rectangle width="20" height="20" fill="#bfdbfe" stroke="#666"/>
+                    <Label text="Moderados" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Rectangle width="20" height="20" fill="#dbeafe" stroke="#666"/>
+                    <Label text="Casi Completos" style="-fx-text-fill: #1e40af; -fx-font-weight: bold;"/>
+                </HBox>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="15" alignment="CENTER_RIGHT"
+              style="-fx-padding: 15; -fx-background-color: #e0f2fe;">
+            <Label fx:id="lblContador" text="Total: 0 pacientes" style="-fx-text-fill: #1e40af;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Regresar" onAction="#regresar"
+                    style="-fx-background-color: #6b7280; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+            <Button text=" Cancelar" onAction="#cancelar"
+                    style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 5 10;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

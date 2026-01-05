@@ -1,0 +1,131 @@
+/* src/main/resources/styles/medical-styles.css */
+/* src/main/resources/pdf_templates/SEUL-16-P_2024.pdf
+
+/* ESTILOS GENERALES */
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* CAMPOS DE TEXTO MÉDICOS */
+.medical-field {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 3, 0, 0, 1);
+}
+
+.medical-field:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.2), 5, 0, 0, 2);
+}
+
+/* TEXT AREAS MÉDICAS */
+.medical-textarea {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 3, 0, 0, 1);
+}
+
+.medical-textarea .content {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+}
+
+.medical-textarea:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.2), 5, 0, 0, 2);
+}
+
+/* COMBO BOX MÉDICOS */
+.medical-combo {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.medical-combo:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+}
+
+/* TITLED PANE STYLES */
+.titled-pane {
+    -fx-text-fill: #1e3a8a;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.titled-pane > .title {
+    -fx-background-color: linear-gradient(to right, #f0f9ff, #e0f2fe);
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-color: #3b82f6;
+    -fx-border-radius: 8 8 0 0;
+    -fx-padding: 12 15;
+}
+
+.titled-pane > .content {
+    -fx-background-color: #fafafa;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 0 0 8 8;
+    -fx-background-radius: 0 0 8 8;
+}
+
+/* SCROLL PANE */
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* LABEL STYLES */
+.label {
+    -fx-text-fill: #374151;
+}
+
+/* SPINNER STYLES */
+.spinner {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #cbd5e1;
+}
+
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+/* CHECKBOX STYLES */
+.check-box {
+    -fx-text-fill: #374151;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #3b82f6;
+}
+
+.check-box:selected {
+    -fx-text-fill: #1e40af;
+}

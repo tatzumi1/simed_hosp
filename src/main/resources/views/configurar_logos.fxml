@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<VBox fx:controller="com.PruebaSimed2.controllers.ConfigurarLogosController"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      spacing="20" alignment="CENTER" style="-fx-padding: 20;">
+
+    <Label text="Configurar logos del encabezado PDF" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <TableView fx:id="tablaLogos" prefHeight="380" prefWidth="750">
+        <columns>
+            <TableColumn text="Orden" prefWidth="70" editable="true">
+                <cellValueFactory><PropertyValueFactory property="orden" /></cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Nombre del logo" prefWidth="300">
+                <cellValueFactory><PropertyValueFactory property="nombreLogo" /></cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Imagen" prefWidth="200"/>
+            <TableColumn text="Activo" prefWidth="80"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button text="Guardar y cerrar" onAction="#guardarYCerrar"
+                style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 14px;"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,1272 @@
+@startuml
+class com.PruebaSimed2.controllers.ModuloEstadisticaController {
+- TextField txtFechaDiaria
+- ComboBox<String> cbMes
+- ComboBox<Integer> cbAnio
+- ComboBox<String> cbTipoProductividad
+- TableView<EstadisticaMedico> tablaEstadisticas
+- VBox panelEstadisticas
+- Button btnVerFoliosDia
+- Button btnImprimirRango
+- Button btnImprimirUnFolio
+- Usuario usuarioLogueado
+- List<Integer> foliosDelDiaActual
++ void setUsuarioLogueado(Usuario)
++ void initialize(URL,ResourceBundle)
+- void configurarCombobox()
+- void configurarTabla()
+- void handleVerFoliosDia()
+- void crearVentanaFoliosDia(String,List<Integer>)
+- void copiarListaFolios(String)
+- void handleImprimirRangoFolios()
+- void imprimirRangoFolios(String,int,int)
+- void handleImprimirUnFolio()
+- void imprimirFolioIndividual(String,int)
+- boolean verificarFolioExiste(int,String)
+- void handleVisualizarGrafica()
+- void handleVisualizarRelacion()
+- List<EstadisticaMedico> obtenerEstadisticasDesdeBD(String,int,String)
+- List<String> obtenerTodasLasPersonasPorTipo(String)
+- Map<String,Integer> obtenerEstadisticasReales(String,int,String)
+- void handleVisualizarDiaria()
+- int obtenerNumeroMes(String)
+- boolean validarSeleccionMensual()
+- void handleLimpiar()
+- void handleCerrar()
+- boolean validarFormatoFecha(String)
+- void mostrarAlerta(String,String,Alert.AlertType)
+}
+
+
+class com.PruebaSimed2.controllers.ModuloEstadisticaController$EstadisticaMedico {
+- String medico
+- int cantidad
+- double porcentaje
++ String getMedico()
++ int getCantidad()
++ double getPorcentaje()
+}
+
+
+class com.PruebaSimed2.utils.PDFFieldReader {
++ {static} void main(String[])
++ {static} void checkPDFFields()
+}
+
+class com.PruebaSimed2.database.ConexionBD {
+- {static} String URL
+- {static} String USER
+- {static} String PASSWORD
++ {static} Connection conectar()
++ {static} boolean testConnection()
++ {static} Connection getSafeConnection()
++ {static} void safeClose(Connection)
++ {static} boolean executeInTransaction(TransactionOperation)
++ {static} boolean isConnectionAlive(Connection)
+}
+
+
+interface com.PruebaSimed2.database.ConexionBD$TransactionOperation {
+~ boolean execute(Connection)
+}
+
+class com.PruebaSimed2.models.Usuario {
+- int id
+- String username
+- String email
+- String rol
+- boolean activo
+- boolean primerLogin
++ int getId()
++ void setId(int)
++ String getUsername()
++ void setUsername(String)
++ String getEmail()
++ void setEmail(String)
++ String getRol()
++ void setRol(String)
++ boolean isActivo()
++ void setActivo(boolean)
++ boolean isPrimerLogin()
++ void setPrimerLogin(boolean)
+}
+
+
+class com.PruebaSimed2.controllers.RegistroUsuarioController {
+- TextField txtNombreCompleto
+- TextField txtEmail
+- TextField txtUsername
+- ComboBox<String> cbRol
+- Label lblMensaje
+- VBox vboxDatosMedico
+- TextField txtCedulaProfesional
+- VBox vboxUniversidad
+- TextField txtUniversidad
+- VBox vboxJefaturaUrgencias
+- TextField txtCedulaJefatura
+- Usuario usuarioAdmin
++ void setUsuarioAdmin(Usuario)
++ void initialize()
+- boolean registrarUsuarioCompleto(String,String,String,String,String,String,String)
+- boolean cedulaExiste(String,String)
+- int generarNuevaCveMed(Connection,String)
+- int generarSiguienteIdManual(Connection,String,int)
+- void registrarAuditoria(String,String)
+- void handleVolver()
+- void limpiarFormulario()
+- void mostrarMensaje(String,String)
+- void handleRegistrarUsuario()
+}
+
+
+class com.PruebaSimed2.utils.ChartGenerator {
++ {static} File generarGraficaBarrasAzulMarino(List<EstadisticaMedico>,String,String,String,int)
++ {static} File generarGraficaBarrasHorizontalAzulMarino(List<EstadisticaMedico>,String,String,String,int)
+}
+
+class com.PruebaSimed2.MainLauncher {
++ {static} void main(String[])
+}
+
+class com.PruebaSimed2.controllers.CargaCompletaMedicosUrgencias {
++ {static} void main(String[])
++ {static} void cargarTodosMedicosUrgencias()
+- {static} boolean usuarioExiste(Connection,String)
+- {static} boolean registrarUsuario(Connection,MedicoUrgencias)
+- {static} boolean registrarMedicoConCveExacto(Connection,MedicoUrgencias)
+- {static} List<MedicoUrgencias> crearListaCompletaMedicos()
+}
+
+class com.PruebaSimed2.controllers.CargaCompletaMedicosUrgencias$MedicoUrgencias {
+~ int cveMed
+~ String nombreCompleto
+~ String cedula
+~ String universidad
+~ String email
+~ String username
+- String limpiarNombre(String)
+- String generarUsername(String)
++ String getCedulaCompleta()
+}
+
+
+class com.PruebaSimed2.models.PermisoHistorialVO {
+- int idHistorial
+- int idNota
+- String tipoNota
+- int folioPaciente
+- String medicoAutor
+- String accion
+- String usuarioQueActua
+- String rolUsuario
+- LocalDateTime fechaAccion
+- String motivo
+- String estadoPaciente
++ int getIdHistorial()
++ void setIdHistorial(int)
++ int getIdNota()
++ void setIdNota(int)
++ String getTipoNota()
++ void setTipoNota(String)
++ int getFolioPaciente()
++ void setFolioPaciente(int)
++ String getMedicoAutor()
++ void setMedicoAutor(String)
++ String getAccion()
++ void setAccion(String)
++ String getUsuarioQueActua()
++ void setUsuarioQueActua(String)
++ String getRolUsuario()
++ void setRolUsuario(String)
++ LocalDateTime getFechaAccion()
++ void setFechaAccion(LocalDateTime)
++ String getMotivo()
++ void setMotivo(String)
++ String getEstadoPaciente()
++ void setEstadoPaciente(String)
+}
+
+
+class com.PruebaSimed2.controllers.SeleccionEdicionPacienteController {
+- TextField txtBuscar
+- ComboBox<String> cbTipoBusqueda
+- TableView<PacienteSeleccion> tablaPacientes
+- TableColumn<PacienteSeleccion,Integer> colFolio
+- TableColumn<PacienteSeleccion,String> colColor
+- TableColumn<PacienteSeleccion,String> colPaterno
+- TableColumn<PacienteSeleccion,String> colMaterno
+- TableColumn<PacienteSeleccion,String> colNombre
+- TableColumn<PacienteSeleccion,Integer> colEdad
+- TableColumn<PacienteSeleccion,String> colTriage
+- TableColumn<PacienteSeleccion,String> colEstado
+- TableColumn<PacienteSeleccion,String> colFechaRegistro
+- TableColumn<PacienteSeleccion,String> colAccion
+- ComboBox<String> cbFiltroEstado
+- ComboBox<String> cbFiltroCompletitud
+- Label lblContador
+- ObservableList<PacienteSeleccion> todosLosPacientes
+- FilteredList<PacienteSeleccion> pacientesFiltrados
++ void initialize()
+- void configurarCombos()
+- void configurarColumnas()
+- void configurarFiltros()
+- void aplicarFiltros()
+- void limpiarFiltros()
+- void filtrarPorBusqueda()
+- void limpiarBusqueda()
+- void aplicarFiltrosCombinados()
+- void cargarPacientes()
+- void aplicarColoresTabla()
+- void actualizarContador()
+- void abrirEdicionPaciente(int)
+- void regresar()
+- void cancelar()
+- void mostrarAlerta(String,String,Alert.AlertType)
+}
+
+
+class com.PruebaSimed2.controllers.SeleccionEdicionPacienteController$PacienteSeleccion {
+- SimpleIntegerProperty folio
+- SimpleStringProperty paterno
+- SimpleStringProperty materno
+- SimpleStringProperty nombre
+- SimpleIntegerProperty edad
+- SimpleStringProperty triage
+- SimpleStringProperty estado
+- SimpleStringProperty fechaRegistro
+- SimpleStringProperty colorCompletitud
+- SimpleStringProperty curp
++ String getCurp()
++ int getFolio()
++ String getPaterno()
++ String getMaterno()
++ String getNombre()
++ int getEdad()
++ String getTriage()
++ String getEstado()
++ String getFechaRegistro()
++ String getColorCompletitud()
+}
+
+
+class com.PruebaSimed2.controllers.MainController {
+- Button btnEstadistica
+- Button btnPendientes
+- Button btnJefatura
+- TextField txtFolio
+- Button btnCapturar
+- Button btnTriage
+- TabPane tabPanePacientes
+- TableView<Paciente> tablaEspera
+- TableView<Paciente> tablaObservacion
+- TableView<Paciente> tablaEgresados
+- TableColumn<Paciente,Integer> colFolioEspera
+- TableColumn<Paciente,String> colNombreEspera
+- TableColumn<Paciente,Integer> colEdadEspera
+- TableColumn<Paciente,String> colSexoEspera
+- TableColumn<Paciente,String> colTriageEspera
+- TableColumn<Paciente,String> colHoraEspera
+- TableColumn<Paciente,Integer> colFolioObservacion
+- TableColumn<Paciente,String> colNombreObservacion
+- TableColumn<Paciente,Integer> colEdadObservacion
+- TableColumn<Paciente,String> colSintomasObservacion
+- TableColumn<Paciente,String> colMedicoObservacion
+- TableColumn<Paciente,String> colHoraAtencionObservacion
+- TableColumn<Paciente,Integer> colFolioEgresados
+- TableColumn<Paciente,String> colNombreEgresados
+- TableColumn<Paciente,String> colFechaAltaEgresados
+- TableColumn<Paciente,String> colTipoAltaEgresados
+- TableColumn<Paciente,String> colMedicoEgresados
+- TextField txtBuscarGlobal
+- ComboBox<String> cbTipoBusqueda
+- Label lblResultadosBusqueda
+- Label lblContadorEspera
+- Label lblContadorObservacion
+- Label lblContadorEgresados
+- Label lblTotalPacientes
+- TableColumn<Paciente,String> colCurpEspera
+- TableColumn<Paciente,String> colPaternoEspera
+- TableColumn<Paciente,String> colMaternoEspera
+- TableColumn<Paciente,String> colSintomasEspera
+- TableColumn<Paciente,String> colPersonalIngresaEspera
+- TableColumn<Paciente,String> colMedicoAsignadoEspera
+- TableColumn<Paciente,String> colCurpObservacion
+- TableColumn<Paciente,String> colPaternoObservacion
+- TableColumn<Paciente,String> colMaternoObservacion
+- TableColumn<Paciente,String> colPersonalIngresaObservacion
+- TableColumn<Paciente,String> colMedicoAsignadoObservacion
+- TableColumn<Paciente,String> colTriageObservacion
+- TableColumn<Paciente,String> colCurpEgresados
+- TableColumn<Paciente,String> colPaternoEgresados
+- TableColumn<Paciente,String> colMaternoEgresados
+- TableColumn<Paciente,String> colSintomasEgresados
+- TableColumn<Paciente,String> colPersonalIngresaEgresados
+- TableColumn<Paciente,String> colMedicoAsignadoEgresados
+- ObservableList<Paciente> pacientesEsperaCompleta
+- ObservableList<Paciente> pacientesObservacionCompleta
+- ObservableList<Paciente> pacientesEgresadosCompleta
+- boolean ordenAscendente
+- Usuario usuarioLogueado
++ void setUsuarioLogueado(Usuario)
+- void actualizarInterfazSegunRol()
++ void initialize()
+- void abrirGestionUsuarios()
+- void configurarColumnas()
+- void onKeyReleased(KeyEvent)
+- void handleCapturar()
+- boolean verificarFolioExiste(int)
+- void abrirVentanaCaptura(int)
+- void handleActualizar()
+- void handleBuscar()
+- void cargarPacientesEnEspera()
+- void cargarPacientesEnObservacion()
+- void cargarPacientesEgresados()
+- void buscarPacientePorFolio(int)
+- void mostrarAlerta(String,String,Alert.AlertType)
+- void handleAbrirTriage()
+- void handleAbrirEstadistica()
+- void handleAbrirPendientes()
+- void handleAbrirJefatura()
+- void inicializarBusqueda()
+- void filtrarPacientes()
+- void filtrarTabla(TableView<Paciente>,ObservableList<Paciente>,String,String,String)
+- void actualizarContadores()
+- void handleBuscarGlobal()
+- void handleLimpiarBusqueda()
+- void handleOrdenar()
+}
+
+
+class com.PruebaSimed2.controllers.MainController$Paciente {
+- SimpleIntegerProperty folio
+- SimpleStringProperty curp
+- SimpleStringProperty paterno
+- SimpleStringProperty materno
+- SimpleStringProperty nombre
+- SimpleStringProperty sintomas
+- SimpleStringProperty personalIngresa
+- SimpleStringProperty medicoAsignado
+- SimpleStringProperty triage
+- SimpleStringProperty horaRegistro
+- SimpleStringProperty horaAtencion
+- SimpleStringProperty fechaAlta
+- SimpleStringProperty tipoAlta
+- SimpleStringProperty medicoAlta
+- SimpleIntegerProperty edad
+- SimpleStringProperty sexo
+- SimpleStringProperty domicilio
+- SimpleStringProperty telefono
+- SimpleStringProperty derechohabiencia
++ int getFolio()
++ String getCurp()
++ String getPaterno()
++ String getMaterno()
++ String getNombre()
++ String getSintomas()
++ String getPersonalIngresa()
++ String getMedicoAsignado()
++ String getTriage()
++ String getHoraRegistro()
++ String getHoraAtencion()
++ String getFechaAlta()
++ String getTipoAlta()
++ String getMedicoAlta()
++ int getEdad()
++ String getSexo()
++ String getDomicilio()
++ String getTelefono()
++ String getDerechohabiencia()
++ void setDomicilio(String)
++ void setTelefono(String)
++ void setDerechohabiencia(String)
++ void setEdad(int)
++ void setSexo(String)
+}
+
+
+class com.PruebaSimed2.controllers.LoginController {
+- TextField txtUsuario
+- PasswordField txtPassword
+- Label lblMensaje
+- AuthController authController
++ void initialize()
+- void handleLogin()
+- void redirigirACambioPassword(Usuario)
+- void redirigirAVentanaPrincipal(Usuario)
+- void handleEnter(javafx.scene.input.KeyEvent)
+}
+
+
+class com.PruebaSimed2.utils.PDFGeneratorEstadisticas {
++ {static} boolean generarPDF(List<EstadisticaMedico>,String,int,String,boolean)
++ {static} boolean generarPDFGrafica(List<EstadisticaMedico>,String,int,String,boolean)
+- {static} List<List<EstadisticaMedico>> dividirEnGrupos(List<EstadisticaMedico>,int)
+}
+
+class com.PruebaSimed2.utils.PasswordUtils {
++ {static} String hashPassword(String)
++ {static} boolean checkPassword(String,String)
+}
+
+class com.PruebaSimed2.TestPassword {
++ {static} void main(String[])
+}
+
+class com.PruebaSimed2.controllers.NotaMedicaController {
+- Label lblFolio
+- ComboBox<String> cmbMedicos
+- TextField txtCedula
+- TextArea txtNota
+- TextArea txtSintomas
+- Button btnGuardarDefinitivo
+- Button btnGuardarTemporal
+- {static} int MAX_CHARS_SINTOMAS
+- {static} int MAX_CHARS_SIGNOS
+- {static} int MAX_CHARS_DIAGNOSTICO
+- {static} int MAX_CHARS_NOTA
+- {static} int MAX_CHARS_INDICACIONES
+- {static} int MAX_TOTAL_CHARS
+- int folioPaciente
+- String usuarioLogueado
+- String rolUsuarioLogueado
+- boolean modoEdicion
+- NotaMedicaVO notaEnEdicion
+- Integer idNotaActual
+- Integer numeroNotaActual
+- SesionUsuario sesion
+- Date primeraFechaCreacion
+- String primeraHoraCreacion
+- boolean esPrimeraGuardada
+- DatosCaptura datosCaptura
++ void setDatosCaptura(String,String,String,String)
++ void setFolioPaciente(int)
++ void setUsuarioLogueado(String,String)
++ void initialize()
+- void configurarLimitesTextAreas()
+- void cargarMedicos()
+- void cargarNotaExistente()
+- void actualizarCedula()
+- void guardarTemporal()
+- void guardarFechaHoraCreacion(Connection,int)
+- void guardarDefinitivo()
+- void actualizarEstadoPacienteObservacion(Connection)
+- void generarPDFAutomatico(String,String,String,String,String,String,String,String)
+- void abrirPDFReciente()
+- int obtenerSiguienteNumNota(Connection)
+- Map<String,String> obtenerDatosPacienteCompletos()
+- String construirNombreCompleto(String,String,String)
+- boolean verificarLimitesDatos()
+- boolean validarCampos()
+- void mostrarAlerta(String,String,Alert.AlertType)
++ void setModoEdicion(NotaMedicaVO)
+- void obtenerFechaHoraOriginalNota(int)
+- void cargarCamposSeparadosDesdeBD(int)
+- void cargarDesdeCampoCombinado(String)
+- void revocarPermisoDespuesDeUso()
+- void registrarEnHistorialPermisos(int,String,String)
++ void limpiarRecursos()
+}
+
+
+class com.PruebaSimed2.controllers.NotaMedicaController$DatosCaptura {
+- String tipoUrgencia
+- String motivoUrgencia
+- String tipoCama
+- String medico
++ String getTipoUrgencia()
++ String getMotivoUrgencia()
++ String getTipoCama()
++ String getMedico()
+}
+
+
+class com.PruebaSimed2.controllers.VentanaRegistroTriageController {
+- DatePicker dpFechaNac
+- TextField txtFecha
+- TextField txtDomicilio
+- TextField txtMunicipioSel
+- TextArea txtSintomas
+- ComboBox<String> comboSexo
+- Button btnRegistrar
+- CheckBox chkReingreso
+- Label lblCapturista
+- String turno
+- Map<String,Integer> mapaDerechohab
+- {static} Map<String,String> MAPA_ENTIDADES_CURP
+- {static} int LIMITE_NOMBRE
+- {static} int LIMITE_TEXTO_CORTO
+- {static} int LIMITE_TEXTO_LARGO
+- {static} int LIMITE_TELEFONO
+- {static} int LIMITE_CURP
+- {static} int LIMITE_TEXTO_AREA
++ void setTurno(String)
++ void initialize()
+- void configurarLimitesDatos()
+- void configurarLimiteTextField(TextField,int)
+- void configurarLimiteTextArea(TextArea,int)
+- void configurarUI()
+- void configurarSesion()
+- String obtenerTurnoActual()
+- void iniciarReloj()
+- void cargarCombos()
+- void cargarDerechohabiencia()
+- void cargarMedicos()
+- void configurarEventos()
+- void configurarValidaciones()
+- void actualizarColorTriage()
+- void registrarPaciente()
+- int obtenerSiguienteFolio(Connection)
+- boolean insertarPacienteCompleto(Connection,int,String)
+- int obtenerEdad()
+- java.sql.Date obtenerFechaNacimiento()
+- Integer obtenerCodigoDerechohab()
+- Integer obtenerCodigoSexo()
+- String obtenerCodigoMunicipio()
+- String obtenerCodigoEntidad(String)
+- void generarCURPAutomatica()
+- boolean validarDatosCURP()
+- String limpiarTexto(String)
+- String obtenerPrimerNombreReal(String)
+- char obtenerPrimeraVocalInterna(String)
+- char obtenerPrimeraConsonanteInterna(String)
+- String obtenerCodigoCURPEntidad(String)
+- {static} Map<String,String> initMapaEntidadesCURP()
+- void seleccionarEntidad()
+- void seleccionarMunicipio()
+- void mostrarDialogoSeleccion(String,String,String,TextField,boolean,String)
+- void mostrarDialogoTextoManual(String,TextField)
+- String obtenerCodigoEntidadDesdeNombre(String)
+- void registrarAuditoria(int,String)
+- void limpiarCampos()
+- void cerrarVentana()
+- void mostrarAlerta(String,String,Alert.AlertType)
+- String generarCURP()
+- String limpiarTextoParaCURP(String)
+- String obtenerPrimerNombreRealExacto(String)
+- char obtenerPrimeraVocalInternaExacta(String)
+- char obtenerPrimeraConsonanteInternaExacta(String)
+- String obtenerCodigoCURPEntidadExacto(String)
+- char calcularDigitoVerificadorSimple(String)
+}
+
+
+class com.PruebaSimed2.controllers.ConfigurarLogosController {
+- TableView<LogoVO> tablaLogos
+- ObservableList<LogoVO> lista
+- void initialize()
+- void configurarTabla()
+- void cargarLogos()
+- void subirImagen(LogoVO)
+- void guardarYCerrar()
+}
+
+
+class com.PruebaSimed2.controllers.CambioPasswordController {
+- PasswordField txtNuevaPassword
+- PasswordField txtConfirmarPassword
+- Label lblMensaje
+- Usuario usuario
+- AuthController authController
++ void setUsuario(Usuario)
+- void handleCambiarPassword()
+- void abrirVentanaPrincipal()
+- void mostrarMensaje(String,String)
+}
+
+
+class com.PruebaSimed2.utils.LoggerDB {
++ {static} void log(String,String,String,String,String,Integer,String)
++ {static} void logLogin(String,String)
++ {static} void logAuditoria(String,String,int,String)
++ {static} void logError(String,String,String,Exception)
++ {static} void logBD(String,String,int)
+}
+
+class com.PruebaSimed2.controllers.EdicionPacienteController {
+- Label lblTitulo
+- TextField txtApPaterno
+- TextField txtDomicilio
+- TextField txtMunicipioSel
+- TextArea txtSintomas
+- DatePicker dpFechaNac
+- ComboBox<String> comboSexo
+- CheckBox chkReingreso
+- Button btnGuardar
+- int folioPaciente
+- HashMap<String,Object> datosOriginales
+- HashMap<String,Integer> mapaDerechohabiencia
+- {static} HashMap<String,String> CODIGOS_ENTIDADES
++ void initialize()
+- void configurarInformacionSesion()
+- void aplicarLimitesEntrada()
+- TextFormatter<String> crearLimitador(int)
+- void configurarValidacionesYEdadAutomatica()
++ void cargarPacienteExistente(int)
+- void guardarDatosOriginales(ResultSet)
+- void cargarDatosEnInterfaz(ResultSet)
+- void cargarDerechohabiencia()
+- String obtenerDescripcionDerechohabiencia(int)
+- void guardarCambios()
+- void cancelar()
+- void restaurarOriginal()
+- void seleccionarMunicipio()
+- void seleccionarEntidad()
+- void generarCURPAutomatica()
+- String generarCURPPropuesta()
+- String limpiarTexto(String)
+- String obtenerPrimerNombreReal(String)
+- char obtenerPrimeraVocalInterna(String)
+- char obtenerPrimeraConsonanteInterna(String)
+- char obtenerDigitoVerificadorSimple()
+- void mostrarAlerta(String,String,Alert.AlertType)
+}
+
+
+class com.PruebaSimed2.controllers.InterconsultaController {
+- Label lblFolio
+- ComboBox<String> cmbEspecialistas
+- TextField txtCedula
+- TextField txtEspecialidad
+- TextArea txtSintomas
+- TextArea txtSignosVitales
+- TextArea txtDiagnostico
+- TextArea txtIndicaciones
+- Button btnGuardarDefinitivo
+- Button btnGuardarTemporal
+- {static} int MAX_CHARS_ESPECIALIDAD
+- {static} int MAX_CHARS_SINTOMAS
+- {static} int MAX_CHARS_SIGNOS
+- {static} int MAX_CHARS_DIAGNOSTICO
+- {static} int MAX_CHARS_INDICACIONES
+- {static} int MAX_TOTAL_CHARS
+- String universidadEspecialista
+- int folioPaciente
+- String usuarioLogueado
+- boolean modoEdicion
+- InterconsultaVO interconsultaEnEdicion
+- Integer idInterconsultaActual
+- Integer numeroInterconsultaActual
+- String rolUsuarioLogueado
+- SesionUsuario sesion
+- Date primeraFechaCreacion
+- String primeraHoraCreacion
+- boolean esPrimeraGuardada
+- DatosCaptura datosCaptura
++ void setFolioPaciente(int)
++ void setUsuarioLogueado(String,String)
+- int obtenerIdUsuarioDesdeBD(String)
+- boolean otorgarPermisoInterconsultaEnBD(int)
++ void setDatosCaptura(String,String,String,String)
++ void initialize()
+- void configurarLimitesTextos()
+- void configurarSugerenciasEspecialidad()
+- void cargarEspecialistas()
+- void cargarInterconsultaExistente()
+- void actualizarCedula()
+- void guardarTemporal()
+- void guardarFechaHoraCreacion(Connection,int)
+- void guardarDefinitivo()
+- void actualizarEstadoPacienteObservacion(Connection)
+- void generarPDFAutomatico(String,String,String,String,String,String,String,String)
+- int obtenerSiguienteNumInterconsulta(Connection)
+- Map<String,String> obtenerDatosPacienteCompletos()
+- String construirNombreCompleto(String,String,String)
+- void abrirPDFInterconsultaReciente()
+- boolean verificarLimitesDatos()
+- boolean validarCampos()
+- void mostrarAlerta(String,String,Alert.AlertType)
++ void setModoEdicion(InterconsultaVO)
+- void obtenerFechaHoraOriginalInterconsulta(int)
+- void cargarCamposSeparadosDesdeBD(int)
+- void cargarDesdeCampoCombinado(String)
+- String obtenerNombreMedicoDesdeUsuario(String)
+- void revocarPermisoInterconsultaDespuesDeUso()
+- void registrarEnHistorialPermisosInterconsulta(int,String,String)
++ void limpiarRecursos()
+}
+
+
+class com.PruebaSimed2.controllers.InterconsultaController$DatosCaptura {
+- String tipoUrgencia
+- String motivoUrgencia
+- String tipoCama
+- String medico
++ String getTipoUrgencia()
++ String getMotivoUrgencia()
++ String getTipoCama()
++ String getMedico()
+}
+
+
+class com.PruebaSimed2.controllers.VentanaInicialTriageController {
+- ComboBox<String> comboCapturista
+- ComboBox<String> comboTurno
+- Button btnIniciar
+- Label lblInfo
+- boolean esAdmin
++ void initialize()
+- void cargarTurnos()
+- void cargarCapturistas()
+- String obtenerUsernamePorNombreCompleto(String)
+- void iniciarCaptura()
+- void registrarAuditoria(String,String,String)
+- void cerrarVentana()
+- void mostrar(String,Alert.AlertType)
++ void setAdmin(boolean)
+}
+
+
+class com.PruebaSimed2.models.LogoVO {
+- IntegerProperty id
+- StringProperty nombreLogo
+- IntegerProperty orden
+- BooleanProperty activo
++ int getId()
++ String getNombreLogo()
++ int getOrden()
++ boolean isActivo()
++ IntegerProperty ordenProperty()
++ BooleanProperty activoProperty()
++ void setOrden(int)
++ void setActivo(boolean)
+}
+
+
+class com.PruebaSimed2.utils.PDFGenerator {
++ {static} boolean generarNotaMedicaPDF(int,int)
++ {static} boolean generarInterconsultaPDF(int,int)
+- {static} void agregarEncabezadoConLogos(PdfDocument)
+- {static} void agregarPiePaginaNotaMedica(PdfDocument,String,String)
+- {static} void agregarPiePaginaInterconsulta(PdfDocument,String,String,String,String)
+- {static} ImageData cargarImagenDesdeResources(String)
+- {static} void abrirPDF(String)
+- {static} void programarEliminacionArchivo(String,long)
+- {static} void eliminarArchivoTemporal(String)
+- {static} String safeString(String)
+- {static} boolean isEmpty(String)
+- {static} String formatearFecha(String)
+- {static} String formatearHora(String)
+}
+
+class com.PruebaSimed2.utils.PDFGeneratorDiario {
+- {static} String TEMPLATE_PATH
+- {static} String TEMP_DIR
+- {static} String CLUES_FIJO
++ {static} InputStream generarPDFDiario(String,boolean)
+- {static} byte[] generarPaginaIndividual(int)
+- {static} Map<String,String> obtenerDatosPacienteCompletos(int)
+- {static} String obtenerDescripcionAlta(int,Connection)
+- {static} String obtenerTipoAlta(Integer,Connection)
+- {static} List<Map<String,String>> obtenerInterconsultas(int,Connection)
+- {static} String obtenerCedulaMedico(String,Connection)
+- {static} List<Integer> obtenerFoliosEgresadosPorFecha(LocalDate)
+- {static} String getValorSeguro(Object)
++ {static} boolean abrirPDF(InputStream)
++ {static} File guardarPDF(InputStream,String)
++ {static} List<Integer> obtenerFoliosEgresadosFecha(String)
+- {static} List<Integer> ordenarFoliosPorHoraAlta(List<Integer>,LocalDate)
++ {static} InputStream generarPDFPorFolios(List<Integer>,String,boolean)
++ {static} InputStream generarPDFPorRango(List<Integer>,int,int,String,boolean)
++ {static} InputStream generarPDFParaUnFolio(int,String,boolean)
+- {static} boolean verificarFolioDelDia(int,String)
+}
+
+
+class com.PruebaSimed2.utils.PDFGeneratorDiario$PdfPageFormCopier {
++ void copy(PdfPage,PdfPage)
+}
+
+class com.PruebaSimed2.controllers.CapturaPrincipalController {
+- TextField txtFolio
+- TextField txtNombre
+- TextField txtDerechohabiencia
+- TextArea txtDomicilio
+- Button btnColorTriage
+- TextField txtFechaAtencion
+- ComboBox<String> cmbTipoUrgencia
+- ToggleGroup tgEstadoPaciente
+- RadioButton rbObservacion
+- Label lblContadorNotas
+- TableView<NotaMedicaVO> tablaNotasMedicas
+- TableView<InterconsultaVO> tablaInterconsultas
+- Button btnVisualizarNotaMedica
+- Button btnVisualizarInterconsulta
+- Button btnNuevaNotaMedica
+- Button btnOtorgarPermiso
+- Button btnGuardarGeneral
+- int folioPaciente
+- String usuarioLogueado
+- String rolUsuarioLogueado
+- Map<String,String> coloresTriage
+- boolean capturaGuardada
+- ObservableList<NotaMedicaVO> notasData
+- ObservableList<InterconsultaVO> interconsultasData
+- SesionUsuario sesion
+- ToggleGroup mujerFertilGroup
+- void imprimirNotaMedica()
+- void imprimirInterconsulta()
++ void setFolioPaciente(int)
++ void setUsuarioLogueado(String,String)
++ void initialize()
+- void configurarToggleGroup()
+- void configurarEventos()
+- void configurarTablas()
+- void cargarDatosPaciente(int)
+- String obtenerNombreMunicipio(String,String)
+- String obtenerNombreEntidad(String)
+- void actualizarUIDatosPaciente(Map<String,Object>)
+- String construirNombreCompleto(String,String,String)
+- String obtenerDescripcionSexo(String)
+- void aplicarColorTriage(String)
+- int obtenerIdUsuarioDesdeBD(String)
+- String obtenerNombreMedicoDesdeUsuario(String)
+- String obtenerNombreCompletoDesdeUsuarios(String)
+- void mostrarSeccionNuevaInformacion()
+- void habilitarSeccionNuevaInformacion()
+- void abrirNotaMedica()
+- void abrirInterconsulta()
+- void cargarCombos()
+- void cargarComboDesdeTabla(Connection,String,String,ComboBox<String>)
+- void cargarContadores()
+- void configurarFechaHoraActual()
+- void iniciarRelojTiempoReal()
+- void actualizarCedulaMedico()
+- void configurarColumnasTablas()
+- TableCell<NotaMedicaVO,String> crearCeldaConTooltip()
+- void configurarColumnasInterconsultas()
+- TableCell<InterconsultaVO,String> crearCeldaConTooltipInterconsulta()
+- String obtenerSintomasNota(int)
+- String obtenerSintomasInterconsulta(int)
+- void mostrarSintomasCompletos(String)
+- void onNotaSeleccionada()
+- void onInterconsultaSeleccionada()
+- void configurarVisibilidadBotonesSegunNotaSeleccionada()
+- void configurarVisibilidadBotonesInterconsulta()
+- boolean otorgarPermisoInterconsultaEnBD(int)
+- void editarNotaMedica()
+- void editarInterconsulta()
+- void guardarGeneral()
+- boolean guardarCapturaCompleta()
+- void verificarNotasTemporalesPropias()
+- void cargarNotasDelPaciente()
+- void cargarInterconsultasDelPaciente()
+- LocalDateTime obtenerFechaHoraDesdeBD(String,String)
+- void cargarYEditarNotaExistente(int)
+- void cargarDatosNuevaInfoDesdeBD()
+- String obtenerDescripcionDesdeClave(String,String,String,int)
+- void deshabilitarCamposNuevaInformacion()
+- void habilitarBotonesNotas()
+- void forzarActualizacionCompleta()
+- String obtenerEstadoSeleccionado()
+- boolean validarCampos()
+- int obtenerClaveDesdeDescripcion(String,String,String)
+- int obtenerClaveMedico(String)
+- void mostrarAlerta(String,String,Alert.AlertType)
+- boolean esMedicoInterconsulta()
+- int obtenerEstadoPacienteActual()
+- boolean pacienteEnEspera()
+- boolean pacienteEnObservacion()
+- boolean pacienteEgresado()
+- boolean actualizarEstadoPaciente(int)
+- void configurarVisibilidadSegunRol()
+- void ocultarSeccionNuevaInformacion()
+- void configurarBotonesSegunEstadoPaciente()
+- void visualizarNotaMedica()
+- void visualizarInterconsulta()
+- Map<String,String> obtenerDatosEspecialistaParaPDF(String)
+- Map<String,String> obtenerDatosMedicoFallback(String)
+- Map<String,String> obtenerDatosNotaCompleta(int)
+- Map<String,String> obtenerDatosInterconsultaCompleta(int)
+- void abrirPDFReciente()
+- void abrirPDFInterconsultaReciente()
+- Map<String,String> obtenerDatosPacienteCompletos()
+- void otorgarPermisoInterconsulta()
+- void registrarEnHistorialPermisosInterconsulta(int,String,String)
+- boolean otorgarPermisoEnBD(int)
+- void registrarEnHistorialPermisos(int,String,String)
+- void otorgarPermisoEdicion()
+- void abrirVentanaEgreso()
++ String getMujerEdadFertil()
++ void limpiarMujerFertil()
+- Map<String,String> obtenerDatosPacienteParaPDF()
+- Map<String,String> obtenerDatosNotaParaPDF(int)
+- Map<String,String> obtenerDatosInterconsultaParaPDF(int)
+- void mostrarEspecialistasEnBD(Connection)
+- void ocultarSeccionParaEgresado()
+- void mostrarSoloRadioButtonsParaEgreso()
+}
+
+
+class com.PruebaSimed2.utils.ColorGenerator {
+- {static} String[] COLOR_PALETTE
+- {static} Map<String,Color> medicoColors
+- {static} int currentIndex
++ {static} Color getColorForMedico(String)
++ {static} void resetColors()
++ {static} String getColorStyleForMedico(String)
+- {static} String toHex(Color)
+}
+
+
+class com.PruebaSimed2.GenerarHashesParaTodos {
++ {static} void main(String[])
+}
+
+class com.PruebaSimed2.controllers.CargaMasivaMedicos {
++ {static} void main(String[])
++ {static} void cargarMedicosEspecialistas()
+- {static} boolean usuarioExiste(Connection,String)
+- {static} int registrarUsuario(Connection,MedicoEspecialista)
+- {static} boolean registrarMedicoEspecialista(Connection,MedicoEspecialista)
+- {static} int generarNuevaCveMed(Connection)
+- {static} void revertirUsuario(Connection,int)
+- {static} List<MedicoEspecialista> crearListaMedicos()
+}
+
+class com.PruebaSimed2.controllers.CargaMasivaMedicos$MedicoEspecialista {
+~ String nombreCompleto
+~ String cedula
+~ String universidad
+~ String email
+~ String username
+- String generarUsernameSimple(String)
+}
+
+
+class com.PruebaSimed2.models.NotaMedicaVO {
+- int idNota
+- int folioPaciente
+- int numeroNota
+- String nota
+- String indicaciones
+- String medicoAutor
+- String cedulaMedico
+- LocalDateTime fechaCreacion
+- String estado
+- String estadoPaciente
+- boolean editablePorMedico
+- String permisoEdicionOtorgadoPor
+- LocalDateTime fechaPermisoEdicion
+- LocalDateTime fechaEdicionRealizada
+- String mujerEdadFertil
++ String getMujerEdadFertil()
++ void setMujerEdadFertil(String)
++ int getIdNota()
++ void setIdNota(int)
++ int getFolioPaciente()
++ void setFolioPaciente(int)
++ int getNumeroNota()
++ void setNumeroNota(int)
++ String getNota()
++ void setNota(String)
++ String getIndicaciones()
++ void setIndicaciones(String)
++ String getMedicoAutor()
++ void setMedicoAutor(String)
++ String getCedulaMedico()
++ void setCedulaMedico(String)
++ LocalDateTime getFechaCreacion()
++ void setFechaCreacion(LocalDateTime)
++ String getEstado()
++ void setEstado(String)
++ String getEstadoPaciente()
++ void setEstadoPaciente(String)
++ boolean isEditablePorMedico()
++ void setEditablePorMedico(boolean)
++ String getPermisoEdicionOtorgadoPor()
++ void setPermisoEdicionOtorgadoPor(String)
++ LocalDateTime getFechaPermisoEdicion()
++ void setFechaPermisoEdicion(LocalDateTime)
++ LocalDateTime getFechaEdicionRealizada()
++ void setFechaEdicionRealizada(LocalDateTime)
++ String getContenido()
++ void setContenido(String)
++ String toString()
++ String getEditable()
+}
+
+
+class com.PruebaSimed2.controllers.EgresoPacienteController {
+- TextArea tfAfecc1
+- ComboBox<String> cbCodAfecc1
+- TextField tfMedic1
+- TextArea taCausaExterna
+- ComboBox<String> cbIndigena
+- ComboBox<String> cbMujerFertil
+- TextField tfSemanasGestacion
+- TextArea taAviso
+- ComboBox<String> cbAltaPor
+- TextField tfFolioDef
+- TextField tfProc1
+- ComboBox<String> cbIra
+- Spinner<Integer> spSobres
+- ComboBox<String> cbAreaHosp
+- ComboBox<String> cbMedicoAlta
+- Label lblFechaAlta
+- CheckBox cbSoloJefatura
+- TextField tfFolio
+- DateTimeFormatter dateFmt
+- DateTimeFormatter timeFmt
+- Timer timer
+- int folioPaciente
++ void setFolioPaciente(int)
+- void cargarDatosPaciente(int)
++ void setUsuarioLogueado(String,String)
++ void initialize()
+- void configurarComboBoxesCIE10()
+- void cargarDatosCIE10()
+- void cargarValoresEjemploCIE10()
+- void configurarLimitesTexto()
+- void configurarListeners()
+- void cargarCombos()
+- void cargarValoresPorDefecto()
+- void cargarDatosPacienteExistente()
+- void seleccionarCodigoEnComboBox(ComboBox<String>,String)
+- void startDateTimeUpdater()
+- void onGuardarCerrar()
+- boolean validarCampos()
+- String extraerCodigo(String)
+- void guardarEgreso()
+- Integer obtenerCveAlta(String)
+- void actualizarEstadoPaciente()
+- String emptyToNull(String)
+- void mostrarAlerta(String,String,Alert.AlertType)
+}
+
+
+class com.PruebaSimed2.Main {
++ void start(Stage)
+- void showError(String)
++ {static} void main(String[])
+}
+
+class com.PruebaSimed2.controllers.AuthController {
++ Usuario login(String,String)
++ boolean cambiarPassword(String,String)
+}
+
+class com.PruebaSimed2.controllers.JefaturaController {
+- TextField txtFolioNota
+- TextField txtNumNotaMedica
+- TextField txtNumInterconsulta
+- TableView<PacienteEgresado> tablaEgresados
+- TableColumn<PacienteEgresado,Integer> colFolio
+- TableColumn<PacienteEgresado,String> colNombreCompleto
+- TableColumn<PacienteEgresado,String> colFechaIngreso
+- TableColumn<PacienteEgresado,Integer> colTotalNotasMedicas
+- TableColumn<PacienteEgresado,Integer> colTotalInterconsultas
+- TableColumn<PacienteEgresado,String> colDiagnostico
+- TableColumn<PacienteEgresado,String> colAltaPor
+- TableColumn<PacienteEgresado,String> colFolioDefuncion
+- TableColumn<PacienteEgresado,String> colMedicoAlta
+- Label lblTotalEgresados
+- ObservableList<PacienteEgresado> pacientesEgresados
+- {static} Map<String,String> TABLA_QUERIES
+- void handleExportarExcel()
+- void exportarBaseDatosExcel(File)
+- void exportarTabla(Workbook,String,String)
++ void initialize()
+- void configurarColumnas()
+- void handleVisualizarNota()
+- void buscarNotaMedica(int,int)
+- void buscarInterconsulta(int,int)
+- void generarPDFNotaMedica(ResultSet,int)
+- void generarPDFInterconsulta(ResultSet,int)
+- String obtenerUniversidadEspecialista(String)
+- void cargarPacientesEgresados()
+- void mostrarAlerta(String,String,Alert.AlertType)
+}
+
+
+class com.PruebaSimed2.controllers.JefaturaController$PacienteEgresado {
+- int folio
+- String nombreCompleto
+- String fechaIngreso
+- int totalNotasMedicas
+- int totalInterconsultas
+- String diagnostico
+- String altaPor
+- String folioDefuncion
+- String medicoAlta
++ int getFolio()
++ String getNombreCompleto()
++ String getFechaIngreso()
++ int getTotalNotasMedicas()
++ int getTotalInterconsultas()
++ String getDiagnostico()
++ String getAltaPor()
++ String getFolioDefuncion()
++ String getMedicoAlta()
+}
+
+
+class com.PruebaSimed2.controllers.GestionUsuariosController {
+- TextField txtBuscar
+- ComboBox<String> cbFiltroRol
+- ComboBox<String> cbFiltroEstado
+- Label lblResultados
+- Label lblContador
+- TableView<UsuarioVO> tablaUsuarios
+- TableColumn<UsuarioVO,String> colUsername
+- TableColumn<UsuarioVO,String> colEmail
+- TableColumn<UsuarioVO,String> colRol
+- TableColumn<UsuarioVO,Boolean> colActivo
+- TableColumn<UsuarioVO,String> colPrimerLogin
+- TableColumn<UsuarioVO,String> colUltimoLogin
+- TableColumn<UsuarioVO,String> colAcciones
+- Label lblMensaje
+- ObservableList<UsuarioVO> usuariosCompleta
+- ObservableList<UsuarioVO> usuariosFiltrada
+- Usuario usuarioAdmin
+- ObservableList<UsuarioVO> usuariosData
++ void setUsuarioAdmin(Usuario)
++ void initialize()
+- void configurarColumnas()
+- void configurarAcciones()
+- void cargarUsuarios()
+- void resetearPassword(UsuarioVO)
+- void toggleActivo(UsuarioVO)
+- void handleRegistrarUsuario()
+- void handleActualizarLista()
+- void handleVolver()
+- boolean confirmarAccion(String)
+- void mostrarMensaje(String,String)
+- void inicializarBusqueda()
+- void filtrarUsuarios()
+- void actualizarContadores()
+- void handleBuscar()
+- void handleLimpiarBusqueda()
+- void handleEstadisticas()
+- void cambiarRol(UsuarioVO)
+- Pair<String,String> pedirDatosMedico(String)
+- boolean actualizarRolEnBD(int,String)
+- boolean actualizarRolConDatos(int,String,String,String)
+- String obtenerNombreUsuario(Connection,int)
+- int generarNuevaCveMed(Connection,String)
+- void handleVerificarDatos()
+- void abrirConfigurarLogos()
+}
+
+
+class com.PruebaSimed2.controllers.GestionUsuariosController$UsuarioVO {
+- SimpleStringProperty username
+- SimpleStringProperty email
+- SimpleStringProperty rol
+- SimpleBooleanProperty activo
+- SimpleStringProperty primerLogin
+- SimpleStringProperty ultimoLogin
+- int idUsuario
++ String getUsername()
++ String getEmail()
++ String getRol()
++ boolean isActivo()
++ String getPrimerLogin()
++ String getUltimoLogin()
++ int getIdUsuario()
+}
+
+
+class com.PruebaSimed2.utils.SesionUsuario {
+- {static} SesionUsuario instance
+- String username
+- String rol
+- String nombreMedico
+- int usuarioId
++ {static} SesionUsuario getInstance()
++ void inicializar(String,String,int)
++ boolean puedeCrearNuevaNota(int)
++ boolean puedeCrearNuevaInterconsulta(int)
++ boolean puedeEditarNota(String)
++ boolean puedeEditarInterconsulta(String)
+- String obtenerNombreMedicoDesdeUsuario(String)
+- String obtenerNombreCompletoFallback(String)
++ String getUsername()
++ String getRol()
++ String getNombreMedico()
++ int getUsuarioId()
++ Integer obtenerNotaTemporalExistente(int)
++ Integer obtenerInterconsultaTemporalExistente(int)
++ void cerrarSesion()
+}
+
+
+class com.PruebaSimed2.utils.DatosPacienteUtils {
++ {static} int calcularCompletitud(Paciente)
++ {static} String obtenerColorCompletitud(int)
++ {static} String obtenerColorCSS(String)
++ {static} String obtenerDescripcionNivel(String)
+- {static} boolean tieneTexto(String)
+}
+
+class com.PruebaSimed2.GenerarHashReal {
++ {static} void main(String[])
+}
+
+class com.PruebaSimed2.models.InterconsultaVO {
+- int idInterconsulta
+- int folioPaciente
+- int numeroInterconsulta
+- String contenido
+- String especialista
+- String cedulaEspecialista
+- LocalDateTime fechaCreacion
+- String estado
+- String estadoPaciente
+- boolean editablePorMedico
+- String permisoEdicionOtorgadoPor
+- LocalDateTime fechaPermisoEdicion
+- LocalDateTime fechaEdicionRealizada
+- String mujerEdadFertil
++ String getMujerEdadFertil()
++ void setMujerEdadFertil(String)
++ int getIdInterconsulta()
++ void setIdInterconsulta(int)
++ int getFolioPaciente()
++ void setFolioPaciente(int)
++ int getNumeroInterconsulta()
++ void setNumeroInterconsulta(int)
++ String getContenido()
++ void setContenido(String)
++ String getEspecialista()
++ void setEspecialista(String)
++ String getCedulaEspecialista()
++ void setCedulaEspecialista(String)
++ LocalDateTime getFechaCreacion()
++ void setFechaCreacion(LocalDateTime)
++ String getEstado()
++ void setEstado(String)
++ String getEstadoPaciente()
++ void setEstadoPaciente(String)
++ boolean isEditablePorMedico()
++ void setEditablePorMedico(boolean)
++ String getPermisoEdicionOtorgadoPor()
++ void setPermisoEdicionOtorgadoPor(String)
++ LocalDateTime getFechaPermisoEdicion()
++ void setFechaPermisoEdicion(LocalDateTime)
++ LocalDateTime getFechaEdicionRealizada()
++ void setFechaEdicionRealizada(LocalDateTime)
++ String getEditable()
+}
+
+
+class com.PruebaSimed2.DescubrirPassword {
++ {static} void main(String[])
+}
+
+
+
+javafx.fxml.Initializable <|.. com.PruebaSimed2.controllers.ModuloEstadisticaController
+com.PruebaSimed2.controllers.ModuloEstadisticaController +.. com.PruebaSimed2.controllers.ModuloEstadisticaController$EstadisticaMedico
+com.PruebaSimed2.database.ConexionBD +.. com.PruebaSimed2.database.ConexionBD$TransactionOperation
+com.PruebaSimed2.controllers.CargaCompletaMedicosUrgencias +.. com.PruebaSimed2.controllers.CargaCompletaMedicosUrgencias$MedicoUrgencias
+com.PruebaSimed2.controllers.SeleccionEdicionPacienteController +.. com.PruebaSimed2.controllers.SeleccionEdicionPacienteController$PacienteSeleccion
+com.PruebaSimed2.controllers.MainController +.. com.PruebaSimed2.controllers.MainController$Paciente
+com.PruebaSimed2.controllers.NotaMedicaController +.. com.PruebaSimed2.controllers.NotaMedicaController$DatosCaptura
+com.PruebaSimed2.controllers.InterconsultaController +.. com.PruebaSimed2.controllers.InterconsultaController$DatosCaptura
+com.PruebaSimed2.utils.PDFGeneratorDiario +.. com.PruebaSimed2.utils.PDFGeneratorDiario$PdfPageFormCopier
+com.PruebaSimed2.utils.IPdfPageExtraCopier <|.. com.PruebaSimed2.utils.PDFGeneratorDiario$PdfPageFormCopier
+com.PruebaSimed2.controllers.CargaMasivaMedicos +.. com.PruebaSimed2.controllers.CargaMasivaMedicos$MedicoEspecialista
+javafx.application.Application <|-- com.PruebaSimed2.Main
+com.PruebaSimed2.controllers.JefaturaController +.. com.PruebaSimed2.controllers.JefaturaController$PacienteEgresado
+com.PruebaSimed2.controllers.GestionUsuariosController +.. com.PruebaSimed2.controllers.GestionUsuariosController$UsuarioVO
+@enduml

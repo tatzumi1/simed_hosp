@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.VentanaInicialTriageController"
+            prefWidth="600" prefHeight="400"
+            style="-fx-background-color:#f9f9f9; -fx-border-color:#002366; -fx-border-width:2;">
+
+    <VBox spacing="20" alignment="CENTER" prefWidth="580" layoutX="10" layoutY="30">
+
+        <!-- TÍTULO -->
+        <Label text="Inicialización de Captura de Pacientes"
+               style="-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill:#002366;"/>
+
+        <Label text="Seleccione su nombre y el turno correspondiente para iniciar la captura."
+               style="-fx-font-size:13px; -fx-text-fill:#002366;"/>
+
+        <!-- PANEL PRINCIPAL -->
+        <GridPane hgap="10" vgap="15" alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35"/>
+                <ColumnConstraints percentWidth="65"/>
+            </columnConstraints>
+
+            <!-- Capturista -->
+            <Label text="Capturista:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                   style="-fx-font-size:14px; -fx-text-fill:#002366;"/>
+            <ComboBox fx:id="comboCapturista" prefWidth="250"
+                      promptText="Seleccione capturista"
+                      GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Tipo de turno -->
+            <Label text="Tipo de turno:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                   style="-fx-font-size:14px; -fx-text-fill:#002366;"/>
+            <ComboBox fx:id="comboTurno" prefWidth="250"
+                      promptText="Seleccione turno"
+                      GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Mensaje de bienvenida -->
+            <Label fx:id="lblInfo" text=""
+                   GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2"
+                   style="-fx-font-size:12px; -fx-text-fill:#002366;"/>
+        </GridPane>
+
+        <!-- BOTONES -->
+        <HBox spacing="20" alignment="CENTER">
+            <Button fx:id="btnIniciar" text="Iniciar Captura"
+                    style="-fx-background-color:#002366; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 25 8 25;"/>
+            <Button fx:id="btnSalir" text="Salir"
+                    style="-fx-background-color:#b22222; -fx-text-fill:white; -fx-background-radius:12; -fx-padding:8 25 8 25;"/>
+        </HBox>
+
+    </VBox>
+</AnchorPane>

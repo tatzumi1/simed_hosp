@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="1200" prefHeight="800"
+      style="-fx-background-color: #e6f0ff;"
+      fx:controller="com.PruebaSimed2.controllers.JefaturaController">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <!-- TÍTULO PRINCIPAL -->
+    <Label text="MÓDULO DE JEFATURA DEL SERVICIO DE URGENCIAS"
+           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #002b5c; -fx-alignment: center;"/>
+
+    <Separator/>
+    <VBox spacing="10" style="-fx-padding: 10 0 10 0;">
+
+        <!-- SECCIÓN 1: EXPORTAR A EXCEL -->
+        <VBox spacing="8" style="-fx-padding: 10; -fx-background-color: #d4e6f1; -fx-background-radius: 5;">
+            <Label text="EXPORTAR BASE DE DATOS" style="-fx-font-weight: bold; -fx-text-fill: #003366;"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text=" Exportar Base SIMED a Excel"
+                        onAction="#handleExportarExcel"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 250;"/>
+                <Label text="Exporta toda la base de datos principal a formato Excel"
+                       style="-fx-text-fill: #555; -fx-font-size: 11px;"/>
+            </HBox>
+        </VBox>
+
+        <!-- SECCIÓN 2: BÚSQUEDA DE NOTAS -->
+        <VBox spacing="8" style="-fx-padding: 10; -fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-width: 1;">
+            <Label text="VISUALIZAR NOTAS CAPTURADAS" style="-fx-font-weight: bold; -fx-text-fill: #003366;"/>
+            <Label text="Para visualizar una nota ya capturada, proporcione los siguientes datos y de click en Visualizar:"
+                   style="-fx-text-fill: #555; -fx-font-size: 12px;"/>
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox spacing="5">
+                    <Label text="Folio del Paciente:" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="txtFolioNota" promptText="Ingrese folio"
+                               style="-fx-pref-width: 120;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Número de Nota Médica:" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="txtNumNotaMedica" promptText="Núm. nota médica"
+                               style="-fx-pref-width: 140;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Número de Interconsulta:" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="txtNumInterconsulta" promptText="Núm. interconsulta"
+                               style="-fx-pref-width: 140;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text=" "/> <!-- Espacio vacío para alinear -->
+                    <Button text=" Visualizar Nota" onAction="#handleVisualizarNota"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 30;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- SECCIÓN 3: LISTADO DE PACIENTES EGRESADOS -->
+        <VBox spacing="8" VBox.vgrow="ALWAYS">
+            <Label text="LISTADO DE PACIENTES EGRESADOS" style="-fx-font-weight: bold; -fx-text-fill: #003366; -fx-font-size: 14px;"/>
+
+            <TableView fx:id="tablaEgresados" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colFolio" text="Folio" prefWidth="60"/>
+                    <TableColumn fx:id="colNombreCompleto" text="Nombre Completo" prefWidth="200"/>
+                    <TableColumn fx:id="colFechaIngreso" text="Fecha Ingreso" prefWidth="100"/>
+                    <TableColumn fx:id="colTotalNotasMedicas" text="Total Notas Médicas" prefWidth="120"/>
+                    <TableColumn fx:id="colTotalInterconsultas" text="Total Interconsultas" prefWidth="120"/>
+                    <TableColumn fx:id="colDiagnostico" text="Diagnóstico" prefWidth="150"/>
+                    <TableColumn fx:id="colAltaPor" text="Alta Por" prefWidth="100"/>
+                    <TableColumn fx:id="colFolioDefuncion" text="Folio Defunción" prefWidth="100"/>
+                    <TableColumn fx:id="colMedicoAlta" text="Médico que Egresó" prefWidth="150"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+            </TableView>
+
+            <!-- CONTADOR -->
+            <HBox spacing="10" style="-fx-padding: 5 0 0 0;">
+                <Label fx:id="lblTotalEgresados" text="Total de pacientes egresados: 0"
+                       style="-fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+
+</VBox>

@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.PruebaSimed2.controllers.CapturaPrincipalController"
+            style="-fx-padding: 15;">
+
+    <!-- TÍTULO PRINCIPAL -->
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #e6f0ff; -fx-padding: 15; -fx-border-color: #002366; -fx-border-width: 0 0 2 0;">
+            <Label text="CAPTURA DE LA ATENCIÓN MÉDICA OTORGADA AL PACIENTE"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #002366;"/>
+            <Label text="Complete la información médica del paciente"
+                   style="-fx-font-size: 12px; -fx-text-fill: #002366;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <GridPane hgap="20" vgap="15">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+
+            <!-- ============================================= -->
+            <!-- COLUMNA IZQUIERDA - DATOS EXISTENTES DEL PACIENTE -->
+            <!-- ============================================= -->
+            <VBox spacing="15" GridPane.columnIndex="0">
+                <Label text=" DATOS EXISTENTES DEL PACIENTE"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #002366; -fx-padding: 0 0 5 0;"/>
+
+                <!-- Información Básica del Paciente -->
+                <TitledPane text="Información del Paciente" expanded="true"
+                            style="-fx-border-color: #cccccc; -fx-border-radius: 5;">
+                    <VBox spacing="8" style="-fx-padding: 12;">
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
+
+                            <Label text="Folio:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtFolio" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Fecha Registro:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtFechaRegistro" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Hora Registro:" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtHoraRegistro" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <!-- TRIAGE CON COLOR -->
+                            <Label text="TRIAGE:" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <HBox spacing="8" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                                <TextField fx:id="txtTriage" editable="false" prefWidth="120"
+                                           style="-fx-background-color: #f5f5f5;"/>
+                                <Button fx:id="btnColorTriage" text=" " prefWidth="30" prefHeight="26"
+                                        style="-fx-background-radius: 10;"/>
+                            </HBox>
+
+                            <Label text="Nombre:" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtNombre" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Edad:" GridPane.rowIndex="5" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtEdad" GridPane.rowIndex="5" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Sexo:" GridPane.rowIndex="6" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtSexo" GridPane.rowIndex="6" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <!-- DOMICILIO COMPLETO -->
+                            <Label text="Domicilio:" GridPane.rowIndex="7" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextArea fx:id="txtDomicilio" GridPane.rowIndex="7" GridPane.columnIndex="1"
+                                      editable="false" wrapText="true" prefRowCount="2"
+                                      style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Municipio:" GridPane.rowIndex="8" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtMunicipio" GridPane.rowIndex="8" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Entidad:" GridPane.rowIndex="9" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtEntidad" GridPane.rowIndex="9" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Derechohabiencia:" GridPane.rowIndex="10" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtDerechohabiencia" GridPane.rowIndex="10" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Referencia:" GridPane.rowIndex="11" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtReferencia" GridPane.rowIndex="11" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Síntomas:" GridPane.rowIndex="12" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextArea fx:id="txtSintomas" GridPane.rowIndex="12" GridPane.columnIndex="1"
+                                      editable="false" wrapText="true" prefRowCount="3"
+                                      style="-fx-background-color: #f5f5f5;"/>
+
+                            <Label text="Médico que Ingresó:" GridPane.rowIndex="13" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtMedicoIngreso" GridPane.rowIndex="13" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #f5f5f5;"/>
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- NOTA MÉDICA - BUSCAR Y GESTIONAR -->
+                <TitledPane text=" Nota Médica - Buscar y Gestionar" expanded="true"
+                            style="-fx-border-color: #3498db; -fx-border-radius: 5;">
+                    <VBox spacing="10" style="-fx-padding: 12;">
+                        <!-- CONTADOR -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Notas médicas de este paciente:"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label fx:id="lblContadorNotas" text="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 14px;"/>
+                        </HBox>
+
+                        <!-- TABLA DE NOTAS EXISTENTES -->
+                        <Label text="Notas existentes del paciente:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                        <TableView fx:id="tablaNotasMedicas" prefHeight="200"
+                                   style="-fx-border-color: #ddd; -fx-border-radius: 3;">
+                            <columns>
+                                <TableColumn text="No. Nota" prefWidth="80"/>
+                                <TableColumn text="Médico" prefWidth="150"/>
+                                <TableColumn text="Fecha" prefWidth="100"/>
+                                <TableColumn text="Estado" prefWidth="100"/>
+                                <TableColumn text="¿Editable?" prefWidth="80"/>
+                                <TableColumn text="Estado Paciente" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+
+                        <!-- BOTONES DE ACCIÓN DINÁMICOS -->
+                        <Label text="Acciones para la nota seleccionada:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text=" Visualizar" fx:id="btnVisualizarNotaMedica"
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+
+                            <Button text=" Imprimir" fx:id="btnImprimirNotaMedica"
+                                    style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+
+                            <Button text=" Editar Nota" fx:id="btnEditarNotaMedica"
+                                    visible="false"
+                                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+                            <Button text=" Otorgar Permiso" fx:id="btnOtorgarPermiso"
+                                    visible="false"
+                                    style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+
+                        <Separator/>
+
+                        <!-- BOTÓN NUEVA NOTA -->
+                        <Label text="Crear nueva nota médica:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Button text=" Nueva Nota Médica" fx:id="btnNuevaNotaMedica"
+                                style="-fx-background-color: #002366; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20 8 20;"/>
+                    </VBox>
+                </TitledPane>
+
+                <!-- NOTA INTERCONSULTA - BUSCAR Y GESTIONAR -->
+                <TitledPane text=" Nota de Interconsulta - Buscar y Gestionar" expanded="true"
+                            style="-fx-border-color: #9b59b6; -fx-border-radius: 5;">
+                    <VBox spacing="10" style="-fx-padding: 12;">
+                        <!-- CONTADOR -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Interconsultas de este paciente:"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                            <Label fx:id="lblContadorInterconsultas" text="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 14px;"/>
+                        </HBox>
+
+                        <!-- TABLA DE INTERCONSULTAS EXISTENTES -->
+                        <Label text="Interconsultas existentes del paciente:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                        <TableView fx:id="tablaInterconsultas" prefHeight="200"
+                                   style="-fx-border-color: #ddd; -fx-border-radius: 3;">
+                            <columns>
+                                <TableColumn text="No. Interconsulta" prefWidth="100"/>
+                                <TableColumn text="Especialista" prefWidth="150"/>
+                                <TableColumn text="Fecha" prefWidth="100"/>
+                                <TableColumn text="Estado" prefWidth="100"/>
+                                <TableColumn text="¿Editable?" prefWidth="80"/>
+                            </columns>
+                        </TableView>
+
+                        <!-- BOTONES DE ACCIÓN -->
+                        <Label text="Acciones para la interconsulta seleccionada:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text=" Visualizar" fx:id="btnVisualizarInterconsulta"
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+
+                            <Button text=" Imprimir" fx:id="btnImprimirInterconsulta"
+                                    style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+
+                            <Button text=" Editar" fx:id="btnEditarInterconsulta"
+                                    visible="false"
+                                    style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+                            <Button text=" Otorgar Permiso" fx:id="btnOtorgarPermisoInterconsulta"
+                                    visible="false"
+                                    style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+
+                        <Separator/>
+
+                        <!-- BOTÓN NUEVA INTERCONSULTA -->
+                        <Label text="Crear nueva interconsulta:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Button text=" Nueva Interconsulta" fx:id="btnNuevaInterconsulta"
+                                style="-fx-background-color: #002366; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20 8 20;"/>
+                    </VBox>
+                </TitledPane>
+            </VBox>
+
+            <!-- ============================================= -->
+            <!-- COLUMNA DERECHA - NUEVA INFORMACIÓN MÉDICA -->
+            <!-- ============================================= -->
+            <VBox spacing="15" GridPane.columnIndex="1">
+                <Label text=" NUEVA INFORMACIÓN MÉDICA"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #002366; -fx-padding: 0 0 5 0;"/>
+
+                <!-- Información de Atención Actual -->
+                <TitledPane text="Información de Atención Actual" expanded="true"
+                            style="-fx-border-color: #e74c3c; -fx-border-radius: 5;">
+                    <VBox spacing="8" style="-fx-padding: 12;">
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
+
+                            <Label text="Fecha Atención:" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtFechaAtencion" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #fff0f0;"/>
+
+                            <Label text="Hora Atención:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <TextField fx:id="txtHoraAtencion" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                       editable="false" style="-fx-background-color: #fff0f0;"/>
+
+                            <Label text="Tipo de Urgencia:" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <ComboBox fx:id="cmbTipoUrgencia" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                                      promptText="Seleccionar tipo"/>
+
+                            <Label text="Motivo Urgencia:" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <ComboBox fx:id="cmbMotivoUrgencia" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                                      promptText="Seleccionar motivo"/>
+
+                            <Label text="Tipo de Cama:" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <ComboBox fx:id="cmbTipoCama" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                                      promptText="Seleccionar cama"/>
+
+                            <Label text="Médico Actual:" GridPane.rowIndex="5" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <HBox spacing="5" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                                <ComboBox fx:id="cmbMedicoActual" promptText="Seleccionar médico" prefWidth="180"/>
+                                <TextField fx:id="txtCedulaMedico" promptText="Cédula" prefWidth="100" editable="false"/>
+                            </HBox>
+
+                            <!-- CAMPO CORREGIDO: Mujer en edad fértil -->
+                            <Label text="Mujer en edad fértil:" GridPane.rowIndex="6" GridPane.columnIndex="0"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
+                            <HBox spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                                <RadioButton text="Sí" toggleGroup="$mujerFertilGroup" userData="SI" />
+                                <RadioButton text="No" toggleGroup="$mujerFertilGroup" userData="NO" />
+                            </HBox>
+
+                        </GridPane>
+                    </VBox>
+                </TitledPane>
+
+                <!-- ESTADO DEL PACIENTE -->
+                <TitledPane text=" Estado del Paciente" expanded="true"
+                            style="-fx-border-color: #f39c12; -fx-border-radius: 5;">
+                    <VBox spacing="10" style="-fx-padding: 12;">
+                        <Label text="Indique si el paciente está en observación o será egresado del servicio de urgencias:"
+                               style="-fx-font-weight: bold; -fx-text-fill: #333; -fx-wrap-text: true;"/>
+
+                        <VBox spacing="5">
+                            <RadioButton text=" En Observación" fx:id="rbObservacion"
+                                         style="-fx-font-weight: bold;"/>
+                            <RadioButton text=" Egresado - Alta Médica" fx:id="rbAltaMedica"
+                                         style="-fx-font-weight: bold;"/>
+                        </VBox>
+                    </VBox>
+                </TitledPane>
+
+                <!-- Botón Guardar General -->
+                <HBox alignment="CENTER" style="-fx-padding: 15 0 0 0;">
+                    <Button text=" GUARDAR CAPTURA COMPLETA" fx:id="btnGuardarGeneral"
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20;"/>
+                </HBox>
+            </VBox>
+        </GridPane>
+    </center>
+
+    <!-- PIE DE PÁGINA -->
+    <bottom>
+        <Label text="Sistema SIMED - Módulo de Captura Médica | Todos los campos marcados con * son obligatorios"
+               style="-fx-text-fill: #666; -fx-font-size: 11px; -fx-padding: 10; -fx-background-color: #f8f9fa;"/>
+    </bottom>
+</BorderPane>
