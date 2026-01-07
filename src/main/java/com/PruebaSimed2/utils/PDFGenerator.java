@@ -102,8 +102,8 @@ public class PDFGenerator {
 
 // Línea 3
             add.accept("NOMBRE: ", safeString(nombrePaciente));
-            add.accept("      EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
-            add.accept("      SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
+            add.accept("       EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
+            add.accept("       SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
 
 // Línea 4
             add.accept("FECHA DE NACIMIENTO: ", formatearFecha(rsPaciente.getString("F_nac")));
@@ -111,18 +111,18 @@ public class PDFGenerator {
 
 // Línea 5
             add.accept("OCUPACIÓN: ", safeString(rsPaciente.getString("Ocupacion")));
-            add.accept("                                        TELÉFONO: ", safeString(rsPaciente.getString("Telefono")) + "\n");
+            add.accept("                                         TELÉFONO: ", safeString(rsPaciente.getString("Telefono")) + "\n");
 
 // Línea 6
             add.accept("DOMICILIO: ", safeString(rsPaciente.getString("Domicilio")) + "\n");
 
 // Línea 7
             add.accept("REFERENCIA: ", safeString(rsPaciente.getString("Referencia")));
-            add.accept("                       EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
+            add.accept("                             EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
 
 // Línea 8
             add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
-            add.accept("                         NOTA MÉDICA: #", String.valueOf(numeroNota));  // o INTERCONSULTA en el otro método
+            add.accept("                          NOTA MÉDICA: #", String.valueOf(numeroNota));  // o INTERCONSULTA en el otro método
             datosPaciente.add("\n");
 
             document.add(datosPaciente);
@@ -142,11 +142,12 @@ public class PDFGenerator {
                 }
             };
 
+            // ORDEN de impresion del pdf
+            addSeccion.accept("PRESENTACIÓN DEL PACIENTE:", rsNota.getString("Nota"));
             addSeccion.accept("SÍNTOMAS:", rsNota.getString("sintomas"));
             addSeccion.accept("SIGNOS VITALES:", rsNota.getString("signos_vitales"));
-            addSeccion.accept("DIAGNÓSTICO:", rsNota.getString("diagnostico"));
-            addSeccion.accept("NOTA MÉDICA:", rsNota.getString("Nota"));
-            addSeccion.accept("INDICACIONES:", rsNota.getString("Indicaciones"));
+            addSeccion.accept("ANÁLISIS/DIAGNÓSTICO:", rsNota.getString("diagnostico"));
+            addSeccion.accept("PLAN/INDICACIONES:", rsNota.getString("Indicaciones"));
 
             document.add(contenido);
             document.close();

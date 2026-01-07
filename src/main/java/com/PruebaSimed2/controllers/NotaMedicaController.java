@@ -39,7 +39,7 @@ public class NotaMedicaController {
     private static final int MAX_CHARS_SINTOMAS = 3000;
     private static final int MAX_CHARS_SIGNOS = 2000;
     private static final int MAX_CHARS_DIAGNOSTICO = 9000;
-    private static final int MAX_CHARS_NOTA = 11000;
+    private static final int MAX_CHARS_NOTA = 11000;  // ahora este es presentacion del paciente
     private static final int MAX_CHARS_INDICACIONES = 7000;
     private static final int MAX_TOTAL_CHARS = 33000; // Límite total para evitar saturación
 
@@ -134,7 +134,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_DIAGNOSTICO) {
                 txtDiagnostico.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Diagnóstico no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
+                        "El campo Análisis/Diagnóstico no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -143,7 +143,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_NOTA) {
                 txtNota.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Nota Médica no puede exceder los " + MAX_CHARS_NOTA + " caracteres",
+                        "El campo Presentación del Paciente no puede exceder los " + MAX_CHARS_NOTA + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -152,11 +152,12 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_INDICACIONES) {
                 txtIndicaciones.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Indicaciones no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
+                        "El campo Plan/Indicaciones no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
     }
+
 
     private void cargarMedicos() {
         try (Connection conn = ConexionBD.conectar();
@@ -696,7 +697,7 @@ public class NotaMedicaController {
         int totalChars = 0;
         List<String> camposExcedidos = new ArrayList<>();
 
-        // Verificar límites individuales
+        // Verificar límites individuales/ lo acabo de cmabiar 07/01/26
         if (txtSintomas.getText().length() > MAX_CHARS_SINTOMAS) {
             camposExcedidos.add("Síntomas (" + txtSintomas.getText().length() + "/" + MAX_CHARS_SINTOMAS + ")");
         }
@@ -708,17 +709,17 @@ public class NotaMedicaController {
         totalChars += txtSignosVitales.getText().length();
 
         if (txtDiagnostico.getText().length() > MAX_CHARS_DIAGNOSTICO) {
-            camposExcedidos.add("Diagnóstico (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
+            camposExcedidos.add("Análisis/Diagnóstico (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
         }
         totalChars += txtDiagnostico.getText().length();
 
         if (txtNota.getText().length() > MAX_CHARS_NOTA) {
-            camposExcedidos.add("Nota Médica (" + txtNota.getText().length() + "/" + MAX_CHARS_NOTA + ")");
+            camposExcedidos.add("Presentación del Paciente (" + txtNota.getText().length() + "/" + MAX_CHARS_NOTA + ")");
         }
         totalChars += txtNota.getText().length();
 
         if (txtIndicaciones.getText().length() > MAX_CHARS_INDICACIONES) {
-            camposExcedidos.add("Indicaciones (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
+            camposExcedidos.add("Plan/Indicaciones (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
         }
         totalChars += txtIndicaciones.getText().length();
 
@@ -757,7 +758,7 @@ public class NotaMedicaController {
             return false;
         }
 
-        // Validar campos obligatorios
+        // Validar campos obligatorios - ACTUALIZAR NOMBRES
         if (txtSintomas.getText().trim().isEmpty()) {
             mostrarAlerta("Error", "El campo SÍNTOMAS es obligatorio", Alert.AlertType.ERROR);
             txtSintomas.requestFocus();
@@ -771,19 +772,19 @@ public class NotaMedicaController {
         }
 
         if (txtDiagnostico.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo DIAGNÓSTICO es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo ANÁLISIS/DIAGNÓSTICO es obligatorio", Alert.AlertType.ERROR);
             txtDiagnostico.requestFocus();
             return false;
         }
 
         if (txtNota.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo NOTA MÉDICA es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo PRESENTACIÓN DEL PACIENTE es obligatorio", Alert.AlertType.ERROR);
             txtNota.requestFocus();
             return false;
         }
 
         if (txtIndicaciones.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo INDICACIONES es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo PLAN/INDICACIONES es obligatorio", Alert.AlertType.ERROR);
             txtIndicaciones.requestFocus();
             return false;
         }
@@ -851,11 +852,11 @@ public class NotaMedicaController {
             boolean puedeEditar = (esMedicoAutor && esNotaTemporal) ||
                     (esMedicoAutor && tienePermiso);
 
-            System.out.println(" 📋 VERIFICACIÓN (MÉDICO NORMAL):");
-            System.out.println("   ¿Es Médico Autor? " + esMedicoAutor);
-            System.out.println("   ¿Es Nota Temporal? " + esNotaTemporal);
-            System.out.println("   ¿Tiene Permiso? " + tienePermiso);
-            System.out.println("   ¿PUEDE EDITAR? " + puedeEditar);
+            System.out.println("  VERIFICACIÓN (MÉDICO NORMAL):");
+            System.out.println("  ¿Es Médico Autor? " + esMedicoAutor);
+            System.out.println("  ¿Es Nota Temporal? " + esNotaTemporal);
+            System.out.println("  ¿Tiene Permiso? " + tienePermiso);
+            System.out.println("  ¿PUEDE EDITAR? " + puedeEditar);
 
             if (puedeEditar) {
                 btnGuardarDefinitivo.setDisable(false);
