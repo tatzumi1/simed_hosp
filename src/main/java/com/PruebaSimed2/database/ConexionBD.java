@@ -2,6 +2,9 @@
 
 package com.PruebaSimed2.database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DriverManager;
@@ -9,43 +12,43 @@ import java.sql.DriverManager;
 public class ConexionBD {
 
     // allowPublicKeyRetrieval=true
-  //  private static final String URL = "jdbc:mysql://192.168.99.108:3306/bdsimed2_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    //  private static final String URL = "jdbc:mysql://192.168.99.108:3306/bdsimed2_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     //private static final String USER = "hospital_user";
-  //  private static final String PASSWORD = "Hospital2025!";
+    //  private static final String PASSWORD = "Hospital2025!";
 
     // AGREGAR allowPublicKeyRetrieval=true para solucionar el error
+    // ¡Las credenciales NO deben de ir aquí, deben de ir en un archivo de propiedades o variables de entorno!
     private static final String URL = "jdbc:mysql://localhost:3306/bdsimed2_db?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true";
     private static final String USER = "root";
     private static final String PASSWORD = "EIMI";
+    private static final HikariDataSource dataSource;
 
+    static {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(URL);
+        config.setUsername(USER);
+        config.setPassword(PASSWORD);
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+        config.setIdleTimeout(300000);
+        config.setConnectionTimeout(20000);
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        System.out.println("Conectado a: " + URL);
+
+        dataSource = new HikariDataSource(config);
+    }
 
 
     public static Connection conectar() throws SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println(" Conectando a: " + URL);
-
-            Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-
-            // CONFIGURACIONES PARA MEJOR ESTABILIDAD
-            conn.setAutoCommit(true); // Por defecto auto-commit true
-            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-
-            System.out.println(" Conexión establecida - AutoCommit: " + conn.getAutoCommit());
-            return conn;
-
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL Driver no encontrado", e);
-        } catch (SQLException e) {
-            System.err.println(" Error de conexión: " + e.getMessage());
-            throw e;
-        }
+        return dataSource.getConnection();
     }
 
     public static boolean testConnection() {
         try (Connection conn = conectar()) {
             System.out.println(" ¡CONEXIÓN EXITOSA! La BD está funcionando");
-            return true;
+            return conn.isValid(2);
         } catch (SQLException e) {
             System.err.println(" ERROR DE CONEXIÓN: " + e.getMessage());
             return false;
@@ -68,59 +71,33 @@ public class ConexionBD {
     public static void safeClose(Connection conn) {
         if (conn != null) {
             try {
-                if (!conn.isClosed()) {
-                    // Restaurar auto-commit a true antes de cerrar
-                    conn.setAutoCommit(true);
-                    conn.close();
-                    System.out.println(" Conexión cerrada correctamente");
-                }
+                conn.close();
             } catch (SQLException e) {
-                System.err.println("️ Advertencia al cerrar conexión: " + e.getMessage());
-                // NO relanzar la excepción - es solo limpieza
+                System.err.println("️Error al liberar conexión: " + e.getMessage());
             }
         }
     }
 
     public static boolean executeInTransaction(TransactionOperation operation) {
-        Connection conn = null;
-        boolean success = false;
-
-        try {
-            conn = getSafeConnection();
+        try (Connection conn = conectar()) {
             conn.setAutoCommit(false); // INICIAR TRANSACCIÓN
-
             System.out.println(" Iniciando transacción...");
-
-            // Ejecutar la operación del usuario
-            success = operation.execute(conn);
-
-            if (success) {
-                conn.commit();
-                System.out.println(" Transacción COMPLETADA exitosamente");
-            } else {
-                conn.rollback();
-                System.out.println(" Transacción CANCELADA - Rollback ejecutado");
-            }
-
-            return success;
-
-        } catch (SQLException e) {
-            System.err.println(" ERROR en transacción: " + e.getMessage());
-
-            // Hacer ROLLBACK en caso de error
-            if (conn != null) {
-                try {
+            try {
+                boolean success = operation.execute(conn);
+                if (success) {
+                    conn.commit();
+                } else {
                     conn.rollback();
-                    System.out.println(" Rollback de emergencia ejecutado");
-                } catch (SQLException rollbackEx) {
-                    System.err.println(" ERROR haciendo rollback: " + rollbackEx.getMessage());
                 }
+                return success;
+            } catch (Exception e) {
+                conn.rollback();
+                System.err.println("Transacción fallida: " + e.getMessage());
+                return false;
             }
+        } catch (SQLException e) {
+            System.err.println("Error en la BD" + e.getMessage());
             return false;
-
-        } finally {
-            // CERRAR CONEXIÓN de forma segura
-            safeClose(conn);
         }
     }
 
