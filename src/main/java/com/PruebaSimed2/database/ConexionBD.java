@@ -4,11 +4,11 @@ package com.PruebaSimed2.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
+import lombok.extern.log4j.Log4j2;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.DriverManager;
 
+@Log4j2
 public class ConexionBD {
 
     // allowPublicKeyRetrieval=true
@@ -35,22 +35,24 @@ public class ConexionBD {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        System.out.println("Conectado a: " + URL);
 
         dataSource = new HikariDataSource(config);
+        log.info("Conectado a: " + URL);
     }
 
 
     public static Connection conectar() throws SQLException {
-        return dataSource.getConnection();
+        Connection conn = dataSource.getConnection();
+        log.debug("Conexión utilizada");
+        return conn;
     }
 
     public static boolean testConnection() {
         try (Connection conn = conectar()) {
-            System.out.println(" ¡CONEXIÓN EXITOSA! La BD está funcionando");
+            log.info("¡CONEXIÓN EXITOSA! La BD está funcionando");
             return conn.isValid(2);
         } catch (SQLException e) {
-            System.err.println(" ERROR DE CONEXIÓN: " + e.getMessage());
+            log.error("Error de conexión: {}", e.getMessage());
             return false;
         }
     }
@@ -59,11 +61,12 @@ public class ConexionBD {
         try {
             Connection conn = conectar();
             if (conn == null || conn.isClosed()) {
+                log.error("No se pudo establecer conexión con la base de datos");
                 throw new SQLException("No se pudo establecer conexión con la base de datos");
             }
             return conn;
         } catch (SQLException e) {
-            System.err.println(" ERROR CRÍTICO DE CONEXIÓN: " + e.getMessage());
+            log.error("ERROR CRÍTICO DE CONEXIÓN: {}", e.getMessage());
             throw new SQLException("El sistema no está disponible temporalmente. Contacte al administrador.", e);
         }
     }
@@ -72,8 +75,9 @@ public class ConexionBD {
         if (conn != null) {
             try {
                 conn.close();
+                log.debug("Conexión liberada");
             } catch (SQLException e) {
-                System.err.println("️Error al liberar conexión: " + e.getMessage());
+                log.error("Error al liberar conexión: {}", e.getMessage());
             }
         }
     }
@@ -81,22 +85,24 @@ public class ConexionBD {
     public static boolean executeInTransaction(TransactionOperation operation) {
         try (Connection conn = conectar()) {
             conn.setAutoCommit(false); // INICIAR TRANSACCIÓN
-            System.out.println(" Iniciando transacción...");
+            log.debug("Iniciando transacción...");
             try {
                 boolean success = operation.execute(conn);
                 if (success) {
                     conn.commit();
+                    log.debug("Commit realizado");
                 } else {
                     conn.rollback();
+                    log.debug("Rollback realizado");
                 }
                 return success;
             } catch (Exception e) {
                 conn.rollback();
-                System.err.println("Transacción fallida: " + e.getMessage());
+                log.error("Transacción fallida: {}", e.getMessage());
                 return false;
             }
         } catch (SQLException e) {
-            System.err.println("Error en la BD" + e.getMessage());
+            log.error("Error en la BD: {}", e.getMessage());
             return false;
         }
     }
