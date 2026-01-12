@@ -3,10 +3,13 @@ package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
 import com.PruebaSimed2.utils.PasswordUtils;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class CargaCompletaMedicosUrgencias {
 
     static class MedicoUrgencias {
@@ -76,8 +79,8 @@ public class CargaCompletaMedicosUrgencias {
     }
 
     public static void main(String[] args) {
-        System.out.println("=== CARGA COMPLETA DE 81 MÉDICOS DE URGENCIAS ===");
         cargarTodosMedicosUrgencias();
+        log.info("=== CARGA COMPLETA DE 81 MÉDICOS DE URGENCIAS ===");
     }
 
     public static void cargarTodosMedicosUrgencias() {
@@ -91,67 +94,70 @@ public class CargaCompletaMedicosUrgencias {
 
             List<MedicoUrgencias> medicos = crearListaCompletaMedicos();
 
-            System.out.println("Total a procesar: " + medicos.size());
-            System.out.println("---------------------------------------------");
+            log.info("Total a procesar: {}", medicos.size());
 
             for (MedicoUrgencias medico : medicos) {
                 try {
-                    System.out.println("Cve_med " + medico.cveMed + ": " + medico.nombreCompleto);
-                    System.out.println("  Username: " + medico.username);
-                    System.out.println("  Cédula: " + medico.getCedulaCompleta());
+                    log.debug("Cve_med {}: {}", medico.cveMed, medico.nombreCompleto);
+                    log.debug("Username: {}", medico.username);
+                    log.debug("Cédula: {}", medico.getCedulaCompleta());
 
                     // 1. Verificar si usuario ya existe
                     if (usuarioExiste(conn, medico.username)) {
-                        System.out.println("  ⚠️  Usuario ya existe");
+                        log.warn("Usuario ya existe");
                         fallidos++;
                         continue;
                     }
 
                     // 2. Registrar en tb_usuarios
                     if (!registrarUsuario(conn, medico)) {
-                        System.out.println("  ❌ Error al registrar usuario");
+                        log.warn("❌ Error al registrar usuario");
                         fallidos++;
                         continue;
                     }
 
                     // 3. Registrar en tb_medicos con Cve_med EXACTO
                     if (registrarMedicoConCveExacto(conn, medico)) {
-                        System.out.println("  ✅ Registrado exitosamente");
+                        log.debug("✅ Registrado exitosamente");
                         exitos++;
                     } else {
-                        System.out.println("  ❌ Error al registrar en tb_medicos");
+                        log.warn("❌ Error al registrar en tb_medicos");
                         fallidos++;
                     }
 
-                    System.out.println("  ---");
-
                 } catch (Exception e) {
-                    System.out.println("  ❌ Error: " + e.getMessage());
-                    e.printStackTrace();
+                    log.error("❌ Error: {}", e.getMessage());
+                    log.error(e);
                     fallidos++;
                 }
             }
 
             conn.commit();
 
-            System.out.println("=============================================");
-            System.out.println("RESUMEN:");
-            System.out.println("✅ Registrados exitosamente: " + exitos);
-            System.out.println("❌ Fallidos: " + fallidos);
-            System.out.println("Total procesados: " + (exitos + fallidos));
+            log.info("✅ Registrados exitosamente: {}", exitos);
+            log.info("❌ Fallidos: {}", fallidos);
+            log.info("Total procesados: {}", exitos + fallidos);
 
         } catch (SQLException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error de conexión: {}", e.getMessage());
+            log.error(e);
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
+                try {
+                    conn.rollback();
+                    log.debug("Rollback realizado");
+                } catch (SQLException ex) {
+                    log.error("Error al realizar rollback: {}", ex.getMessage());
+                }
             }
         } finally {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (SQLException e) {}
+                    log.debug("Conexión cerrada");
+                } catch (SQLException e) {
+                    log.error("Error al cerrar la conexión: {}", e.getMessage());
+                }
             }
         }
     }

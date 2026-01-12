@@ -4,32 +4,32 @@ package com.PruebaSimed2.controllers;
 import com.PruebaSimed2.database.ConexionBD;
 import com.PruebaSimed2.models.Usuario;
 import com.PruebaSimed2.utils.PasswordUtils;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
 
+@Log4j2
 public class AuthController {
 
     public Usuario login(String username, String password) {
-
-        System.out.println(" [AuthController] Intentando login para: " + username);
+        log.debug("[AuthController] Intentando login para: {}", username);
 
         String sql = "SELECT id_usuario, username, email, rol, activo, primer_login, password_hash " +
                 "FROM tb_usuarios WHERE username = ? AND activo = true";
         try (Connection conn = ConexionBD.conectar();
-       // try (Connection conn = ConexionBD.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                System.out.println("[AuthController] Usuario encontrado en BD: " + username);
+                log.debug("[AuthController] Usuario encontrado en BD: {}", username);
                 String storedHash = rs.getString("password_hash");
-                System.out.println(" [AuthController] Hash en BD: " + storedHash);
+                log.debug("[AuthController] Hash en BD: {}", storedHash);
 
                 // Verificar contraseña
                 boolean passwordOK = PasswordUtils.checkPassword(password, storedHash);
-                System.out.println(" [AuthController] Contraseña correcta: " + passwordOK);
+                log.debug("[AuthController] Contraseña correcta: {}", passwordOK);
 
                 if (passwordOK) {
                     // Login exitoso
@@ -41,18 +41,18 @@ public class AuthController {
                             rs.getBoolean("activo"),
                             rs.getBoolean("primer_login")
                     );
-                    System.out.println(" [AuthController] Login exitoso: " + usuario.getUsername());
+                    log.debug("[AuthController] Login exitoso: {}", usuario.getUsername());
                     return usuario;
                 } else {
-                    System.out.println(" [AuthController] Contraseña incorrecta");
+                    log.warn("[AuthController] Contraseña incorrecta");
                 }
             } else {
-                System.out.println(" [AuthController] Usuario NO encontrado en BD: " + username);
+                log.warn("[AuthController] Usuario NO encontrado en BD: {}", username);
             }
         } catch (SQLException e) {
-            System.err.println(" [AuthController] Error SQL: " + e.getMessage());
-            e.printStackTrace();
+            log.error("[AuthController] Error SQL: {}", e.getMessage());
         }
+        log.error("[AuthController] Login fallido");
         return null; // Login fallido
     }
 
@@ -60,18 +60,19 @@ public class AuthController {
     public boolean cambiarPassword(String username, String nuevaPassword) {
         String sql = "UPDATE tb_usuarios SET password_hash = ?, primer_login = false WHERE username = ?";
         try (Connection conn = ConexionBD.conectar();
-        //try (Connection conn = ConexionBD.testconectar();
-     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             String nuevoHash = PasswordUtils.hashPassword(nuevaPassword);
             pstmt.setString(1, nuevoHash);
             pstmt.setString(2, username);
 
             int filasAfectadas = pstmt.executeUpdate();
+            log.debug("Filas afectadas: {}", filasAfectadas);
+            log.info("Password cambiado correctamente");
             return filasAfectadas > 0;
 
         } catch (SQLException e) {
-            System.err.println(" Error cambiando password: " + e.getMessage());
+            log.error("[AuthController] Error cambiando password: {}", e.getMessage());
             return false;
         }
     }

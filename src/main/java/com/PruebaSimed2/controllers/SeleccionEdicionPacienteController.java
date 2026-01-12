@@ -15,12 +15,14 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Log4j2
 public class SeleccionEdicionPacienteController {
 
     @FXML private TextField txtBuscar;
@@ -352,10 +354,10 @@ public class SeleccionEdicionPacienteController {
             }
 
             aplicarFiltros();
-            System.out.println(" Pacientes cargados para edición: " + todosLosPacientes.size());
+            log.debug(" Pacientes cargados para edición: {}", todosLosPacientes.size());
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando pacientes: " + e.getMessage());
+            log.error(" Error cargando pacientes: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudieron cargar los pacientes: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -400,8 +402,7 @@ public class SeleccionEdicionPacienteController {
             regresar();
 
         } catch (Exception e) {
-            System.err.println("Error abriendo edición: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error abriendo edición: {}", e.getMessage(), e);
             mostrarAlerta("Error", "No se pudo abrir la edición:\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }

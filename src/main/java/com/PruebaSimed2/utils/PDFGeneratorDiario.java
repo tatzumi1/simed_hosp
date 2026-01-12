@@ -7,6 +7,8 @@ import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.*;
 import com.PruebaSimed2.database.ConexionBD;
 import com.itextpdf.kernel.pdf.*;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +23,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Log4j2
 public class PDFGeneratorDiario {
     private static final String TEMPLATE_PATH = "pdf_templates/SEUL-16-P_2024.pdf";
     private static final String TEMP_DIR = "temp_pdfs/";
@@ -37,11 +40,11 @@ public class PDFGeneratorDiario {
             List<Integer> folios = obtenerFoliosEgresadosPorFecha(fecha);
 
             if (folios.isEmpty()) {
-                System.out.println(" No hay egresos para la fecha: " + fechaStr);
+                log.info(" No hay egresos para la fecha: {}", fechaStr);
                 return null;
             }
 
-            System.out.println(" Encontrados " + folios.size() + " egresos para " + fechaStr);
+            log.debug(" Encontrados {} egresos para {}", folios.size(), fechaStr);
 
             // Crear PDF final en memoria
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -52,7 +55,7 @@ public class PDFGeneratorDiario {
                 // Procesar cada folio
                 for (int i = 0; i < folios.size(); i++) {
                     int folio = folios.get(i);
-                    System.out.println("\n Procesando folio " + (i+1) + "/" + folios.size() + ": " + folio);
+                    log.debug("\n Procesando folio {}/{}: {}", i + 1, folios.size(), folio);
 
                     // Generar página individual
                     byte[] paginaIndividual = generarPaginaIndividual(folio);
@@ -71,19 +74,18 @@ public class PDFGeneratorDiario {
                     }
                 }
 
-                System.out.println("\n PDF generado en memoria!");
-                System.out.println(" Total de páginas: " + pdfDoc.getNumberOfPages());
+                log.debug("\n PDF generado en memoria!");
+                log.debug(" Total de páginas: {}", pdfDoc.getNumberOfPages());
 
                 PdfAcroForm form = PdfAcroForm.getAcroForm(pdfDoc, true);
                 if (form != null) {
                     form.flattenFields();
-                    System.out.println(" Campos del formulario convertidos a texto");
+                    log.debug(" Campos del formulario convertidos a texto");
                 }
             }
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -101,17 +103,18 @@ public class PDFGeneratorDiario {
             Map<String, String> datos = obtenerDatosPacienteCompletos(folio);
 
             if (datos.isEmpty()) {
-                System.out.println("   No hay datos para el folio: " + folio);
+                log.warn("   No hay datos para el folio: {}", folio);
                 return null;
             }
 
-            System.out.println("   Obtenidos " + datos.size() + " campos para folio " + folio);
+            log.debug("   Obtenidos {} campos para folio {}", datos.size(), folio);
 
             // 2. Crear documento
             InputStream templateStream = PDFGeneratorDiario.class.getClassLoader()
                     .getResourceAsStream(TEMPLATE_PATH);
 
             if (templateStream == null) {
+                log.error("No se encontró el template PDF: " + TEMPLATE_PATH);
                 throw new RuntimeException("No se encontró el template PDF: " + TEMPLATE_PATH);
             }
 
@@ -147,26 +150,25 @@ public class PDFGeneratorDiario {
             // 5. Cerrar documento
             pdfDoc.close();
 
-            System.out.println("   Campos llenados: " + camposLlenados);
+            log.debug("   Campos llenados: {}", camposLlenados);
             if (camposNoEncontrados > 0) {
-                System.out.println("   Campos no encontrados: " + camposNoEncontrados);
+                log.debug("   Campos no encontrados: {}", camposNoEncontrados);
             }
 
             // En lugar de verificar campos no encontrados complejo, haz esto:
 // Agrega esta línea después de "Campos no encontrados: X"
-            System.out.println("   Ejemplos de campos mapeados (primeros 5):");
+            log.debug("   Ejemplos de campos mapeados (primeros 5):");
             int count = 0;
             for (Map.Entry<String, String> entry : datos.entrySet()) {
                 if (count < 5) {
-                    System.out.println("    - PDF: \"" + entry.getKey() + "\" → Valor: \"" + entry.getValue() + "\"");
+                    log.debug("    - PDF: \"{}\" → Valor: \"{}\"", entry.getKey(), entry.getValue());
                     count++;
                 }
             }
             return baos.toByteArray();
 
         } catch (Exception e) {
-            System.err.println(" Error al generar página para folio " + folio + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar página para folio {}: {}", folio, e.getMessage(), e);
             return null;
         }
     }
@@ -437,8 +439,7 @@ public class PDFGeneratorDiario {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error al obtener datos para folio " + folio + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error al obtener datos para folio {}: {}", folio, e.getMessage(), e);
         }
 
         return datos;
@@ -453,7 +454,7 @@ public class PDFGeneratorDiario {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getString("Descripcion");
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { log.error("Stacktrace: ", e); }
         return "";
     }
 
@@ -479,7 +480,7 @@ public class PDFGeneratorDiario {
                 }
             }
         } catch (Exception e) {
-            System.err.println(" Error al obtener tipo de alta: " + e.getMessage());
+            log.error(" Error al obtener tipo de alta: {}", e.getMessage());
         }
 
         return "";
@@ -509,10 +510,10 @@ public class PDFGeneratorDiario {
                 }
             }
 
-            System.out.println("   Interconsultas encontradas: " + interconsultas.size());
+            log.debug("   Interconsultas encontradas: {}", interconsultas.size());
 
         } catch (Exception e) {
-            System.err.println(" Error al obtener interconsultas: " + e.getMessage());
+            log.error(" Error al obtener interconsultas: {}", e.getMessage());
         }
 
         return interconsultas;
@@ -539,7 +540,7 @@ public class PDFGeneratorDiario {
                 }
             }
         } catch (Exception e) {
-            System.err.println(" Error al obtener cédula: " + e.getMessage());
+            log.error(" Error al obtener cédula: {}", e.getMessage());
         }
 
         return "";
@@ -567,11 +568,10 @@ public class PDFGeneratorDiario {
                 }
             }
 
-            System.out.println(" Folios encontrados para " + fecha + ": " + folios.size());
+            log.debug(" Folios encontrados para {}: {}", fecha, folios.size());
 
         } catch (Exception e) {
-            System.err.println(" Error al obtener folios: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al obtener folios: {}", e.getMessage(), e);
         }
 
         return folios;
@@ -605,7 +605,7 @@ public class PDFGeneratorDiario {
             }
             return false;
         } catch (Exception e) {
-            System.err.println(" Error al abrir PDF: " + e.getMessage());
+            log.error(" Error al abrir PDF: {}", e.getMessage());
             return false;
         }
     }
@@ -620,10 +620,10 @@ public class PDFGeneratorDiario {
                     fos.write(buffer, 0, bytesRead);
                 }
             }
-            System.out.println(" PDF guardado en: " + archivo.getAbsolutePath());
+            log.debug(" PDF guardado en: {}", archivo.getAbsolutePath());
             return archivo;
         } catch (Exception e) {
-            System.err.println("Error al guardar PDF: " + e.getMessage());
+            log.error("Error al guardar PDF: {}", e.getMessage());
             return null;
         }
     }
@@ -643,8 +643,7 @@ public class PDFGeneratorDiario {
             }
 
         } catch (Exception e) {
-            System.err.println(" Error al obtener folios: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al obtener folios: {}", e.getMessage(), e);
         }
 
         return folios;
@@ -678,7 +677,7 @@ public class PDFGeneratorDiario {
                 return foliosOrdenados;
             }
         } catch (Exception e) {
-            System.err.println(" Error al ordenar folios: " + e.getMessage());
+            log.error(" Error al ordenar folios: {}", e.getMessage());
             return folios; // Devuelve la lista original si hay error
         }
     }
@@ -686,11 +685,11 @@ public class PDFGeneratorDiario {
     public static InputStream generarPDFPorFolios(List<Integer> folios, String fechaStr, boolean paraImprimir) {
         try {
             if (folios.isEmpty()) {
-                System.out.println(" No hay folios para generar PDF");
+                log.warn(" No hay folios para generar PDF");
                 return null;
             }
 
-            System.out.println(" Generando PDF para " + folios.size() + " folios: " + folios);
+            log.debug(" Generando PDF para {} folios: {}", folios.size(), folios);
 
             // Crear PDF final en memoria
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -701,7 +700,7 @@ public class PDFGeneratorDiario {
                 // Procesar cada folio
                 for (int i = 0; i < folios.size(); i++) {
                     int folio = folios.get(i);
-                    System.out.println("\n Procesando folio " + (i+1) + "/" + folios.size() + ": " + folio);
+                    log.debug("\n Procesando folio {}/{}: {}", i + 1, folios.size(), folio);
 
                     // Generar página individual
                     byte[] paginaIndividual = generarPaginaIndividual(folio);
@@ -720,20 +719,19 @@ public class PDFGeneratorDiario {
                     }
                 }
 
-                System.out.println("\n PDF generado en memoria!");
-                System.out.println("   Total de páginas: " + pdfDoc.getNumberOfPages());
+                log.debug("\n PDF generado en memoria!");
+                log.debug("   Total de páginas: {}", pdfDoc.getNumberOfPages());
 
                 PdfAcroForm form = PdfAcroForm.getAcroForm(pdfDoc, true);
                 if (form != null) {
                     form.flattenFields();
-                    System.out.println(" Campos del formulario convertidos a texto");
+                    log.debug(" Campos del formulario convertidos a texto");
                 }
             }
             return new ByteArrayInputStream(baos.toByteArray());
 
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF por folios: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF por folios: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -742,7 +740,7 @@ public class PDFGeneratorDiario {
         try {
             // Validar índices
             if (desde < 1 || hasta > todosFoliosDelDia.size() || desde > hasta) {
-                System.err.println(" Rango inválido: desde=" + desde + ", hasta=" + hasta + ", total=" + todosFoliosDelDia.size());
+                log.error(" Rango inválido: desde={}, hasta={}, total={}", desde, hasta, todosFoliosDelDia.size());
                 return null;
             }
 
@@ -752,14 +750,13 @@ public class PDFGeneratorDiario {
                 foliosRango.add(todosFoliosDelDia.get(i));
             }
 
-            System.out.println(" Generando PDF para rango [" + desde + "-" + hasta + "]");
-            System.out.println("   Folios en rango: " + foliosRango);
+            log.debug(" Generando PDF para rango [{}-{}]", desde, hasta);
+            log.debug("   Folios en rango: {}", foliosRango);
 
             return generarPDFPorFolios(foliosRango, fechaStr, paraImprimir);
 
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF por rango: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF por rango: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -770,20 +767,19 @@ public class PDFGeneratorDiario {
             boolean existe = verificarFolioDelDia(folioEspecifico, fechaStr);
 
             if (!existe) {
-                System.err.println(" Folio " + folioEspecifico + " no encontrado para la fecha " + fechaStr);
+                log.debug(" Folio {} no encontrado para la fecha {}", folioEspecifico, fechaStr);
                 return null;
             }
 
             List<Integer> folioList = new ArrayList<>();
             folioList.add(folioEspecifico);
 
-            System.out.println(" Generando PDF para folio único: " + folioEspecifico);
+            log.debug(" Generando PDF para folio único: {}", folioEspecifico);
 
             return generarPDFPorFolios(folioList, fechaStr, paraImprimir);
 
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF para folio único: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF para folio único: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -809,7 +805,7 @@ public class PDFGeneratorDiario {
                 }
             }
         } catch (Exception e) {
-            System.err.println(" Error al verificar folio: " + e.getMessage());
+            log.error(" Error al verificar folio: {}", e.getMessage());
         }
 
         return false;

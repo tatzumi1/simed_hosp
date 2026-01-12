@@ -8,24 +8,36 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Log4j2
 public class VentanaRegistroTriageController {
 
     // === CAMPOS FXML ===
-    @FXML private DatePicker dpFechaNac;
-    @FXML private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtEdad, txtTelefono;
-    @FXML private TextField txtDomicilio, txtNoAfiliacion, txtReferencia, txtExpediente, txtCURP;
-    @FXML private TextField txtMunicipioSel, txtEntidadSel, txtOcupacion, txtReligion, txtEstadoCivil;
-    @FXML private TextArea txtSintomas, txtObservaciones;
-    @FXML private ComboBox<String> comboSexo, comboDerechohab, comboMedico, comboTriage;
-    @FXML private Button btnRegistrar, btnSalir, btnMunicipio, btnEntidad, btnTriageColor;
-    @FXML private CheckBox chkReingreso, chkHospitalizado;
-    @FXML private Label lblCapturista, lblTurno, lblClave, lblTriageDescripcion;
+    @FXML
+    private DatePicker dpFechaNac;
+    @FXML
+    private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtEdad, txtTelefono;
+    @FXML
+    private TextField txtDomicilio, txtNoAfiliacion, txtReferencia, txtExpediente, txtCURP;
+    @FXML
+    private TextField txtMunicipioSel, txtEntidadSel, txtOcupacion, txtReligion, txtEstadoCivil;
+    @FXML
+    private TextArea txtSintomas, txtObservaciones;
+    @FXML
+    private ComboBox<String> comboSexo, comboDerechohab, comboMedico, comboTriage;
+    @FXML
+    private Button btnRegistrar, btnSalir, btnMunicipio, btnEntidad, btnTriageColor;
+    @FXML
+    private CheckBox chkReingreso, chkHospitalizado;
+    @FXML
+    private Label lblCapturista, lblTurno, lblClave, lblTriageDescripcion;
 
     // === VARIABLES ===
     private String turno;
@@ -157,7 +169,9 @@ public class VentanaRegistroTriageController {
                 mapaDerechohab.put(desc, rs.getInt("Cve_dh"));
                 comboDerechohab.getItems().add(desc);
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            log.error("Error al cargar derechohab", e);
+        }
     }
 
     private void cargarMedicos() {
@@ -168,7 +182,9 @@ public class VentanaRegistroTriageController {
             while (rs.next()) {
                 comboMedico.getItems().add(rs.getString("Med_nombre"));
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            log.error("Error al cargar medicos", e);
+        }
     }
 
     // === EVENTOS ===
@@ -235,6 +251,7 @@ public class VentanaRegistroTriageController {
             }
         } catch (SQLException e) {
             mostrarAlerta("Error BD", e.getMessage(), Alert.AlertType.ERROR);
+            log.error("Error al registrar paciente", e);
         }
     }
 
@@ -313,8 +330,12 @@ public class VentanaRegistroTriageController {
 
     // === MÉTODOS AUXILIARES ===
     private int obtenerEdad() {
-        try { return Integer.parseInt(txtEdad.getText().trim()); }
-        catch (Exception e) { return 0; }
+        try {
+            return Integer.parseInt(txtEdad.getText().trim());
+        } catch (Exception e) {
+            log.error("Error al obtener edad", e);
+            return 0;
+        }
     }
 
     private java.sql.Date obtenerFechaNacimiento() {
@@ -349,6 +370,7 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString("MPO") : "999";
         } catch (SQLException e) {
+            log.error("Error al obtener código municipio, usando determinado 999", e);
             return "999";
         }
     }
@@ -362,6 +384,7 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString("EDO") : "97";
         } catch (SQLException e) {
+            log.error("Error al obtener código entidad, usando determinado 97", e);
             return "97";
         }
     }
@@ -533,7 +556,7 @@ public class VentanaRegistroTriageController {
             ps.close();
 
         } catch (SQLException e) {
-            System.err.println("Error SQL en mostrarDialogoSeleccion: " + e.getMessage());
+            log.error("Error SQL en mostrarDialogoSeleccion: " + e.getMessage());
             mostrarAlerta("Error", "Error cargando " + tipo + ": " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -556,6 +579,7 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString(1) : "97";
         } catch (SQLException e) {
+            log.error("Error al Obtener Código Entidad desde Nombre, usando determinado 97", e);
             return "97";
         }
     }
@@ -571,20 +595,36 @@ public class VentanaRegistroTriageController {
                 ps.setString(3, "tb_urgencias");
                 ps.setInt(4, folio);
                 ps.executeUpdate();
-            } catch (SQLException ignored) {}
+            } catch (SQLException e) {
+                log.error("Error al registrar auditoria", e);
+            }
         }).start();
     }
 
     private void limpiarCampos() {
-        txtApPaterno.clear(); txtApMaterno.clear(); txtNombre.clear();
-        txtEdad.clear(); txtTelefono.clear(); txtDomicilio.clear();
-        txtNoAfiliacion.clear(); txtReferencia.clear(); txtExpediente.clear();
-        txtCURP.clear(); txtSintomas.clear(); txtObservaciones.clear();
-        txtMunicipioSel.clear(); txtEntidadSel.clear(); txtOcupacion.clear();
-        txtReligion.clear(); txtEstadoCivil.clear();
-        comboTriage.setValue(null); comboDerechohab.setValue(null);
-        comboMedico.setValue(null); comboSexo.setValue(null);
-        dpFechaNac.setValue(null); chkReingreso.setSelected(false);
+        txtApPaterno.clear();
+        txtApMaterno.clear();
+        txtNombre.clear();
+        txtEdad.clear();
+        txtTelefono.clear();
+        txtDomicilio.clear();
+        txtNoAfiliacion.clear();
+        txtReferencia.clear();
+        txtExpediente.clear();
+        txtCURP.clear();
+        txtSintomas.clear();
+        txtObservaciones.clear();
+        txtMunicipioSel.clear();
+        txtEntidadSel.clear();
+        txtOcupacion.clear();
+        txtReligion.clear();
+        txtEstadoCivil.clear();
+        comboTriage.setValue(null);
+        comboDerechohab.setValue(null);
+        comboMedico.setValue(null);
+        comboSexo.setValue(null);
+        dpFechaNac.setValue(null);
+        chkReingreso.setSelected(false);
         chkHospitalizado.setSelected(false);
         btnTriageColor.setStyle("-fx-background-color:lightgray;");
         lblTriageDescripcion.setText("");
@@ -648,7 +688,7 @@ public class VentanaRegistroTriageController {
             return curp.toString();
 
         } catch (Exception e) {
-            System.err.println("Error generando CURP: " + e.getMessage());
+            log.error("Error generando CURP: " + e.getMessage());
             return "";
         }
     }

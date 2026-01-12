@@ -2,8 +2,13 @@
 package com.PruebaSimed2.utils;
 
 import com.PruebaSimed2.database.ConexionBD;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 
+@Getter
+@Log4j2
 public class SesionUsuario {
     private static SesionUsuario instance;
 
@@ -14,7 +19,8 @@ public class SesionUsuario {
     private int usuarioId;
 
     // Constructor privado para Singleton
-    private SesionUsuario() {}
+    private SesionUsuario() {
+    }
 
     public static SesionUsuario getInstance() {
         if (instance == null) {
@@ -30,11 +36,11 @@ public class SesionUsuario {
         this.usuarioId = usuarioId;
         this.nombreMedico = obtenerNombreMedicoDesdeUsuario(username);
 
-        System.out.println(" SESIÓN INICIADA:");
-        System.out.println("   - Usuario: " + username);
-        System.out.println("   - Rol: " + rol);
-        System.out.println("   - ID: " + usuarioId);
-        System.out.println("   - Nombre Médico: " + nombreMedico);
+        log.debug(" SESIÓN INICIADA:");
+        log.debug("   - Usuario: {}", username);
+        log.debug("   - Rol: {}", rol);
+        log.debug("   - ID: {}", usuarioId);
+        log.debug("   - Nombre Médico: {}", nombreMedico);
     }
 
     public boolean puedeCrearNuevaNota(int folioPaciente) {
@@ -52,17 +58,17 @@ public class SesionUsuario {
                     int count = rs.getInt("count");
 
                     if (count >= 1) {
-                        System.out.println(" BLOQUEADO - Ya tiene " + count + " nota(s) temporal(es) en este paciente");
+                        log.warn(" BLOQUEADO - Ya tiene {} nota(s) temporal(es) en este paciente", count);
                         return false;
                     }
                 }
             }
 
-            System.out.println(" PERMITIDO - Puede crear nueva nota en folio: " + folioPaciente);
+            log.debug(" PERMITIDO - Puede crear nueva nota en folio: {}", folioPaciente);
             return true;
 
         } catch (SQLException e) {
-            System.err.println(" Error verificando notas temporales: " + e.getMessage());
+            log.error(" Error verificando notas temporales: {}", e.getMessage());
             return false;
         }
     }
@@ -82,43 +88,43 @@ public class SesionUsuario {
                     int count = rs.getInt("count");
 
                     if (count >= 1) {
-                        System.out.println(" BLOQUEADO - Ya tiene " + count + " interconsulta(s) temporal(es) en este paciente");
+                        log.warn(" BLOQUEADO - Ya tiene {} interconsulta(s) temporal(es) en este paciente", count);
                         return false;
                     }
                 }
             }
 
-            System.out.println("PERMITIDO - Puede crear nueva interconsulta en folio: " + folioPaciente);
+            log.debug("PERMITIDO - Puede crear nueva interconsulta en folio: {}", folioPaciente);
             return true;
 
         } catch (SQLException e) {
-            System.err.println(" Error verificando interconsultas temporales: " + e.getMessage());
+            log.error(" Error verificando interconsultas temporales: {}", e.getMessage());
             return false;
         }
     }
 
     public boolean puedeEditarNota(String medicoAutor) {
-        System.out.println(" VERIFICANDO PERMISOS EDICIÓN:");
-        System.out.println("   Médico Autor: " + medicoAutor);
-        System.out.println("   Nombre Sesión: " + nombreMedico);
-        System.out.println("   Rol: " + rol);
+        log.debug(" VERIFICANDO PERMISOS EDICIÓN:");
+        log.debug("   Médico Autor: {}", medicoAutor);
+        log.debug("   Nombre Sesión: {}", nombreMedico);
+        log.debug("   Rol: {}", rol);
 
         // Admin y jefatura pueden editar CUALQUIER nota
         if ("ADMIN".equals(rol) || "JEFATURA_URGENCIAS".equals(rol)) {
-            System.out.println(" PERMITIDO (" + rol + ") - Puede editar cualquier nota");
+            log.debug(" PERMITIDO ({}) - Puede editar cualquier nota", rol);
             return true;
         }
 
         // Médico normal solo puede editar SUS notas
         boolean esAutor = medicoAutor != null && medicoAutor.equals(nombreMedico);
 
-        System.out.println("   ¿Es Autor? " + esAutor);
+        log.debug("   ¿Es Autor? {}", esAutor);
 
         if (esAutor) {
-            System.out.println(" PERMITIDO - Es el médico autor de la nota");
+            log.debug(" PERMITIDO - Es el médico autor de la nota");
             return true;
         } else {
-            System.out.println(" BLOQUEADO - No es el médico autor");
+            log.warn(" BLOQUEADO - No es el médico autor");
             return false;
         }
     }
@@ -127,7 +133,7 @@ public class SesionUsuario {
     public boolean puedeEditarInterconsulta(String especialistaAutor) {
         // Admin y jefatura pueden editar CUALQUIER interconsulta
         if ("ADMIN".equals(rol) || "JEFATURA_URGENCIAS".equals(rol)) {
-            System.out.println(" PERMITIDO (" + rol + ") - Puede editar cualquier interconsulta");
+            log.debug(" PERMITIDO ({}) - Puede editar cualquier interconsulta", rol);
             return true;
         }
 
@@ -135,16 +141,16 @@ public class SesionUsuario {
         boolean esAutor = especialistaAutor != null && especialistaAutor.equals(nombreMedico);
 
         if (esAutor) {
-            System.out.println(" PERMITIDO - Es el especialista autor de la interconsulta");
+            log.debug(" PERMITIDO - Es el especialista autor de la interconsulta");
             return true;
         } else {
-            System.out.println(" BLOQUEADO - No es el especialista autor. Autor: " + especialistaAutor + ", Actual: " + nombreMedico);
+            log.warn(" BLOQUEADO - No es el especialista autor. Autor: {}, Actual: {}", especialistaAutor, nombreMedico);
             return false;
         }
     }
 
     private String obtenerNombreMedicoDesdeUsuario(String username) {
-        System.out.println(" [SesionUsuario] Buscando nombre médico para: " + username);
+        log.debug(" [SesionUsuario] Buscando nombre médico para: {}", username);
 
         String sql = "SELECT m.Med_nombre " +
                 "FROM tb_medicos m " +
@@ -167,17 +173,17 @@ public class SesionUsuario {
 
             if (rs.next()) {
                 String nombreMedico = rs.getString("Med_nombre");
-                System.out.println(" [SesionUsuario] Médico encontrado: " + nombreMedico);
+                log.debug(" [SesionUsuario] Médico encontrado: {}", nombreMedico);
                 return nombreMedico;
             } else {
                 // Fallback a nombre_completo
                 String fallback = obtenerNombreCompletoFallback(username);
-                System.out.println(" [SesionUsuario] Usando fallback: " + fallback);
+                log.warn(" [SesionUsuario] Usando fallback: {}", fallback);
                 return fallback;
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error en SesionUsuario: " + e.getMessage());
+            log.error(" Error en SesionUsuario: {}", e.getMessage());
             return username;
         }
     }
@@ -196,18 +202,13 @@ public class SesionUsuario {
                 return (nombreCompleto != null && !nombreCompleto.trim().isEmpty()) ? nombreCompleto : username;
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo nombre_completo: " + e.getMessage());
+            log.error(" Error obteniendo nombre_completo: {}", e.getMessage());
         }
 
         return username;
     }
 
     // ==================== GETTERS ====================
-
-    public String getUsername() { return username; }
-    public String getRol() { return rol; }
-    public String getNombreMedico() { return nombreMedico; }
-    public int getUsuarioId() { return usuarioId; }
 
 
     public Integer obtenerNotaTemporalExistente(int folioPaciente) {
@@ -223,15 +224,13 @@ public class SesionUsuario {
 
                 if (rs.next()) {
                     int idNota = rs.getInt("id_nota");
-                    System.out.println(" Nota temporal existente encontrada - ID: " + idNota);
+                    log.debug(" Nota temporal existente encontrada - ID: {}", idNota);
                     return idNota;
                 }
             }
-
         } catch (SQLException e) {
-            System.err.println(" Error buscando nota temporal: " + e.getMessage());
+            log.error(" Error buscando nota temporal: {}", e.getMessage());
         }
-
         return null;
     }
 
@@ -248,15 +247,13 @@ public class SesionUsuario {
 
                 if (rs.next()) {
                     int idInter = rs.getInt("id_inter");
-                    System.out.println(" Interconsulta temporal existente encontrada - ID: " + idInter);
+                    log.debug(" Interconsulta temporal existente encontrada - ID: {}", idInter);
                     return idInter;
                 }
             }
-
         } catch (SQLException e) {
-            System.err.println(" Error buscando interconsulta temporal: " + e.getMessage());
+            log.error(" Error buscando interconsulta temporal: {}", e.getMessage());
         }
-
         return null;
     }
 
@@ -265,6 +262,6 @@ public class SesionUsuario {
         this.rol = null;
         this.nombreMedico = null;
         this.usuarioId = -1;
-        System.out.println(" Sesión cerrada");
+        log.info(" Sesión cerrada");
     }
 }

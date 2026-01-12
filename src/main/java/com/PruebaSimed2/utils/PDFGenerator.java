@@ -18,12 +18,15 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.layout.element.LineSeparator;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.File;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+@Log4j2
 public class PDFGenerator {
 
     // =============== NOTA MÉDICA - CON DATOS REALES ===============
@@ -161,8 +164,7 @@ public class PDFGenerator {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error: {}", e.getMessage(), e);
             if (tempFilePath != null) eliminarArchivoTemporal(tempFilePath);
             return false;
         }
@@ -190,7 +192,7 @@ public class PDFGenerator {
             psPaciente.setInt(1, folioPaciente);
             ResultSet rsPaciente = psPaciente.executeQuery();
             if (!rsPaciente.next()) {
-                System.err.println("No se encontró el paciente con folio: " + folioPaciente);
+                log.warn("No se encontró el paciente con folio: {}", folioPaciente);
                 return false;
             }
 
@@ -211,8 +213,7 @@ public class PDFGenerator {
             psInter.setInt(2, numeroInterconsulta);
             ResultSet rsInter = psInter.executeQuery();
             if (!rsInter.next()) {
-                System.err.println("No se encontró la interconsulta " + numeroInterconsulta +
-                        " para folio: " + folioPaciente);
+                log.warn("No se encontró la interconsulta {} para folio: {}", numeroInterconsulta, folioPaciente);
                 return false;
             }
 
@@ -320,13 +321,12 @@ public class PDFGenerator {
             psPaciente.close();
             conn.close();
 
-            System.out.println("PDF de interconsulta generado: " + tempFilePath);
+            log.debug("PDF de interconsulta generado: {}", tempFilePath);
             abrirPDF(tempFilePath);
             return true;
 
         } catch (Exception e) {
-            System.err.println("Error generando PDF de interconsulta: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando PDF de interconsulta: {}", e.getMessage(), e);
             if (conn != null) try { conn.close(); } catch (Exception ignored) {}
             if (tempFilePath != null) eliminarArchivoTemporal(tempFilePath);
             return false;
@@ -370,8 +370,7 @@ public class PDFGenerator {
                 canvas.close();
 
             } catch (Exception e) {
-                System.err.println("Error cargando logos desde BD: " + e.getMessage());
-                e.printStackTrace();
+                log.error("Error cargando logos desde BD: {}", e.getMessage(), e);
             }
         });
     }
@@ -423,12 +422,12 @@ public class PDFGenerator {
     private static ImageData cargarImagenDesdeResources(String resourcePath) {
         try (InputStream is = PDFGenerator.class.getResourceAsStream(resourcePath)) {
             if (is == null) {
-                System.out.println("Warning: No encontrado: " + resourcePath);
+                log.warn("Warning: No encontrado: {}", resourcePath);
                 return null;
             }
             return ImageDataFactory.create(is.readAllBytes());
         } catch (Exception e) {
-            System.out.println("Error cargando imagen: " + resourcePath);
+            log.error("Error cargando imagen: {}", resourcePath);
             return null;
         }
     }
@@ -440,10 +439,10 @@ public class PDFGenerator {
             if (pdfFile.exists()) {
                 programarEliminacionArchivo(filePath, 120000);
                 java.awt.Desktop.getDesktop().open(pdfFile);
-                System.out.println("PDF abierto: " + filePath);
+                log.debug("PDF abierto: {}", filePath);
             }
         } catch (Exception e) {
-            System.err.println("Error abriendo PDF: " + e.getMessage());
+            log.error("Error abriendo PDF: {}", e.getMessage());
             eliminarArchivoTemporal(filePath);
         }
     }
@@ -459,7 +458,7 @@ public class PDFGenerator {
         try {
             File tempFile = new File(filePath);
             if (tempFile.exists() && tempFile.delete()) {
-                System.out.println("PDF temporal eliminado: " + filePath);
+                log.debug("PDF temporal eliminado: {}", filePath);
             }
         } catch (Exception ignored) {}
     }
