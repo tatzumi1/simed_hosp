@@ -242,20 +242,23 @@ public class VentanaRegistroTriageController {
 
         if (nombreMedico == null) {
             mostrarAlerta("Sesión inválida", "Reinicie sesión", Alert.AlertType.ERROR);
+            log.error("Usuario sin sesión válida intentó registrar paciente");
             return;
         }
 
         try (Connection conn = ConexionBD.conectar()) {
             conn.setAutoCommit(false);
-            int folio = obtenerSiguienteFolio(conn);
+            int folio = obtenerSiguienteFolio();
 
             if (folio > 0 && insertarPacienteCompleto(folio, nombreMedico)) {
                 conn.commit();
                 registrarAuditoria(folio, username);
+                log.debug("Paciente registrado con folio {}", folio);
                 mostrarAlerta("Éxito", "Paciente registrado\nFolio: " + folio, Alert.AlertType.INFORMATION);
                 limpiarCampos();
             } else {
                 conn.rollback();
+                log.warn("Error al registrar paciente con folio {}, realizando rollback", folio);
                 mostrarAlerta("Error", "No se pudo registrar", Alert.AlertType.ERROR);
             }
         } catch (SQLException e) {
@@ -264,11 +267,9 @@ public class VentanaRegistroTriageController {
         }
     }
 
-    private int obtenerSiguienteFolio(Connection conn) throws SQLException {
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT MAX(Folio) FROM tb_urgencias")) {
-            return rs.next() ? rs.getInt(1) + 1 : 1000;
-        }
+    private int obtenerSiguienteFolio() throws SQLException {
+        UrgenciasData ud = new UrgenciasData();
+        return ud.obtenerFolio();
     }
 
     private boolean insertarPacienteCompleto(int folio, String nombreMedico) throws SQLException {

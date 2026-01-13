@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Log4j2
@@ -19,6 +20,7 @@ public class UrgenciasData {
             "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
             "CURDATE(), ?, 1, ?, ?, ?, " +
             "?, ?, ?, ?, ?, ?)";
+    private static final String OBTENER_ID_MAXIMO = "SELECT COALESCE(MAX(Folio), 0) + 1 FROM tb_urgencias";
 
     public boolean insertarPaciente(InsertarPacienteDTO dto) {
         log.debug("Insertando paciente en la base de datos: {}", dto);
@@ -60,6 +62,21 @@ public class UrgenciasData {
         } catch (SQLException e) {
             log.error("Error al insertar paciente en la base de datos: {}", e.getMessage());
             return false;
+        }
+    }
+
+    public int obtenerFolio() {
+        try (Connection connection = ConexionBD.conectar(); PreparedStatement stmt = connection.prepareStatement(OBTENER_ID_MAXIMO); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                int folio = rs.getInt(1);
+                log.debug("Folio máximo obtenido: {}", folio);
+                return folio;
+            }
+            log.warn("No se encontró folio máximo, asignando folio inicial 1");
+            return 1;
+        } catch (SQLException e) {
+            log.error("Error al obtener el folio: {}", e.getMessage());
+            return -1;
         }
     }
 }
