@@ -1,6 +1,8 @@
 package com.PruebaSimed2.controllers;
 
+import com.PruebaSimed2.DTO.InsertarPacienteDTO;
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.UrgenciasData;
 import com.PruebaSimed2.models.Edad;
 import com.PruebaSimed2.utils.SesionUsuario;
 import javafx.animation.KeyFrame;
@@ -247,7 +249,7 @@ public class VentanaRegistroTriageController {
             conn.setAutoCommit(false);
             int folio = obtenerSiguienteFolio(conn);
 
-            if (folio > 0 && insertarPacienteCompleto(conn, folio, nombreMedico)) {
+            if (folio > 0 && insertarPacienteCompleto(folio, nombreMedico)) {
                 conn.commit();
                 registrarAuditoria(folio, username);
                 mostrarAlerta("Éxito", "Paciente registrado\nFolio: " + folio, Alert.AlertType.INFORMATION);
@@ -269,66 +271,59 @@ public class VentanaRegistroTriageController {
         }
     }
 
-    // TODO: Mover operaciones de BD.
-    private boolean insertarPacienteCompleto(Connection conn, int folio, String nombreMedico) throws SQLException {
-        String sql = "INSERT INTO tb_urgencias (" +
-                "Folio, A_paterno, A_materno, Nombre, Edad, F_nac, Telefono, Domicilio, " +
-                "Derechohabiencia, No_afiliacion, Referencia, Reingreso, Hospitalizado, " +
-                "Exp_clinico, CURP, Sintomas, Nom_med, TRIAGE, Nombre_ts, Turno, " +
-                "Fecha, Hora_registro, Estado_pac, Sexo, Municipio_resid, Entidad_resid, " +
-                "Ocupacion, Religion, Edo_civil, Observaciones_ts, Municipio_completo, Entidad_completa" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                "CURDATE(), ?, 1, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            int i = 1;
-            LocalDate fechaNac = dpFechaNac.getValue();
-            Edad edad = new Edad();
-            edad.calcularEdad(fechaNac);
-            if (fechaNac == null) {
-                log.warn("Fecha nacimiento no especificada");
-                return false;
-            }
-            ps.setInt(i++, folio);
-            ps.setString(i++, txtApPaterno.getText().trim());
-            ps.setString(i++, txtApMaterno.getText().trim());
-            ps.setString(i++, txtNombre.getText().trim());
-            ps.setInt(i++, edad.getAnos());
-            ps.setDate(i++, Date.valueOf(fechaNac));
-            ps.setString(i++, txtTelefono.getText().trim());
-            ps.setString(i++, txtDomicilio.getText().trim());
-
-            Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
-            if (cveDerechoHabiente != null) ps.setInt(i++, cveDerechoHabiente);
-            else ps.setNull(i++, Types.INTEGER);
-            ps.setString(i++, txtNoAfiliacion.getText().trim());
-            ps.setString(i++, txtReferencia.getText().trim());
-            ps.setBoolean(i++, chkReingreso.isSelected());
-            ps.setBoolean(i++, chkHospitalizado.isSelected());
-            ps.setString(i++, txtExpediente.getText().trim());
-            ps.setString(i++, txtCURP.getText().trim());
-            ps.setString(i++, txtSintomas.getText().trim());
-            ps.setString(i++, comboMedico.getValue());
-            ps.setString(i++, comboTriage.getValue());
-            ps.setString(i++, nombreMedico);
-            ps.setString(i++, turno);
-            ps.setString(i++, txtHora.getText().trim());
-            Integer codigoSexo = obtenerCodigoSexo();
-            if (codigoSexo != null) ps.setInt(i++, codigoSexo);
-            else ps.setNull(i++, Types.INTEGER);
-            ps.setString(i++, obtenerCodigoMunicipio());
-            ps.setString(i++, obtenerCodigoEntidad(txtEntidadSel.getText().trim()));
-            ps.setString(i++, txtOcupacion.getText().trim());
-            ps.setString(i++, txtReligion.getText().trim());
-            ps.setString(i++, txtEstadoCivil.getText().trim());
-            ps.setString(i++, txtObservaciones.getText().trim());
-            ps.setString(i++, txtMunicipioSel.getText().trim());
-            ps.setString(i, txtEntidadSel.getText().trim());
-
-            return ps.executeUpdate() > 0;
+    private boolean insertarPacienteCompleto(int folio, String nombreMedico) throws SQLException {
+        LocalDate fechaNac = dpFechaNac.getValue();
+        Edad edad = new Edad();
+        edad.calcularEdad(fechaNac);
+        if (fechaNac == null) {
+            log.warn("Fecha nacimiento no especificada");
+            return false;
         }
+        Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
+        if (cveDerechoHabiente == null) {
+            log.warn("Derechohabiente no especificado");
+            return false;
+        }
+        Integer codigoSexo = obtenerCodigoSexo();
+        if (codigoSexo == null) {
+            log.warn("Sexo no especificado");
+            return false;
+        }
+
+        InsertarPacienteDTO dto = new InsertarPacienteDTO(
+                folio,
+                txtApPaterno.getText().trim(),
+                txtApMaterno.getText().trim(),
+                txtNombre.getText().trim(),
+                edad.getAnos(),
+                Date.valueOf(fechaNac),
+                txtTelefono.getText().trim(),
+                txtDomicilio.getText().trim(),
+                cveDerechoHabiente,
+                txtNoAfiliacion.getText().trim(),
+                txtReferencia.getText().trim(),
+                chkReingreso.isSelected(),
+                chkHospitalizado.isSelected(),
+                txtExpediente.getText().trim(),
+                txtCURP.getText().trim(),
+                txtSintomas.getText().trim(),
+                comboMedico.getValue(),
+                comboTriage.getValue(),
+                nombreMedico,
+                turno,
+                txtHora.getText().trim(),
+                codigoSexo,
+                obtenerCodigoMunicipio(),
+                obtenerCodigoEntidad(txtEntidadSel.getText().trim()),
+                txtOcupacion.getText().trim(),
+                txtReligion.getText().trim(),
+                txtEstadoCivil.getText().trim(),
+                txtObservaciones.getText().trim(),
+                txtMunicipioSel.getText().trim(),
+                txtEntidadSel.getText().trim()
+        );
+        UrgenciasData ud = new UrgenciasData();
+        return ud.insertarPaciente(dto);
     }
 
     // === MÉTODOS AUXILIARES ===
