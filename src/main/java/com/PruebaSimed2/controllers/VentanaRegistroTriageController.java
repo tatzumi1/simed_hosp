@@ -44,7 +44,6 @@ public class VentanaRegistroTriageController {
     // === VARIABLES ===
     private String turno;
     private final Map<String, Integer> mapaDerechohab = new HashMap<>();
-    private static final Map<String, String> MAPA_ENTIDADES_CURP = initMapaEntidadesCURP();
 
     // === LÍMITES DE DATOS ===
     private static final int LIMITE_NOMBRE = 100;
@@ -393,44 +392,6 @@ public class VentanaRegistroTriageController {
                 dpFechaNac.getValue() != null &&
                 comboSexo.getValue() != null &&
                 !txtEntidadSel.getText().isEmpty();
-    }
-
-    private String limpiarTexto(String texto) {
-        if (texto == null) return "";
-        return texto.replace('Á', 'A').replace('É', 'E').replace('Í', 'I')
-                .replace('Ó', 'O').replace('Ú', 'U').replace('Ü', 'U')
-                .replace('Ñ', 'X')
-                .replaceAll("\\b(DE|LA|DEL|LAS|LOS|Y|MC|VON|VAN|DA|DI|EL)\\b", "");
-    }
-
-    private String obtenerPrimerNombreReal(String nombreCompleto) {
-        String[] nombres = nombreCompleto.split(" ");
-        if (nombres.length > 1 && Arrays.asList("MARIA", "MA", "JOSE", "J").contains(nombres[0].toUpperCase())) {
-            return nombres[1];
-        }
-        return nombres.length > 0 ? nombres[0] : "X";
-    }
-
-    private char obtenerPrimeraVocalInterna(String texto) {
-        if (texto.length() < 2) return 'X';
-        for (int i = 1; i < texto.length(); i++) {
-            char c = texto.charAt(i);
-            if ("AEIOU".indexOf(c) != -1) return c;
-        }
-        return 'X';
-    }
-
-    private char obtenerPrimeraConsonanteInterna(String texto) {
-        if (texto.length() < 2) return 'X';
-        for (int i = 1; i < texto.length(); i++) {
-            char c = texto.charAt(i);
-            if ("BCDFGHJKLMNÑPQRSTVWXYZ".indexOf(c) != -1) return c;
-        }
-        return 'X';
-    }
-
-    private String obtenerCodigoCURPEntidad(String entidad) {
-        return MAPA_ENTIDADES_CURP.getOrDefault(entidad.toUpperCase(), "NE");
     }
 
     private static Map<String, String> initMapaEntidadesCURP() {
