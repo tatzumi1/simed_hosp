@@ -1,6 +1,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.DTO.InsertarPacienteDTO;
+import com.PruebaSimed2.database.AuditoriaData;
 import com.PruebaSimed2.database.ConexionBD;
 import com.PruebaSimed2.database.UrgenciasData;
 import com.PruebaSimed2.models.Edad;
@@ -14,11 +15,11 @@ import javafx.util.Duration;
 import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Log4j2
 public class VentanaRegistroTriageController {
@@ -536,20 +537,10 @@ public class VentanaRegistroTriageController {
     }
 
     // === UTILIDADES ===
-    // TODO: Mover operaciones de BD.
     private void registrarAuditoria(int folio, String username) {
         new Thread(() -> {
-            try (Connection conn = ConexionBD.conectar();
-                 PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO tb_auditoria (username, accion, tabla_afectada, registro_id) VALUES (?,?,?,?)")) {
-                ps.setString(1, username);
-                ps.setString(2, "Registro triage");
-                ps.setString(3, "tb_urgencias");
-                ps.setInt(4, folio);
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                log.error("Error al registrar auditoria", e);
-            }
+            AuditoriaData auditoriaData = new AuditoriaData();
+            auditoriaData.registrarAuditoriaRegistroTriage(username, folio);
         }).start();
     }
 
