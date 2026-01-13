@@ -93,8 +93,8 @@ public class VentanaRegistroTriageController {
                 c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
 
         // TextAreas
-        configurarLimiteTextArea(txtSintomas, LIMITE_TEXTO_AREA);
-        configurarLimiteTextArea(txtObservaciones, LIMITE_TEXTO_AREA);
+        configurarLimiteTextArea(txtSintomas);
+        configurarLimiteTextArea(txtObservaciones);
     }
 
     private void configurarLimiteTextField(TextField campo, int limite) {
@@ -105,9 +105,9 @@ public class VentanaRegistroTriageController {
         });
     }
 
-    private void configurarLimiteTextArea(TextArea area, int limite) {
+    private void configurarLimiteTextArea(TextArea area) {
         area.textProperty().addListener((obs, viejo, nuevo) -> {
-            if (nuevo != null && nuevo.length() > limite) {
+            if (nuevo != null && nuevo.length() > VentanaRegistroTriageController.LIMITE_TEXTO_AREA) {
                 area.setText(viejo);
             }
         });
@@ -525,13 +525,11 @@ public class VentanaRegistroTriageController {
             dialogo.setResultConverter(boton -> boton == ButtonType.OK ? lista.getSelectionModel().getSelectedItem() : null);
 
             dialogo.showAndWait().ifPresent(seleccion -> {
-                if (seleccion != null) {
-                    if (seleccion.equals("ESCRIBIR MANUALMENTE")) {
-                        mostrarDialogoTextoManual(tipo.equals("entidades") ? "Entidad" : "Municipio", objetivo);
-                    } else {
-                        objetivo.setText(seleccion);
-                        if (habilitarMunicipio) btnMunicipio.setDisable(false);
-                    }
+                if (seleccion.equals("ESCRIBIR MANUALMENTE")) {
+                    mostrarDialogoTextoManual(tipo.equals("entidades") ? "Entidad" : "Municipio", objetivo);
+                } else {
+                    objetivo.setText(seleccion);
+                    if (habilitarMunicipio) btnMunicipio.setDisable(false);
                 }
             });
 
@@ -549,7 +547,7 @@ public class VentanaRegistroTriageController {
         dialogo.setTitle("Escribir " + campo);
         dialogo.setContentText(campo + ":");
         dialogo.showAndWait().ifPresent(valor -> {
-            if (valor != null && !valor.trim().isEmpty()) {
+            if (!valor.trim().isEmpty()) {
                 objetivo.setText(valor.trim());
             }
         });
