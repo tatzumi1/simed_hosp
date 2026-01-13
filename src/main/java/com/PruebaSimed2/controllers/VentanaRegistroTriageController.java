@@ -1,6 +1,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.models.Edad;
 import com.PruebaSimed2.utils.SesionUsuario;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -11,6 +12,7 @@ import javafx.util.Duration;
 import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -276,26 +278,25 @@ public class VentanaRegistroTriageController {
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             int i = 1;
+            LocalDate fechaNac = dpFechaNac.getValue();
+            Edad edad = new Edad();
+            edad.calcularEdad(fechaNac);
+            if (fechaNac == null) {
+                log.warn("Fecha nacimiento no especificada");
+                return false;
+            }
             ps.setInt(i++, folio);
             ps.setString(i++, txtApPaterno.getText().trim());
             ps.setString(i++, txtApMaterno.getText().trim());
             ps.setString(i++, txtNombre.getText().trim());
-            ps.setInt(i++, obtenerEdad());
-
-            java.sql.Date fechaNac = obtenerFechaNacimiento();
-            if (fechaNac != null) {
-                ps.setDate(i++, fechaNac);
-            } else {
-                ps.setNull(i++, Types.DATE);
-            }
-
+            ps.setInt(i++, edad.getAnos());
+            ps.setDate(i++, Date.valueOf(fechaNac));
             ps.setString(i++, txtTelefono.getText().trim());
             ps.setString(i++, txtDomicilio.getText().trim());
 
-            Integer cveDerechohab = obtenerCodigoDerechohab();
-            if (cveDerechohab != null) ps.setInt(i++, cveDerechohab);
+            Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
+            if (cveDerechoHabiente != null) ps.setInt(i++, cveDerechoHabiente);
             else ps.setNull(i++, Types.INTEGER);
-
             ps.setString(i++, txtNoAfiliacion.getText().trim());
             ps.setString(i++, txtReferencia.getText().trim());
             ps.setBoolean(i++, chkReingreso.isSelected());
@@ -308,42 +309,24 @@ public class VentanaRegistroTriageController {
             ps.setString(i++, nombreMedico);
             ps.setString(i++, turno);
             ps.setString(i++, txtHora.getText().trim());
-
             Integer codigoSexo = obtenerCodigoSexo();
             if (codigoSexo != null) ps.setInt(i++, codigoSexo);
             else ps.setNull(i++, Types.INTEGER);
-
             ps.setString(i++, obtenerCodigoMunicipio());
             ps.setString(i++, obtenerCodigoEntidad(txtEntidadSel.getText().trim()));
-
             ps.setString(i++, txtOcupacion.getText().trim());
             ps.setString(i++, txtReligion.getText().trim());
             ps.setString(i++, txtEstadoCivil.getText().trim());
             ps.setString(i++, txtObservaciones.getText().trim());
-
             ps.setString(i++, txtMunicipioSel.getText().trim());
-            ps.setString(i++, txtEntidadSel.getText().trim());
+            ps.setString(i, txtEntidadSel.getText().trim());
 
             return ps.executeUpdate() > 0;
         }
     }
 
     // === MÉTODOS AUXILIARES ===
-    private int obtenerEdad() {
-        try {
-            return Integer.parseInt(txtEdad.getText().trim());
-        } catch (Exception e) {
-            log.error("Error al obtener edad", e);
-            return 0;
-        }
-    }
-
-    private java.sql.Date obtenerFechaNacimiento() {
-        LocalDate fecha = dpFechaNac.getValue();
-        return fecha != null ? java.sql.Date.valueOf(fecha) : null;
-    }
-
-    private Integer obtenerCodigoDerechohab() {
+    private Integer obtenerCodigoDerechoHabiente() {
         String valor = comboDerechohab.getValue();
         return valor != null ? mapaDerechohab.get(valor) : null;
     }
