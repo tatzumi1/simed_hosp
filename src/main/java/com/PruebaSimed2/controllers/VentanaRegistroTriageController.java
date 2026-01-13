@@ -154,12 +154,14 @@ public class VentanaRegistroTriageController {
     }
 
     // === CARGAR DATOS ===
+    // TODO: Implementar "Naranja"
     private void cargarCombos() {
         cargarDerechohabiencia();
         cargarMedicos();
         comboTriage.getItems().addAll("Verde", "Amarillo", "Rojo");
     }
 
+    // TODO: Mover a clase propia.
     private void cargarDerechohabiencia() {
         try (Connection c = ConexionBD.conectar();
              Statement s = c.createStatement();
@@ -175,6 +177,7 @@ public class VentanaRegistroTriageController {
         }
     }
 
+    // TODO: Mover a clase propia.
     private void cargarMedicos() {
         try (Connection c = ConexionBD.conectar();
              Statement s = c.createStatement();
@@ -197,6 +200,7 @@ public class VentanaRegistroTriageController {
         btnEntidad.setOnAction(e -> seleccionarEntidad());
     }
 
+    // TODO: Verificar el comportamiento del comboTriage
     private void configurarValidaciones() {
         Runnable validar = () -> btnRegistrar.setDisable(
                 txtApPaterno.getText().trim().isEmpty() ||
@@ -208,6 +212,7 @@ public class VentanaRegistroTriageController {
         comboTriage.valueProperty().addListener((o, v, n) -> validar.run());
     }
 
+    // TODO: Implementar color Naranja
     private void actualizarColorTriage() {
         String triage = comboTriage.getValue();
         if (triage == null) return;
@@ -227,6 +232,7 @@ public class VentanaRegistroTriageController {
     }
 
     // === REGISTRO PACIENTE COMPLETO ===
+    // TODO: Mover operaciones de BD.
     @FXML
     private void registrarPaciente() {
         String nombreMedico = SesionUsuario.getInstance().getNombreMedico();
@@ -263,6 +269,7 @@ public class VentanaRegistroTriageController {
         }
     }
 
+    // TODO: Mover operaciones de BD.
     private boolean insertarPacienteCompleto(Connection conn, int folio, String nombreMedico) throws SQLException {
         String sql = "INSERT INTO tb_urgencias (" +
                 "Folio, A_paterno, A_materno, Nombre, Edad, F_nac, Telefono, Domicilio, " +
@@ -337,6 +344,7 @@ public class VentanaRegistroTriageController {
                 sexo.equalsIgnoreCase("femenino") ? 2 : null;
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoMunicipio() {
         String municipio = txtMunicipioSel.getText().trim();
         String entidad = txtEntidadSel.getText().trim();
@@ -357,6 +365,7 @@ public class VentanaRegistroTriageController {
         }
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoEntidad(String nombreEntidad) {
         if (nombreEntidad == null || nombreEntidad.isEmpty()) return "97";
 
@@ -433,6 +442,7 @@ public class VentanaRegistroTriageController {
     }
 
     // === SELECTORES ENTIDAD/MUNICIPIO ===
+    // TODO: Mover operaciones de BD.
     @FXML
     private void seleccionarEntidad() {
         mostrarDialogoSeleccion("Seleccionar Entidad", "entidades",
@@ -440,6 +450,7 @@ public class VentanaRegistroTriageController {
                 txtEntidadSel, true);
     }
 
+    // TODO: Mover operaciones de BD.
     @FXML
     private void seleccionarMunicipio() {
         if (txtEntidadSel.getText().isEmpty()) {
@@ -455,6 +466,7 @@ public class VentanaRegistroTriageController {
                 txtMunicipioSel, false, codigoEntidad);
     }
 
+    // TODO: Mover operaciones de BD.
     private void mostrarDialogoSeleccion(String titulo, String tipo, String sql, TextField objetivo, boolean habilitarMunicipio, String... parametros) {
         try (Connection conn = ConexionBD.conectar()) {
 
@@ -514,6 +526,7 @@ public class VentanaRegistroTriageController {
         });
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoEntidadDesdeNombre(String entidad) {
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement ps = conn.prepareStatement("SELECT EDO FROM tblt_entidad WHERE DESCRIP = ?")) {
@@ -527,6 +540,7 @@ public class VentanaRegistroTriageController {
     }
 
     // === UTILIDADES ===
+    // TODO: Mover operaciones de BD.
     private void registrarAuditoria(int folio, String username) {
         new Thread(() -> {
             try (Connection conn = ConexionBD.conectar();
@@ -543,6 +557,7 @@ public class VentanaRegistroTriageController {
         }).start();
     }
 
+    // TODO: Validar limpieza de campos
     private void limpiarCampos() {
         txtApPaterno.clear();
         txtApMaterno.clear();
@@ -585,7 +600,7 @@ public class VentanaRegistroTriageController {
         alerta.showAndWait();
     }
 
-
+    // TODO: Mover a clase propia.
     private String generarCURP() {
         try {
             String paterno = limpiarTextoParaCURP(txtApPaterno.getText().trim().toUpperCase());
@@ -656,6 +671,7 @@ public class VentanaRegistroTriageController {
         return limpio.replaceAll("\\s+", " ").trim();
     }
 
+    // TODO: Mover a clase propia.
     private String obtenerPrimerNombreRealExacto(String nombreCompleto) {
         if (nombreCompleto == null || nombreCompleto.isEmpty()) return "X";
 
@@ -680,6 +696,7 @@ public class VentanaRegistroTriageController {
         return nombres.length > 0 ? nombres[0] : "X";
     }
 
+    // TODO: Mover a clase propia.
     private char obtenerPrimeraVocalInternaExacta(String texto) {
         if (texto == null || texto.length() < 2) return 'X';
 
@@ -693,6 +710,7 @@ public class VentanaRegistroTriageController {
         return 'X'; // Si no encuentra vocal interna
     }
 
+    // TODO: Mover a clase propia.
     private char obtenerPrimeraConsonanteInternaExacta(String texto) {
         if (texto == null || texto.length() < 2) return 'X';
 
@@ -711,6 +729,7 @@ public class VentanaRegistroTriageController {
         return 'X'; // Si no encuentra consonante interna
     }
 
+    // TODO: Mover a clase propia.
     private String obtenerCodigoCURPEntidadExacto(String entidad) {
         var mapaCompleto = initMapaEntidadesCURP();
 
@@ -723,6 +742,7 @@ public class VentanaRegistroTriageController {
         return "NE"; // No especificado
     }
 
+    // TODO: Mover a clase propia.
     private char calcularDigitoVerificadorSimple(String curp15) {
         // Para propósitos de demo, usar un dígito simple
         // En la realidad, RENAPO usa un algoritmo complejo
