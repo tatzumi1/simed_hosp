@@ -351,7 +351,7 @@ public class VentanaRegistroTriageController {
     private Integer obtenerCodigoSexo() {
         String sexo = comboSexo.getValue();
         if (sexo == null) return null;
-        return sexo.equalsIgnoreCase("masculino") ? 1 :
+        return sexo.equalsIgnoreCase("masculino") ? Integer.valueOf(1) :
                 sexo.equalsIgnoreCase("femenino") ? 2 : null;
     }
 
@@ -456,11 +456,11 @@ public class VentanaRegistroTriageController {
         mapa.put("BAJA CALIFORNIA", "BC");
         mapa.put("BAJA CALIFORNIA SUR", "BS");
         mapa.put("CAMPECHE", "CC");
-        mapa.put("COAHUILA", "CL");
-        mapa.put("COLIMA", "CM");
         mapa.put("CHIAPAS", "CS");
         mapa.put("CHIHUAHUA", "CH");
         mapa.put("CIUDAD DE MÉXICO", "DF");
+        mapa.put("COAHUILA", "CL");
+        mapa.put("COLIMA", "CM");
         mapa.put("DURANGO", "DG");
         mapa.put("GUANAJUATO", "GT");
         mapa.put("GUERRERO", "GR");
@@ -556,7 +556,7 @@ public class VentanaRegistroTriageController {
             ps.close();
 
         } catch (SQLException e) {
-            log.error("Error SQL en mostrarDialogoSeleccion: " + e.getMessage());
+            log.error("Error SQL en mostrarDialogoSeleccion: {}", e.getMessage());
             mostrarAlerta("Error", "Error cargando " + tipo + ": " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -688,7 +688,7 @@ public class VentanaRegistroTriageController {
             return curp.toString();
 
         } catch (Exception e) {
-            log.error("Error generando CURP: " + e.getMessage());
+            log.error("Error generando CURP: {}", e.getMessage());
             return "";
         }
     }
@@ -770,44 +770,7 @@ public class VentanaRegistroTriageController {
     }
 
     private String obtenerCodigoCURPEntidadExacto(String entidad) {
-        // Mapa completo de códigos de entidad federativa
-        Map<String, String> mapaCompleto = new HashMap<>();
-
-        // Agrega TODOS los estados
-        mapaCompleto.put("AGUASCALIENTES", "AS");
-        mapaCompleto.put("BAJA CALIFORNIA", "BC");
-        mapaCompleto.put("BAJA CALIFORNIA SUR", "BS");
-        mapaCompleto.put("CAMPECHE", "CC");
-        mapaCompleto.put("CHIAPAS", "CS");
-        mapaCompleto.put("CHIHUAHUA", "CH");
-        mapaCompleto.put("CIUDAD DE MÉXICO", "DF");
-        mapaCompleto.put("COAHUILA", "CL");
-        mapaCompleto.put("COLIMA", "CM");
-        mapaCompleto.put("DURANGO", "DG");
-        mapaCompleto.put("GUANAJUATO", "GT");
-        mapaCompleto.put("GUERRERO", "GR");
-        mapaCompleto.put("HIDALGO", "HG");
-        mapaCompleto.put("JALISCO", "JC");
-        mapaCompleto.put("MÉXICO", "MC");
-        mapaCompleto.put("MICHOACÁN", "MN");
-        mapaCompleto.put("MORELOS", "MS");
-        mapaCompleto.put("NAYARIT", "NT");
-        mapaCompleto.put("NUEVO LEÓN", "NL");
-        mapaCompleto.put("OAXACA", "OC");
-        mapaCompleto.put("PUEBLA", "PL");
-        mapaCompleto.put("QUERÉTARO", "QT");
-        mapaCompleto.put("QUINTANA ROO", "QR");
-        mapaCompleto.put("SAN LUIS POTOSÍ", "SP");
-        mapaCompleto.put("SINALOA", "SL");
-        mapaCompleto.put("SONORA", "SR");
-        mapaCompleto.put("TABASCO", "TC");
-        mapaCompleto.put("TAMAULIPAS", "TS");
-        mapaCompleto.put("TLAXCALA", "TL");
-        mapaCompleto.put("VERACRUZ", "VZ");
-        mapaCompleto.put("YUCATÁN", "YN");
-        mapaCompleto.put("ZACATECAS", "ZS");
-        mapaCompleto.put("NACIDO EN EL EXTRANJERO", "NE");
-        mapaCompleto.put("EXTRANJERO", "NE");
+        var mapaCompleto = initMapaEntidadesCURP();
 
         // Buscar coincidencia exacta o parcial
         for (Map.Entry<String, String> entry : mapaCompleto.entrySet()) {
@@ -815,7 +778,6 @@ public class VentanaRegistroTriageController {
                 return entry.getValue();
             }
         }
-
         return "NE"; // No especificado
     }
 
