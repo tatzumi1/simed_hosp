@@ -8,6 +8,8 @@ import com.PruebaSimed2.models.Edad;
 import com.PruebaSimed2.utils.SesionUsuario;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -50,6 +52,7 @@ public class VentanaRegistroTriageController {
 
     // === VARIABLES ===
     private String turno;
+    private final ObservableList<String> listaMedicos = FXCollections.observableArrayList();
     private final Map<String, Integer> mapaDerechohab = new HashMap<>();
 
     // === LÍMITES DE DATOS ===
@@ -174,6 +177,9 @@ public class VentanaRegistroTriageController {
         cargarDerechohabiencia();
         cargarMedicos();
         comboTriage.getItems().addAll("Verde", "Amarillo", "Naranja", "Rojo");
+        comboMedico.setEditable(true);
+        comboMedico.valueProperty().addListener((ov, t, t1) -> {
+        });
     }
 
     // TODO: Mover a clase propia.
@@ -196,14 +202,60 @@ public class VentanaRegistroTriageController {
     private void cargarMedicos() {
         try (Connection c = ConexionBD.conectar();
              Statement s = c.createStatement();
-             ResultSet rs = s.executeQuery("SELECT Med_nombre FROM tb_medicos")) {
+             ResultSet rs = s.executeQuery("SELECT Med_nombre FROM tb_medicos ORDER BY Med_nombre")) {
 
+            listaMedicos.clear();
             while (rs.next()) {
-                comboMedico.getItems().add(rs.getString("Med_nombre"));
+                listaMedicos.add(rs.getString("Med_nombre"));
             }
+            comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
+            configurarFiltroMedico();
         } catch (SQLException e) {
             log.error("Error al cargar medicos", e);
         }
+    }
+
+    private void configurarFiltroMedico() {
+        TextField editor = comboMedico.getEditor();
+
+        editor.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (Boolean.TRUE.equals(newVal)) {
+                javafx.application.Platform.runLater(() -> {
+                    if (!comboMedico.isShowing()) {
+                        comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
+                        comboMedico.show();
+                    }
+                });
+            }
+        });
+
+        editor.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                javafx.application.Platform.runLater(() -> comboMedico.setItems(FXCollections.observableArrayList(listaMedicos)));
+                return;
+            }
+
+            // Si el texto es una selección exacta, no filtramos para evitar que el dropdown parpadee
+            if (listaMedicos.contains(nuevo)) {
+                return;
+            }
+
+            String filtro = nuevo.toLowerCase();
+            ObservableList<String> filtrados = FXCollections.observableArrayList(
+                    listaMedicos.stream()
+                            .filter(item -> item.toLowerCase().contains(filtro))
+                            .collect(java.util.stream.Collectors.toList())
+            );
+
+            javafx.application.Platform.runLater(() -> {
+                comboMedico.setItems(filtrados);
+                if (!filtrados.isEmpty()) {
+                    comboMedico.show();
+                } else {
+                    comboMedico.hide();
+                }
+            });
+        });
     }
 
     // === EVENTOS ===
@@ -590,6 +642,8 @@ public class VentanaRegistroTriageController {
         comboTriage.setValue(null);
         comboDerechohab.setValue(null);
         comboMedico.setValue(null);
+        comboMedico.getEditor().setText("");
+        comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
         comboSexo.setValue(null);
         dpFechaNac.setValue(null);
         chkReingreso.setSelected(false);
