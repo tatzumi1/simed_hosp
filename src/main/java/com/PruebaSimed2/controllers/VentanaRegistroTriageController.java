@@ -28,7 +28,9 @@ public class VentanaRegistroTriageController {
     @FXML
     private DatePicker dpFechaNac;
     @FXML
-    private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtEdad, txtTelefono;
+    private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtTelefono;
+    @FXML
+    private TextField txtEdadAnos, txtEdadMeses, txtEdadDias;
     @FXML
     private TextField txtDomicilio, txtNoAfiliacion, txtReferencia, txtExpediente, txtCURP;
     @FXML
@@ -91,8 +93,12 @@ public class VentanaRegistroTriageController {
         configurarLimiteTextField(txtExpediente, 50);
 
         // Edad solo números
-        txtEdad.setTextFormatter(new TextFormatter<>(c ->
+        txtEdadAnos.setTextFormatter(new TextFormatter<>(c ->
                 c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
+        txtEdadMeses.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
+        txtEdadDias.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
 
         // TextAreas
         configurarLimiteTextArea(txtSintomas);
@@ -158,7 +164,6 @@ public class VentanaRegistroTriageController {
     }
 
     // === CARGAR DATOS ===
-    // TODO: Implementar "Naranja"
     private void cargarCombos() {
         cargarDerechohabiencia();
         cargarMedicos();
@@ -202,9 +207,26 @@ public class VentanaRegistroTriageController {
         btnSalir.setOnAction(e -> cerrarVentana());
         btnMunicipio.setOnAction(e -> seleccionarMunicipio());
         btnEntidad.setOnAction(e -> seleccionarEntidad());
+        seleccionarFecha();
     }
 
-    // TODO: Verificar el comportamiento del comboTriage
+    private void seleccionarFecha() {
+        dpFechaNac.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Edad edad = new Edad();
+                edad.calcularEdad(newVal);
+                txtEdadAnos.setText(String.valueOf(edad.getAnos()));
+                txtEdadMeses.setText(String.valueOf(edad.getMeses()));
+                txtEdadDias.setText(String.valueOf(edad.getDias()));
+                log.debug("Edad calculada: {}", edad);
+            } else {
+                txtEdadAnos.clear();
+                txtEdadMeses.clear();
+                txtEdadDias.clear();
+            }
+        });
+    }
+
     private void configurarValidaciones() {
         Runnable validar = () -> btnRegistrar.setDisable(
                 txtApPaterno.getText().trim().isEmpty() ||
@@ -543,12 +565,9 @@ public class VentanaRegistroTriageController {
         }).start();
     }
 
-    // TODO: Validar limpieza de campos
     private void limpiarCampos() {
         txtApPaterno.clear();
         txtApMaterno.clear();
-        txtNombre.clear();
-        txtEdad.clear();
         txtTelefono.clear();
         txtDomicilio.clear();
         txtNoAfiliacion.clear();
@@ -571,6 +590,10 @@ public class VentanaRegistroTriageController {
         chkHospitalizado.setSelected(false);
         btnTriageColor.setStyle("-fx-background-color:lightgray;");
         lblTriageDescripcion.setText("");
+        txtNombre.clear();
+        txtEdadAnos.clear();
+        txtEdadMeses.clear();
+        txtEdadDias.clear();
     }
 
     @FXML
