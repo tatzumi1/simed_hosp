@@ -235,6 +235,11 @@
                 GridPane.rowIndex="20" GridPane.columnIndex="2"
                 style="-fx-background-color:#27ae60; -fx-text-fill:white;"/>
 
+        <Label text="Talla:" GridPane.rowIndex="21" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtTalla" GridPane.rowIndex="21" GridPane.columnIndex="1"/>
+        <Label text="Peso:" GridPane.rowIndex="21" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtPeso" GridPane.rowIndex="21" GridPane.columnIndex="3"/>
+
     </GridPane>
 
 </VBox>

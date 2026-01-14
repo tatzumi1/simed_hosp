@@ -45,6 +45,8 @@ public class VentanaRegistroTriageController {
     private CheckBox chkReingreso, chkHospitalizado;
     @FXML
     private Label lblCapturista, lblTurno, lblClave, lblTriageDescripcion;
+    @FXML
+    private TextField txtTalla, txtPeso;
 
     // === VARIABLES ===
     private String turno;
@@ -99,6 +101,10 @@ public class VentanaRegistroTriageController {
                 c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
         txtEdadDias.setTextFormatter(new TextFormatter<>(c ->
                 c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
+        txtTalla.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
+        txtPeso.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
 
         // TextAreas
         configurarLimiteTextArea(txtSintomas);
@@ -594,6 +600,8 @@ public class VentanaRegistroTriageController {
         txtEdadAnos.clear();
         txtEdadMeses.clear();
         txtEdadDias.clear();
+        txtPeso.clear();
+        txtTalla.clear();
     }
 
     @FXML
