@@ -235,7 +235,6 @@ public class VentanaRegistroTriageController {
     }
 
     // === REGISTRO PACIENTE COMPLETO ===
-    // TODO: Mover operaciones de BD.
     @FXML
     private void registrarPaciente() {
         String nombreMedico = SesionUsuario.getInstance().getNombreMedico();
@@ -247,11 +246,15 @@ public class VentanaRegistroTriageController {
             return;
         }
 
-        try (Connection conn = ConexionBD.conectar()) {
+        boolean exito = ConexionBD.executeInTransaction(conn -> {
             conn.setAutoCommit(false);
-            int folio = obtenerSiguienteFolio();
-
-            if (folio > 0 && insertarPacienteCompleto(folio, nombreMedico)) {
+            UrgenciasData ud = new UrgenciasData();
+            int folio = ud.obtenerFolio(conn);
+            if (folio <= 0) return false;
+            InsertarPacienteDTO dto = formatearPacienteDTO(folio, nombreMedico);
+            if (dto == null) return false;
+            boolean insertado = ud.insertarPaciente(dto, conn);
+            if (insertado) {
                 conn.commit();
                 registrarAuditoria(folio, username);
                 log.debug("Paciente registrado con folio {}", folio);
@@ -262,37 +265,34 @@ public class VentanaRegistroTriageController {
                 log.warn("Error al registrar paciente con folio {}, realizando rollback", folio);
                 mostrarAlerta("Error", "No se pudo registrar", Alert.AlertType.ERROR);
             }
-        } catch (SQLException e) {
-            mostrarAlerta("Error BD", e.getMessage(), Alert.AlertType.ERROR);
-            log.error("Error al registrar paciente", e);
+            return insertado;
+        });
+        if (!exito) {
+            mostrarAlerta("Error en la BD.", "Error en la operación.", Alert.AlertType.ERROR);
+            log.error("Error al registrar paciente");
         }
     }
 
-    private int obtenerSiguienteFolio() throws SQLException {
-        UrgenciasData ud = new UrgenciasData();
-        return ud.obtenerFolio();
-    }
-
-    private boolean insertarPacienteCompleto(int folio, String nombreMedico) throws SQLException {
+    private InsertarPacienteDTO formatearPacienteDTO(int folio, String nombreMedico) {
         LocalDate fechaNac = dpFechaNac.getValue();
         Edad edad = new Edad();
         edad.calcularEdad(fechaNac);
         if (fechaNac == null) {
             log.warn("Fecha nacimiento no especificada");
-            return false;
+            return null;
         }
         Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
         if (cveDerechoHabiente == null) {
             log.warn("Derechohabiente no especificado");
-            return false;
+            return null;
         }
         Integer codigoSexo = obtenerCodigoSexo();
         if (codigoSexo == null) {
             log.warn("Sexo no especificado");
-            return false;
+            return null;
         }
 
-        InsertarPacienteDTO dto = new InsertarPacienteDTO(
+        return new InsertarPacienteDTO(
                 folio,
                 txtApPaterno.getText().trim(),
                 txtApMaterno.getText().trim(),
@@ -324,8 +324,6 @@ public class VentanaRegistroTriageController {
                 txtMunicipioSel.getText().trim(),
                 txtEntidadSel.getText().trim()
         );
-        UrgenciasData ud = new UrgenciasData();
-        return ud.insertarPaciente(dto);
     }
 
     // === MÉTODOS AUXILIARES ===

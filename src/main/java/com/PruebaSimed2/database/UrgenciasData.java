@@ -22,9 +22,9 @@ public class UrgenciasData {
             "?, ?, ?, ?, ?, ?)";
     private static final String OBTENER_ID_MAXIMO = "SELECT COALESCE(MAX(Folio), 0) + 1 FROM tb_urgencias";
 
-    public boolean insertarPaciente(InsertarPacienteDTO dto) {
+    public boolean insertarPaciente(InsertarPacienteDTO dto, Connection connection) {
         log.debug("Insertando paciente en la base de datos: {}", dto);
-        try (Connection connection = ConexionBD.conectar(); PreparedStatement stmt = connection.prepareStatement(INSERT_PACIENTE)) {
+        try (PreparedStatement stmt = connection.prepareStatement(INSERT_PACIENTE)) {
             int i = 1;
             stmt.setInt(i++, dto.getFolio());
             stmt.setString(i++, dto.getApellidoPaterno());
@@ -65,8 +65,8 @@ public class UrgenciasData {
         }
     }
 
-    public int obtenerFolio() {
-        try (Connection connection = ConexionBD.conectar(); PreparedStatement stmt = connection.prepareStatement(OBTENER_ID_MAXIMO); ResultSet rs = stmt.executeQuery()) {
+    public int obtenerFolio(Connection connection) {
+        try (PreparedStatement stmt = connection.prepareStatement(OBTENER_ID_MAXIMO); ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 int folio = rs.getInt(1);
                 log.debug("Folio máximo obtenido: {}", folio);
