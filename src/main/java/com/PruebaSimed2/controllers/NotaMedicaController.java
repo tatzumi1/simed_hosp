@@ -113,6 +113,7 @@ public class NotaMedicaController {
 
     private void configurarLimitesTextAreas() {
         // Configurar listeners para limitar caracteres
+
         txtSintomas.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length() > MAX_CHARS_SINTOMAS) {
                 txtSintomas.setText(oldValue);

@@ -36,10 +36,10 @@ public class PDFGenerator {
         try {
             conn = ConexionBD.conectar();
 
-            // ===== DATOS PACIENTE =====
             String queryPaciente = "SELECT u.A_paterno, u.A_materno, u.Nombre, u.Edad, " +
                     "s.Descripcion as Sexo, u.F_nac, u.Edo_civil, u.Ocupacion, u.Telefono, u.Domicilio, " +
-                    "dh.Derechohabiencia, u.Referencia, u.Exp_clinico, u.CURP " +
+                    "dh.Derechohabiencia, u.Referencia, u.Exp_clinico, u.CURP, " +
+                    "u.Entidad_completa, u.Municipio_completo " +  // cambios nuevos enti y muni
                     "FROM tb_urgencias u " +
                     "LEFT JOIN tblt_cvesexo s ON u.Sexo = s.Cve_sexo " +
                     "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
@@ -71,7 +71,7 @@ public class PDFGenerator {
             PdfWriter writer = new PdfWriter(tempFilePath);
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
-            document.setMargins(75, 50, 80, 50); // Más arriba
+            document.setMargins(75, 50, 80, 50);
 
             PdfFont normal = PdfFontFactory.createFont("Helvetica");
             PdfFont bold = PdfFontFactory.createFont("Helvetica-Bold");
@@ -79,53 +79,53 @@ public class PDFGenerator {
             agregarEncabezadoConLogos(pdfDoc);
             agregarPiePaginaNotaMedica(pdfDoc, rsNota.getString("Medico"), rsNota.getString("Cedula"));
 
-            // ===== DATOS DEL PACIENTE - TODAS LAS ETIQUETAS EN NEGRITA =====
-            // ===== DATOS DEL PACIENTE - CON MEJOR ESPACIADO HORIZONTAL =====
+            // ===== DATOS DEL PACIENTE - CON MUNICIPIO Y ENTIDAD =====
             Paragraph datosPaciente = new Paragraph()
                     .setFont(normal)
                     .setFontSize(10)
-                    .setMultipliedLeading(1.05f)  // Mantiene el interlineado vertical compacto que te gusta
+                    .setMultipliedLeading(1.05f)
                     .setMarginBottom(12)
                     .setTextAlignment(TextAlignment.LEFT);
 
-// Función para agregar etiqueta en negrita + valor con buen espacio
             java.util.function.BiConsumer<String, String> add = (etiqueta, valor) -> {
                 datosPaciente.add(new com.itextpdf.layout.element.Text(etiqueta).setFont(bold));
-                datosPaciente.add(new com.itextpdf.layout.element.Text(valor + "    ").setFont(normal));  // 4 espacios para separar bien
+                datosPaciente.add(new com.itextpdf.layout.element.Text(valor + "    ").setFont(normal));
             };
 
-// Línea 1
+            // Línea 1
             add.accept("MÓDULO: URGENCIAS", "");
-            add.accept("                  FECHA: ", formatearFecha(rsNota.getString("Fecha")));  // o rsInter en interconsulta
-            add.accept("                  HORA: ", formatearHora(rsNota.getString("Hora")) + "\n");
+            add.accept("                    FECHA: ", formatearFecha(rsNota.getString("Fecha")));
+            add.accept("                             HORA: ", formatearHora(rsNota.getString("Hora")) + "\n");
 
-// Línea 2
+            // Línea 2
             add.accept("DERECHOHABIENCIA: ", safeString(rsPaciente.getString("Derechohabiencia")));
             add.accept("                          EXPEDIENTE URGENCIA: ", String.valueOf(folioPaciente) + "\n");
 
-// Línea 3
-            add.accept("NOMBRE: ", safeString(nombrePaciente));
-            add.accept("       EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
-            add.accept("       SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
+            // Línea 3 - CON TRUNCAMIENTO
+            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 40));
+            add.accept("      EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
+            add.accept("      SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
 
-// Línea 4
-            add.accept("FECHA DE NACIMIENTO: ", formatearFecha(rsPaciente.getString("F_nac")));
-            add.accept("                ESTADO CIVIL: ", safeString(rsPaciente.getString("Edo_civil")) + "\n");
+            // Línea 4 - CON TRUNCAMIENTO
+            add.accept("F. NAC: ", formatearFecha(rsPaciente.getString("F_nac")));
+            add.accept("    EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
+            add.accept("    ENTIDAD: ", truncarTexto(safeString(rsPaciente.getString("Entidad_completa")), 20) + "\n");
 
-// Línea 5
-            add.accept("OCUPACIÓN: ", safeString(rsPaciente.getString("Ocupacion")));
-            add.accept("                                         TELÉFONO: ", safeString(rsPaciente.getString("Telefono")) + "\n");
+            // Línea 5 - CON TRUNCAMIENTO
+            add.accept("OCUPACIÓN: ", truncarTexto(safeString(rsPaciente.getString("Ocupacion")), 25));
+            add.accept("    TEL: ", safeString(rsPaciente.getString("Telefono")));
+            add.accept("    MUNICIPIO: ", truncarTexto(safeString(rsPaciente.getString("Municipio_completo")), 20) + "\n");
 
-// Línea 6
+            // Línea 6
             add.accept("DOMICILIO: ", safeString(rsPaciente.getString("Domicilio")) + "\n");
 
-// Línea 7
+            // Línea 7
             add.accept("REFERENCIA: ", safeString(rsPaciente.getString("Referencia")));
-            add.accept("                             EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
+            add.accept("                       EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
 
-// Línea 8
+            // Línea 8
             add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
-            add.accept("                          NOTA MÉDICA: #", String.valueOf(numeroNota));  // o INTERCONSULTA en el otro método
+            add.accept("                         NOTA MÉDICA: #", String.valueOf(numeroNota));
             datosPaciente.add("\n");
 
             document.add(datosPaciente);
@@ -145,7 +145,7 @@ public class PDFGenerator {
                 }
             };
 
-            // ORDEN de impresion del pdf
+            // ORDEN para que coincida con FXML:
             addSeccion.accept("PRESENTACIÓN DEL PACIENTE:", rsNota.getString("Nota"));
             addSeccion.accept("SÍNTOMAS:", rsNota.getString("sintomas"));
             addSeccion.accept("SIGNOS VITALES:", rsNota.getString("signos_vitales"));
@@ -180,10 +180,11 @@ public class PDFGenerator {
             // ===== 1. DATOS DEL PACIENTE =====
             String queryPaciente =
                     "SELECT u.A_paterno, u.A_materno, u.Nombre, u.Edad, " +
-                            " s.Descripcion as Sexo, u.F_nac, u.Edo_civil, " +
-                            " u.Ocupacion, u.Telefono, u.Domicilio, " +
-                            " dh.Derechohabiencia, u.No_afiliacion, u.Referencia, " +
-                            " u.Exp_clinico, u.CURP " +
+                            "s.Descripcion as Sexo, u.F_nac, u.Edo_civil, " +
+                            "u.Ocupacion, u.Telefono, u.Domicilio, " +
+                            "dh.Derechohabiencia, u.No_afiliacion, u.Referencia, " +
+                            "u.Exp_clinico, u.CURP, " +
+                            "u.Entidad_completa, u.Municipio_completo " +  // muni y enti nuevos
                             "FROM tb_urgencias u " +
                             "LEFT JOIN tblt_cvesexo s ON u.Sexo = s.Cve_sexo " +
                             "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
@@ -255,24 +256,26 @@ public class PDFGenerator {
 
             // Línea 1
             add.accept("MÓDULO: URGENCIAS ",          "FECHA: " + formatearFecha(rsInter.getString("Fecha")));
-            add.accept("         HORA: ", formatearHora(rsInter.getString("Hora")) + "\n");
+            add.accept("                       HORA: ", formatearHora(rsInter.getString("Hora")) + "\n");
 
             // Línea 2
             add.accept("DERECHOHABIENCIA: ", safeString(rsPaciente.getString("Derechohabiencia")));
             add.accept("                          EXPEDIENTE URGENCIA: ", String.valueOf(folioPaciente) + "\n");
 
-            // Línea 3
-            add.accept("NOMBRE: ", safeString(nombrePaciente));
-            add.accept("       EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
-            add.accept("       SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
+            // Línea 3 - CON TRUNCAMIENTO
+            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 40));
+            add.accept("      EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
+            add.accept("      SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
 
-            // Línea 4
-            add.accept("FECHA DE NACIMIENTO: ", formatearFecha(rsPaciente.getString("F_nac")));
-            add.accept("                ESTADO CIVIL: ", safeString(rsPaciente.getString("Edo_civil")) + "\n");
+// Línea 4 - CON TRUNCAMIENTO
+            add.accept("F. NAC: ", formatearFecha(rsPaciente.getString("F_nac")));
+            add.accept("    EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
+            add.accept("    ENTIDAD: ", truncarTexto(safeString(rsPaciente.getString("Entidad_completa")), 20) + "\n");
 
-            // Línea 5
-            add.accept("OCUPACIÓN: ", safeString(rsPaciente.getString("Ocupacion")));
-            add.accept("                                        TELÉFONO: ", safeString(rsPaciente.getString("Telefono")) + "\n");
+// Línea 5 - CON TRUNCAMIENTO
+            add.accept("OCUPACIÓN: ", truncarTexto(safeString(rsPaciente.getString("Ocupacion")), 25));
+            add.accept("    TEL: ", safeString(rsPaciente.getString("Telefono")));
+            add.accept("    MUNICIPIO: ", truncarTexto(safeString(rsPaciente.getString("Municipio_completo")), 20) + "\n");
 
             // Línea 6
             add.accept("DOMICILIO: ", safeString(rsPaciente.getString("Domicilio")) + "\n");
@@ -485,6 +488,18 @@ public class PDFGenerator {
         } catch (Exception e) {
             return fechaBD; // si falla, devuelve tal cual
         }
+    }
+
+
+    private static String truncarTexto(String texto, int maxCaracteres) {
+        if (texto == null || texto.trim().isEmpty()) {
+            return "No especificado";
+        }
+        texto = texto.trim();
+        if (texto.length() <= maxCaracteres) {
+            return texto;
+        }
+        return texto.substring(0, maxCaracteres - 3) + "...";
     }
 
     private static String formatearHora(String horaBD) {
