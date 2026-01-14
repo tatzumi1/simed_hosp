@@ -121,6 +121,7 @@ public class VentanaRegistroTriageController {
         comboTriage.setPromptText("Seleccione nivel");
         comboDerechohab.setPromptText("Seleccione derechohabiencia");
         comboMedico.setPromptText("Seleccione médico");
+        btnRegistrar.setDisable(true);
 
         iniciarReloj();
         btnMunicipio.setDisable(true);
@@ -161,7 +162,7 @@ public class VentanaRegistroTriageController {
     private void cargarCombos() {
         cargarDerechohabiencia();
         cargarMedicos();
-        comboTriage.getItems().addAll("Verde", "Amarillo", "Rojo");
+        comboTriage.getItems().addAll("Verde", "Amarillo", "Naranja", "Rojo");
     }
 
     // TODO: Mover a clase propia.
@@ -215,7 +216,6 @@ public class VentanaRegistroTriageController {
         comboTriage.valueProperty().addListener((o, v, n) -> validar.run());
     }
 
-    // TODO: Implementar color Naranja
     private void actualizarColorTriage() {
         String triage = comboTriage.getValue();
         if (triage == null) return;
@@ -223,6 +223,7 @@ public class VentanaRegistroTriageController {
         Map<String, String[]> colores = Map.of(
                 "verde", new String[]{"#2ecc71", "Urgencia menor - Paciente estable"},
                 "amarillo", new String[]{"#f1c40f", "Urgencia - Atención prioritaria"},
+                "naranja", new String[]{"#ff8000", "Urgencia mayor"},
                 "rojo", new String[]{"#e74c3c", "Emergencia - Riesgo vital inmediato"}
         );
 
