@@ -3,6 +3,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.UrgenciasData;
 import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.models.NotaMedicaVO;
 import com.PruebaSimed2.utils.PDFGenerator;
@@ -31,8 +32,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Log4j2
 public class CapturaPrincipalController {
@@ -75,8 +78,6 @@ public class CapturaPrincipalController {
     private Button btnOtorgarPermiso, btnOtorgarPermisoInterconsulta;
     @FXML
     private Button btnGuardarGeneral;
-
-    // MÉTODOS RESTANTES (visualizar, imprimir, etc.) - SE MANTIENEN SIMILARES
 
     @FXML
     private void imprimirNotaMedica() { /* implementación similar */ }
@@ -191,96 +192,47 @@ public class CapturaPrincipalController {
     }
 
     private void cargarDatosPaciente(int folio) {
-        String sql = "SELECT u.*, " +
-                "m.DESCRIP as NombreMunicipio, e.DESCRIP as NombreEntidad, " +
-                "dh.Derechohabiencia as NombreDerechohabiencia " +
-                "FROM tb_urgencias u " +
-                "LEFT JOIN tblt_mpo m ON u.Municipio_resid = m.MPO AND u.Entidad_resid = m.EDO " +
-                "LEFT JOIN tblt_entidad e ON u.Entidad_resid = e.EDO " +
-                "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
-                "WHERE u.Folio = ?";
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            var dto = ud.cardarDatosPaciente(folio, conn);
 
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            txtFolio.setText(String.valueOf(dto.getFolio()));
+            txtFechaRegistro.setText(dto.getFecha().toString());
+            txtHoraRegistro.setText(dto.getHoraRegistro().toString());
 
-            pstmt.setInt(1, folio);
-            ResultSet rs = pstmt.executeQuery();
+            String triage = dto.getTriage();
+            txtTriage.setText(triage != null ? triage : "No especificado");
+            aplicarColorTriage(triage);
 
-            if (rs.next()) {
-                // ========== INFORMACIÓN BÁSICA ==========
-                txtFolio.setText(String.valueOf(rs.getInt("Folio")));
-                txtFechaRegistro.setText(rs.getString("Fecha"));
-                txtHoraRegistro.setText(rs.getString("Hora_registro"));
-
-                // TRIAGE con color
-                String triage = rs.getString("TRIAGE");
-                txtTriage.setText(triage != null ? triage : "No especificado");
-                aplicarColorTriage(triage);
-
-                // Nombre completo
-                String nombreCompleto = construirNombreCompleto(
-                        rs.getString("A_paterno"),
-                        rs.getString("A_materno"),
-                        rs.getString("Nombre")
-                );
-                txtNombre.setText(nombreCompleto);
-
-                // Edad
-                txtEdad.setText(String.valueOf(rs.getInt("Edad")));
-
-                // Sexo
-                txtSexo.setText(obtenerDescripcionSexo(rs.getString("Sexo")));
-
-                // Domicilio
-                txtDomicilio.setText(rs.getString("Domicilio"));
-
-                // ========== MUNICIPIO Y ENTIDAD ==========
-                String municipioCode = rs.getString("Municipio_resid");
-                String entidadCode = rs.getString("Entidad_resid");
-
-                log.debug(" Datos municipio/entidad:");
-                log.debug("   Municipio_resid: '{}'", municipioCode);
-                log.debug("   Entidad_resid: '{}'", entidadCode);
-
-                // 1. PRIMERO usar el resultado del JOIN si encontró algo
-                String municipio = rs.getString("NombreMunicipio");
-                String entidad = rs.getString("NombreEntidad");
-
-                log.debug("   Resultado JOIN Municipio: '{}'", municipio);
-                log.debug("   Resultado JOIN Entidad: '{}'", entidad);
-
-                // 2. SI el JOIN no funcionó, procesar nosotros
-                if (municipio == null && municipioCode != null) {
-                    municipio = obtenerNombreMunicipio(municipioCode, entidadCode);
-                }
-
-                if (entidad == null && entidadCode != null) {
-                    entidad = obtenerNombreEntidad(entidadCode);
-                }
-
-                // Mostrar en UI
-                txtMunicipio.setText(municipio != null ? municipio : "No especificado");
-                txtEntidad.setText(entidad != null ? entidad : "No especificado");
-
-                log.debug(" Mostrando en UI:");
-                log.debug("   Municipio: {}", txtMunicipio.getText());
-                log.debug("   Entidad: {}", txtEntidad.getText());
-                // ========== FIN MUNICIPIO/ENTIDAD ==========
-
-                // Derechohabiencia
-                String derechohabiencia = rs.getString("NombreDerechohabiencia");
-                txtDerechohabiencia.setText(derechohabiencia != null ? derechohabiencia : "No especificado");
-
-                // Información médica
-                txtReferencia.setText(rs.getString("Referencia"));
-                txtSintomas.setText(rs.getString("Sintomas"));
-                txtMedicoIngreso.setText(rs.getString("Nom_med"));
-
-                log.info(" Datos paciente cargados - Folio: {}", folio);
-
-            } else {
-                log.warn(" No se encontró paciente con folio: {}", folio);
+            String nombreCompleto = construirNombreCompleto(
+                    dto.getApellidoPaterno(),
+                    dto.getApellidoMaterno(),
+                    dto.getNombre()
+            );
+            txtNombre.setText(nombreCompleto);
+            txtEdad.setText(String.valueOf(dto.getEdad()));
+            txtSexo.setText(obtenerDescripcionSexo(String.valueOf(dto.getSexo())));
+            txtDomicilio.setText(dto.getDomicilio());
+            String municipioCode = dto.getMunicipioResid();
+            String entidadCode = dto.getEntidadResid();
+            String municipio = dto.getNombreMunicipio();
+            String entidad = dto.getNombreEntidad();
+            if (municipio == null && municipioCode != null) {
+                municipio = obtenerNombreMunicipio(municipioCode, entidadCode);
             }
+
+            if (entidad == null && entidadCode != null) {
+                entidad = obtenerNombreEntidad(entidadCode);
+            }
+
+            txtMunicipio.setText(municipio != null ? municipio : "No especificado");
+            txtEntidad.setText(entidad != null ? entidad : "No especificado");
+            String derechohabiencia = dto.getNombreDerechoHabiencia();
+            txtDerechohabiencia.setText(derechohabiencia != null ? derechohabiencia : "No especificado");
+            txtReferencia.setText(dto.getReferencia());
+            txtSintomas.setText(dto.getSintomas());
+            txtMedicoIngreso.setText(dto.getNombreMedico());
+            log.info(" Datos paciente cargados - Folio: {}", folio);
         } catch (SQLException e) {
             log.error(" Error cargando paciente: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudieron cargar los datos del paciente", Alert.AlertType.ERROR);
