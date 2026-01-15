@@ -1,4 +1,4 @@
-package com.PruebaSimed2.DTO;
+package com.PruebaSimed2.DTO.Urgencias;
 
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.PruebaSimed2.controllers;
 
-import com.PruebaSimed2.DTO.InsertarPacienteDTO;
+import com.PruebaSimed2.DTO.Urgencias.InsertarPacienteDTO;
 import com.PruebaSimed2.database.AuditoriaData;
 import com.PruebaSimed2.database.ConexionBD;
 import com.PruebaSimed2.database.UrgenciasData;

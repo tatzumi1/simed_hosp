@@ -1,6 +1,6 @@
 package com.PruebaSimed2.database;
 
-import com.PruebaSimed2.DTO.InsertarPacienteDTO;
+import com.PruebaSimed2.DTO.Urgencias.InsertarPacienteDTO;
 import lombok.extern.log4j.Log4j2;
 
 import java.sql.Connection;
