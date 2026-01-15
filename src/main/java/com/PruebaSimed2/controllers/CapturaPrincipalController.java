@@ -398,72 +398,14 @@ public class CapturaPrincipalController {
         return 0; // Valor por defecto si no se encuentra
     }
 
-    /**
-     * OBTENER NOMBRE COMPLETO DEL MÉDICO DESDE USUARIO - CORREGIDO
-     */
     private String obtenerNombreMedicoDesdeUsuario(String username) {
-        log.debug(" BUSCANDO NOMBRE MÉDICO COMPLETO para usuario: {}", username);
-
-        // PRIMERO: Buscar por empleado_id en tb_usuarios
-        String sql = "SELECT m.Med_nombre " +
-                "FROM tb_medicos m " +
-                "INNER JOIN tb_usuarios u ON m.Ced_prof = u.empleado_id " +
-                "WHERE u.username = ? " +
-                "UNION " +
-                "SELECT nombre_completo FROM tb_usuarios WHERE username = ? " +
-                "UNION " +
-                "SELECT Med_nombre FROM tb_medicos WHERE Med_nombre LIKE CONCAT('%', ?, '%') " +
-                "LIMIT 1";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            pstmt.setString(2, username);
-            pstmt.setString(3, username);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                String nombreMedico = rs.getString("Med_nombre");
-                log.debug(" NOMBRE MÉDICO ENCONTRADO: {} para usuario: {}", nombreMedico, username);
-                return nombreMedico;
-            } else {
-                log.warn(" NO se encontró médico completo para: {}", username);
-                // Fallback: buscar en tb_usuarios el nombre_completo
-                return obtenerNombreCompletoDesdeUsuarios(username);
-            }
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UsuarioData();
+            return ud.obtenerNombreMedicoPorUsername(conn, username);
         } catch (SQLException e) {
             log.error(" Error obteniendo nombre médico: {}", e.getMessage());
-            return obtenerNombreCompletoDesdeUsuarios(username);
+            return null;
         }
-    }
-
-    /**
-     * FALLBACK: Obtener nombre_completo desde tb_usuarios
-     */
-    private String obtenerNombreCompletoDesdeUsuarios(String username) {
-        String sql = "SELECT nombre_completo FROM tb_usuarios WHERE username = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                String nombreCompleto = rs.getString("nombre_completo");
-                if (nombreCompleto != null && !nombreCompleto.trim().isEmpty()) {
-                    log.debug(" Nombre completo desde usuarios: {}", nombreCompleto);
-                    return nombreCompleto;
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Error obteniendo nombre completo: {}", e.getMessage());
-        }
-        log.debug("Usando username como fallback: {}", username);
-        return username;
     }
 
     @FXML
