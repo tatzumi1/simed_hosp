@@ -2,9 +2,15 @@
 
 package com.PruebaSimed2.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 public class PermisoHistorialVO {
+    // Getters y Setters (usa Alt+Insert para generarlos rápidamente)
     private int idHistorial;
     private int idNota;
     private String tipoNota;
@@ -36,39 +42,6 @@ public class PermisoHistorialVO {
     }
 
     // Constructor vacío
-    public PermisoHistorialVO() {}
-
-    // Getters y Setters (usa Alt+Insert para generarlos rápidamente)
-    public int getIdHistorial() { return idHistorial; }
-    public void setIdHistorial(int idHistorial) { this.idHistorial = idHistorial; }
-
-    public int getIdNota() { return idNota; }
-    public void setIdNota(int idNota) { this.idNota = idNota; }
-
-    public String getTipoNota() { return tipoNota; }
-    public void setTipoNota(String tipoNota) { this.tipoNota = tipoNota; }
-
-    public int getFolioPaciente() { return folioPaciente; }
-    public void setFolioPaciente(int folioPaciente) { this.folioPaciente = folioPaciente; }
-
-    public String getMedicoAutor() { return medicoAutor; }
-    public void setMedicoAutor(String medicoAutor) { this.medicoAutor = medicoAutor; }
-
-    public String getAccion() { return accion; }
-    public void setAccion(String accion) { this.accion = accion; }
-
-    public String getUsuarioQueActua() { return usuarioQueActua; }
-    public void setUsuarioQueActua(String usuarioQueActua) { this.usuarioQueActua = usuarioQueActua; }
-
-    public String getRolUsuario() { return rolUsuario; }
-    public void setRolUsuario(String rolUsuario) { this.rolUsuario = rolUsuario; }
-
-    public LocalDateTime getFechaAccion() { return fechaAccion; }
-    public void setFechaAccion(LocalDateTime fechaAccion) { this.fechaAccion = fechaAccion; }
-
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
-
-    public String getEstadoPaciente() { return estadoPaciente; }
-    public void setEstadoPaciente(String estadoPaciente) { this.estadoPaciente = estadoPaciente; }
+    public PermisoHistorialVO() {
+    }
 }

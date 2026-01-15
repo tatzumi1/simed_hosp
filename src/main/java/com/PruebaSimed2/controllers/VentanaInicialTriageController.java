@@ -9,16 +9,23 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class VentanaInicialTriageController {
 
-    @FXML private ComboBox<String> comboCapturista;
-    @FXML private ComboBox<String> comboTurno;
-    @FXML private Button btnIniciar, btnSalir;
-    @FXML private Label lblInfo;
+    @FXML
+    private ComboBox<String> comboCapturista;
+    @FXML
+    private ComboBox<String> comboTurno;
+    @FXML
+    private Button btnIniciar, btnSalir;
+    @FXML
+    private Label lblInfo;
 
     private boolean esAdmin = false;
 
@@ -55,7 +62,7 @@ public class VentanaInicialTriageController {
              Statement s = c.createStatement()) {
 
             // DEBUG: Ver qué nombres completos tenemos
-            System.out.println("=== DEBUG: NOMBRES COMPLETOS DE CAPTURISTAS ===");
+            log.debug("=== DEBUG: NOMBRES COMPLETOS DE CAPTURISTAS ===");
             String debugQuery = "SELECT nombre_completo, username, rol " +
                     "FROM tb_usuarios " +
                     "WHERE rol IN ('TRIAGE', 'JEFATURA_URGENCIAS', 'ADMINISTRATIVO') " +
@@ -64,7 +71,7 @@ public class VentanaInicialTriageController {
 
             ResultSet debugRs = s.executeQuery(debugQuery);
             while (debugRs.next()) {
-                System.out.println("Nombre completo: " + debugRs.getString("nombre_completo") +
+                log.debug("Nombre completo: " + debugRs.getString("nombre_completo") +
                         " - Username: " + debugRs.getString("username") +
                         " - Rol: " + debugRs.getString("rol"));
             }
@@ -78,7 +85,7 @@ public class VentanaInicialTriageController {
                     "AND nombre_completo != '' " +  // Excluir vacíos
                     "ORDER BY nombre_completo";
 
-            System.out.println("=== CARGANDO CAPTURISTAS (SOLO NOMBRES COMPLETOS) ===");
+            log.debug("=== CARGANDO CAPTURISTAS (SOLO NOMBRES COMPLETOS) ===");
             ResultSet rs = s.executeQuery(query);
             List<String> capturistas = new ArrayList<>();
 
@@ -88,21 +95,21 @@ public class VentanaInicialTriageController {
 
                 // Solo agregar el nombre completo
                 capturistas.add(nombreCompleto);
-                System.out.println(" Capturista " + (++count) + ": " + nombreCompleto);
+                log.debug(" Capturista " + (++count) + ": " + nombreCompleto);
             }
 
             comboCapturista.getItems().clear();
             comboCapturista.getItems().addAll(capturistas);
 
-            System.out.println(" Total de capturistas cargados: " + capturistas.size());
+            log.debug(" Total de capturistas cargados: " + capturistas.size());
 
             // Si no hay capturistas, mostrar advertencia
             if (capturistas.isEmpty()) {
-                System.out.println(" ¡NO SE ENCONTRARON CAPTURISTAS! Revisa que los usuarios tengan nombre_completo.");
+                log.warn(" ¡NO SE ENCONTRARON CAPTURISTAS! Revisa que los usuarios tengan nombre_completo.");
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando capturistas: " + e.getMessage());
+            log.error(" Error cargando capturistas: " + e.getMessage());
             mostrar("Error al cargar capturistas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -120,7 +127,7 @@ public class VentanaInicialTriageController {
                 return rs.getString("username");
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo username: " + e.getMessage());
+            log.error(" Error obteniendo username: " + e.getMessage());
         }
         return null;
     }
@@ -135,11 +142,11 @@ public class VentanaInicialTriageController {
         }
 
         String sql = """
-    SELECT username, rol 
-    FROM tb_usuarios 
-    WHERE nombre_completo = ? AND activo = TRUE 
-    LIMIT 1
-    """;
+                SELECT username, rol 
+                FROM tb_usuarios 
+                WHERE nombre_completo = ? AND activo = TRUE 
+                LIMIT 1
+                """;
 
         try (Connection c = ConexionBD.conectar();
              PreparedStatement ps = c.prepareStatement(sql)) {
@@ -180,10 +187,10 @@ public class VentanaInicialTriageController {
 
         } catch (SQLException e) {
             mostrar("Error de base de datos: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            log.error("Error de base de datos: {}", e.getMessage(), e);
         } catch (Exception e) {
             mostrar("Error al abrir ventana de registro: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            log.error("Error al abrir ventana de registro: {}", e.getMessage(), e);
         }
     }
 
@@ -197,10 +204,10 @@ public class VentanaInicialTriageController {
             ps.setString(2, accion);
             ps.setString(3, tablaAfectada);
             ps.executeUpdate();
-            System.out.println(" Auditoría registrada: " + accion + " por " + usuario);
+            log.info(" Auditoría registrada: {} por {}", accion, usuario);
 
         } catch (SQLException e) {
-            System.err.println(" Error al registrar auditoría: " + e.getMessage());
+            log.error(" Error al registrar auditoría: {}", e.getMessage());
         }
     }
 

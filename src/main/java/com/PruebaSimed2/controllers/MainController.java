@@ -17,9 +17,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.util.Comparator;
 
+@Log4j2
 public class MainController {
 
     @FXML private Button btnEstadistica;
@@ -233,7 +236,7 @@ public class MainController {
 
     public void setUsuarioLogueado(Usuario usuario) {
         this.usuarioLogueado = usuario;
-        System.out.println(" Usuario en MainController: " + usuario.getUsername() + " - Rol: " + usuario.getRol());
+        log.debug(" Usuario en MainController: {} - Rol: {}", usuario.getUsername(), usuario.getRol());
         actualizarInterfazSegunRol();
     }
 
@@ -241,7 +244,7 @@ public class MainController {
         if (usuarioLogueado == null) return;
 
         String rol = usuarioLogueado.getRol();
-        System.out.println(" Configurando interfaz para rol: " + rol);
+        log.debug(" Configurando interfaz para rol: {}", rol);
 
         // 1. BOTÓN TRIAGE
         boolean mostrarTriage = "ADMIN".equals(rol) ||
@@ -252,7 +255,7 @@ public class MainController {
         if (btnTriage != null) {
             btnTriage.setVisible(mostrarTriage);
             btnTriage.setManaged(mostrarTriage);
-            System.out.println("Botón TRIAGE: " + (mostrarTriage ? "VISIBLE" : "OCULTO"));
+            log.debug("Botón TRIAGE: {}", mostrarTriage ? "VISIBLE" : "OCULTO");
         }
 
         // 2. BOTÓN ESTADÍSTICA
@@ -263,7 +266,7 @@ public class MainController {
         if (btnEstadistica != null) {
             btnEstadistica.setVisible(mostrarEstadistica);
             btnEstadistica.setManaged(mostrarEstadistica);
-            System.out.println("Botón ESTADÍSTICA: " + (mostrarEstadistica ? "VISIBLE" : "OCULTO"));
+            log.debug("Botón ESTADÍSTICA: {}", mostrarEstadistica ? "VISIBLE" : "OCULTO");
         }
 
         // 3. BOTÓN PENDIENTES
@@ -272,7 +275,7 @@ public class MainController {
         if (btnPendientes != null) {
             btnPendientes.setVisible(mostrarPendientes);
             btnPendientes.setManaged(mostrarPendientes);
-            System.out.println("Botón PENDIENTES: " + (mostrarPendientes ? "VISIBLE" : "OCULTO"));
+            log.debug("Botón PENDIENTES: {}", mostrarPendientes ? "VISIBLE" : "OCULTO");
         }
 
         // 4. BOTÓN JEFATURA
@@ -283,7 +286,7 @@ public class MainController {
         if (btnJefatura != null) {
             btnJefatura.setVisible(mostrarJefatura);
             btnJefatura.setManaged(mostrarJefatura);
-            System.out.println("Botón JEFATURA: " + (mostrarJefatura ? "VISIBLE" : "OCULTO"));
+            log.debug("Botón JEFATURA: {}", mostrarJefatura ? "VISIBLE" : "OCULTO");
         }
 
         // 5. BOTÓN CAPTURAR
@@ -296,7 +299,7 @@ public class MainController {
         if (btnCapturar != null) {
             btnCapturar.setVisible(mostrarCapturar);
             btnCapturar.setManaged(mostrarCapturar);
-            System.out.println(" Botón CAPTURAR: " + (mostrarCapturar ? "VISIBLE" : "OCULTO"));
+            log.debug(" Botón CAPTURAR: " + (mostrarCapturar ? "VISIBLE" : "OCULTO"));
         }
 
         // 6. GESTIÓN DE USUARIOS (SOLO admin)
@@ -315,7 +318,7 @@ public class MainController {
 
         // 8. Abrir gestión de usuarios automáticamente solo si es admin
         if (mostrarGestionUsuarios) {
-            System.out.println(" Admin detectado - Abriendo gestión de usuarios automáticamente");
+            log.debug(" Admin detectado - Abriendo gestión de usuarios automáticamente");
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -323,17 +326,17 @@ public class MainController {
                         abrirGestionUsuarios();
                     });
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("Error al abrir gestión de usuarios: {}", e.getMessage());
                 }
             }).start();
         } else {
-            System.out.println(" Usuario sin permisos de gestión - Rol: " + rol);
+            log.debug(" Usuario sin permisos de gestión - Rol: {}", rol);
         }
     }
 
     @FXML
     public void initialize() {
-        System.out.println(" Ventana principal cargada con éxito.");
+        log.debug(" Ventana principal cargada con éxito.");
         configurarColumnas();
         inicializarBusqueda();
         cargarPacientesEnEspera();
@@ -343,38 +346,37 @@ public class MainController {
     }
 
     private void abrirGestionUsuarios() {
-        System.out.println(" INTENTANDO abrir gestión de usuarios...");
-        System.out.println(" Usuario logueado: " + (usuarioLogueado != null ? usuarioLogueado.getUsername() : "NULL"));
-        System.out.println(" Rol del usuario: " + (usuarioLogueado != null ? usuarioLogueado.getRol() : "NULL"));
+        log.debug(" INTENTANDO abrir gestión de usuarios...");
+        log.debug(" Usuario logueado: {}", usuarioLogueado != null ? usuarioLogueado.getUsername() : "NULL");
+        log.debug(" Rol del usuario: {}", usuarioLogueado != null ? usuarioLogueado.getRol() : "NULL");
 
         try {
-            System.out.println("1. Cargando FXML...");
+            log.debug("1. Cargando FXML...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/gestionUsuarios.fxml"));
             Parent root = loader.load();
-            System.out.println("2.  FXML cargado exitosamente");
+            log.debug("2.  FXML cargado exitosamente");
 
-            System.out.println("3. Configurando controlador...");
+            log.debug("3. Configurando controlador...");
             GestionUsuariosController controller = loader.getController();
 
             if (usuarioLogueado != null) {
-                System.out.println("4. Pasando usuario al controlador: " + usuarioLogueado.getUsername());
+                log.debug("4. Pasando usuario al controlador: {}", usuarioLogueado.getUsername());
                 controller.setUsuarioAdmin(usuarioLogueado);
             } else {
-                System.out.println(" ERROR: usuarioLogueado es NULL");
+                log.debug(" ERROR: usuarioLogueado es NULL");
                 return;
             }
 
-            System.out.println("5. Creando ventana...");
+            log.debug("5. Creando ventana...");
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 900, 700));
             stage.setTitle("Gestión de Usuarios - Sistema SIMED");
             stage.show();
 
-            System.out.println(" VENTANA DE GESTIÓN ABIERTA EXITOSAMENTE");
+            log.debug(" VENTANA DE GESTIÓN ABIERTA EXITOSAMENTE");
 
         } catch (Exception e) {
-            System.err.println(" ERROR CRÍTICO abriendo gestión de usuarios: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" ERROR CRÍTICO abriendo gestión de usuarios: {}", e.getMessage());
         }
     }
 
@@ -436,7 +438,7 @@ public class MainController {
 
         try {
             int folio = Integer.parseInt(folioTexto);
-            System.out.println(" Buscando paciente con folio: " + folio);
+            log.debug(" Buscando paciente con folio: {}", folio);
 
             if (verificarFolioExiste(folio)) {
                 abrirVentanaCaptura(folio);
@@ -467,15 +469,15 @@ public class MainController {
 
                 if (rs.next()) {
                     int estado = rs.getInt("Estado_pac");
-                    System.out.println(" Folio encontrado - Estado: " + estado);
+                    log.debug(" Folio encontrado - Estado: {}", estado);
                     return true;
                 } else {
-                    System.out.println(" Folio NO encontrado: " + folio);
+                    log.debug(" Folio NO encontrado: {}", folio);
                     return false;
                 }
             }
         } catch (SQLException e) {
-            System.err.println(" Error verificando folio: " + e.getMessage());
+            log.error(" Error verificando folio: {}", e.getMessage());
             mostrarAlerta("Error de Conexión",
                     "No se pudo verificar el folio. Revise la conexión a la base de datos.",
                     Alert.AlertType.ERROR);
@@ -503,11 +505,10 @@ public class MainController {
             stage.show();
 
             txtFolio.clear();
-            System.out.println(" Ventana de captura abierta para folio: " + folio);
+            log.debug(" Ventana de captura abierta para folio: {}", folio);
 
         } catch (Exception e) {
-            System.err.println(" Error abriendo ventana de captura: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error abriendo ventana de captura: {}", e.getMessage());
             mostrarAlerta("Error",
                     "No se pudo abrir el módulo de captura:\n" + e.getMessage(),
                     Alert.AlertType.ERROR);
@@ -516,7 +517,7 @@ public class MainController {
 
     @FXML
     private void handleActualizar() {
-        System.out.println(" Actualizando listas de pacientes...");
+        log.debug(" Actualizando listas de pacientes...");
         cargarPacientesEnEspera();
         cargarPacientesEnObservacion();
         cargarPacientesEgresados();
@@ -590,11 +591,11 @@ public class MainController {
                 }
 
                 tablaEspera.setItems(pacientesEsperaCompleta);
-                System.out.println(" Pacientes en espera cargados: " + pacientesEsperaCompleta.size());
+                log.debug(" Pacientes en espera cargados: {}", pacientesEsperaCompleta.size());
 
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando pacientes en espera: " + e.getMessage());
+            log.error(" Error cargando pacientes en espera: {}", e.getMessage());
             mostrarAlerta("Error del Sistema",
                     "No se pudieron cargar los pacientes. Intente nuevamente.",
                     Alert.AlertType.ERROR);
@@ -651,11 +652,11 @@ public class MainController {
                 }
 
                 tablaObservacion.setItems(pacientesObservacionCompleta);
-                System.out.println(" Pacientes en observación cargados: " + pacientesObservacionCompleta.size());
+                log.debug(" Pacientes en observación cargados: {}", pacientesObservacionCompleta.size());
 
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando pacientes en observación: " + e.getMessage());
+            log.error(" Error cargando pacientes en observación: {}", e.getMessage());
         } finally {
             ConexionBD.safeClose(conn);
         }
@@ -676,7 +677,6 @@ public class MainController {
                 "ORDER BY u.Fecha_alta DESC " +
                 "LIMIT 100";
         try (Connection conn = ConexionBD.conectar();
-             //  try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -701,10 +701,10 @@ public class MainController {
             }
 
             tablaEgresados.setItems(pacientesEgresadosCompleta);
-            System.out.println("Pacientes egresados cargados: " + pacientesEgresadosCompleta.size());
+            log.debug("Pacientes egresados cargados: {}", pacientesEgresadosCompleta.size());
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando pacientes egresados: " + e.getMessage());
+            log.error(" Error cargando pacientes egresados: {}", e.getMessage());
         }
     }
 
@@ -713,7 +713,6 @@ public class MainController {
                 "Estado_pac, TRIAGE, Fecha, Hora_registro " +
                 "FROM tb_urgencias WHERE Folio = ?";
         try (Connection conn = ConexionBD.conectar();
-             //  try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, folio);
@@ -736,7 +735,7 @@ public class MainController {
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error buscando paciente: " + e.getMessage());
+            log.error(" Error buscando paciente: {}", e.getMessage());
             mostrarAlerta("Error", "Error al buscar paciente: " + e.getMessage(),
                     Alert.AlertType.ERROR);
         }
@@ -752,11 +751,11 @@ public class MainController {
 
     @FXML
     private void handleAbrirTriage() {
-        System.out.println(" BOTÓN TRIAGE PRESIONADO");
+        log.debug(" BOTÓN TRIAGE PRESIONADO");
 
         try {
             if (usuarioLogueado == null) {
-                System.out.println(" No hay usuario logueado");
+                log.debug(" No hay usuario logueado");
                 return;
             }
 
@@ -767,14 +766,14 @@ public class MainController {
                     "ADMINISTRATIVO".equals(rol);
 
             if (!puedeAccederTriage) {
-                System.out.println(" Rol sin permisos para TRIAGE: " + rol);
+                log.debug(" Rol sin permisos para TRIAGE: {}", rol);
                 mostrarAlerta("Acceso Denegado",
                         "No tiene permisos para acceder al módulo TRIAGE",
                         Alert.AlertType.WARNING);
                 return;
             }
 
-            System.out.println(" Abriendo módulo TRIAGE para: " + usuarioLogueado.getUsername() + " - Rol: " + rol);
+            log.debug(" Abriendo módulo TRIAGE para: {} - Rol: {}", usuarioLogueado.getUsername(), rol);
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/VentanaInicialTriage.fxml"));
             Parent root = loader.load();
@@ -788,22 +787,21 @@ public class MainController {
             stage.setResizable(false);
             stage.show();
 
-            System.out.println(" Ventana TRIAGE abierta exitosamente");
+            log.debug(" Ventana TRIAGE abierta exitosamente");
 
         } catch (Exception e) {
-            System.err.println(" ERROR abriendo TRIAGE: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" ERROR abriendo TRIAGE: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el módulo TRIAGE: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     private void handleAbrirEstadistica() {
-        System.out.println("BOTÓN ESTADÍSTICA PRESIONADO");
+        log.debug("BOTÓN ESTADÍSTICA PRESIONADO");
 
         try {
             if (usuarioLogueado == null) {
-                System.out.println("No hay usuario logueado");
+                log.debug("No hay usuario logueado");
                 return;
             }
 
@@ -831,22 +829,21 @@ public class MainController {
             stage.setTitle("Módulo de Urgencias Estadística y Supervisión");
             stage.show();
 
-            System.out.println("Ventana de Estadística abierta exitosamente");
+            log.debug("Ventana de Estadística abierta exitosamente");
 
         } catch (Exception e) {
-            System.err.println("ERROR abriendo módulo de Estadística: " + e.getMessage());
-            e.printStackTrace();
+            log.error("ERROR abriendo módulo de Estadística: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el módulo de Estadística: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     private void handleAbrirPendientes() {
-        System.out.println(" BOTÓN PENDIENTES PRESIONADO");
+        log.debug(" BOTÓN PENDIENTES PRESIONADO");
 
         try {
             if (usuarioLogueado == null) {
-                System.out.println("No hay usuario logueado");
+                log.debug("No hay usuario logueado");
                 return;
             }
 
@@ -870,22 +867,21 @@ public class MainController {
             stage.setTitle("Módulo de Pendientes - Completar Datos");
             stage.show();
 
-            System.out.println(" Módulo de Pendientes abierto exitosamente");
+            log.debug(" Módulo de Pendientes abierto exitosamente");
 
         } catch (Exception e) {
-            System.err.println(" ERROR abriendo módulo de Pendientes: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" ERROR abriendo módulo de Pendientes: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el módulo de Pendientes: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     private void handleAbrirJefatura() {
-        System.out.println("BOTÓN JEFATURA PRESIONADO");
+        log.debug("BOTÓN JEFATURA PRESIONADO");
 
         try {
             if (usuarioLogueado == null) {
-                System.out.println("No hay usuario logueado");
+                log.debug("No hay usuario logueado");
                 return;
             }
 
@@ -909,11 +905,10 @@ public class MainController {
             stage.setTitle("Módulo de Jefatura del Servicio de Urgencias");
             stage.show();
 
-            System.out.println("Módulo de Jefatura abierto exitosamente");
+            log.debug("Módulo de Jefatura abierto exitosamente");
 
         } catch (Exception e) {
-            System.err.println("ERROR abriendo módulo de Jefatura: " + e.getMessage());
-            e.printStackTrace();
+            log.error("ERROR abriendo módulo de Jefatura: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el módulo de Jefatura: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -1022,13 +1017,13 @@ public class MainController {
                             lblContadorEgresados.setText(String.valueOf(egresados));
                             lblTotalPacientes.setText(String.valueOf(total));
 
-                            System.out.println(" Contadores optimizados cargados");
+                            log.debug(" Contadores optimizados cargados");
                         });
                     }
                 }
 
             } catch (SQLException e) {
-                System.err.println(" Error cargando contadores optimizados: " + e.getMessage());
+                log.error(" Error cargando contadores optimizados: {}", e.getMessage());
             }
         }).start();
     }

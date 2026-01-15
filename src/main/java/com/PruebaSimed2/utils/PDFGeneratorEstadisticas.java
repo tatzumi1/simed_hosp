@@ -15,6 +15,7 @@ import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.properties.AreaBreakType;
 import com.PruebaSimed2.controllers.ModuloEstadisticaController.EstadisticaMedico;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.FileOutputStream;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.awt.Desktop;
 import java.io.File;
 
+@Log4j2
 public class PDFGeneratorEstadisticas {
 
     public static boolean generarPDF(List<EstadisticaMedico> estadisticas, String mes, int año, String tipo, boolean esParaImprimir) {
@@ -196,8 +198,7 @@ public class PDFGeneratorEstadisticas {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Error generando PDF de " + tipo + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando PDF de {}: {}", tipo, e.getMessage(), e);
             return false;
         }
     }
@@ -411,8 +412,7 @@ public class PDFGeneratorEstadisticas {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Error generando PDF de gráfica de " + tipo + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando PDF de gráfica de {}: {}", tipo, e.getMessage(), e);
             return false;
         }
     }

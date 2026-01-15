@@ -1,36 +1,59 @@
 package com.PruebaSimed2.controllers;
 
+import com.PruebaSimed2.DTO.InsertarPacienteDTO;
+import com.PruebaSimed2.database.AuditoriaData;
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.UrgenciasData;
+import com.PruebaSimed2.models.Edad;
 import com.PruebaSimed2.utils.SesionUsuario;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+@Log4j2
 public class VentanaRegistroTriageController {
 
     // === CAMPOS FXML ===
-    @FXML private DatePicker dpFechaNac;
-    @FXML private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtEdad, txtTelefono;
-    @FXML private TextField txtDomicilio, txtNoAfiliacion, txtReferencia, txtExpediente, txtCURP;
-    @FXML private TextField txtMunicipioSel, txtEntidadSel, txtOcupacion, txtReligion, txtEstadoCivil;
-    @FXML private TextArea txtSintomas, txtObservaciones;
-    @FXML private ComboBox<String> comboSexo, comboDerechohab, comboMedico, comboTriage;
-    @FXML private Button btnRegistrar, btnSalir, btnMunicipio, btnEntidad, btnTriageColor;
-    @FXML private CheckBox chkReingreso, chkHospitalizado;
-    @FXML private Label lblCapturista, lblTurno, lblClave, lblTriageDescripcion;
+    @FXML
+    private DatePicker dpFechaNac;
+    @FXML
+    private TextField txtFecha, txtHora, txtApPaterno, txtApMaterno, txtNombre, txtTelefono;
+    @FXML
+    private TextField txtEdadAnos, txtEdadMeses, txtEdadDias;
+    @FXML
+    private TextField txtDomicilio, txtNoAfiliacion, txtReferencia, txtExpediente, txtCURP;
+    @FXML
+    private TextField txtMunicipioSel, txtEntidadSel, txtOcupacion, txtReligion, txtEstadoCivil;
+    @FXML
+    private TextArea txtSintomas, txtObservaciones;
+    @FXML
+    private ComboBox<String> comboSexo, comboDerechohab, comboMedico, comboTriage;
+    @FXML
+    private Button btnRegistrar, btnSalir, btnMunicipio, btnEntidad, btnTriageColor;
+    @FXML
+    private CheckBox chkReingreso, chkHospitalizado;
+    @FXML
+    private Label lblCapturista, lblTurno, lblClave, lblTriageDescripcion;
+    @FXML
+    private TextField txtTalla, txtPeso;
 
     // === VARIABLES ===
     private String turno;
+    private final ObservableList<String> listaMedicos = FXCollections.observableArrayList();
     private final Map<String, Integer> mapaDerechohab = new HashMap<>();
-    private static final Map<String, String> MAPA_ENTIDADES_CURP = initMapaEntidadesCURP();
 
     // === LÍMITES DE DATOS ===
     private static final int LIMITE_NOMBRE = 100;
@@ -75,12 +98,20 @@ public class VentanaRegistroTriageController {
         configurarLimiteTextField(txtExpediente, 50);
 
         // Edad solo números
-        txtEdad.setTextFormatter(new TextFormatter<>(c ->
+        txtEdadAnos.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
+        txtEdadMeses.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
+        txtEdadDias.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 2 ? c : null));
+        txtTalla.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
+        txtPeso.setTextFormatter(new TextFormatter<>(c ->
                 c.getControlNewText().matches("\\d*") && c.getControlNewText().length() <= 3 ? c : null));
 
         // TextAreas
-        configurarLimiteTextArea(txtSintomas, LIMITE_TEXTO_AREA);
-        configurarLimiteTextArea(txtObservaciones, LIMITE_TEXTO_AREA);
+        configurarLimiteTextArea(txtSintomas);
+        configurarLimiteTextArea(txtObservaciones);
     }
 
     private void configurarLimiteTextField(TextField campo, int limite) {
@@ -91,9 +122,9 @@ public class VentanaRegistroTriageController {
         });
     }
 
-    private void configurarLimiteTextArea(TextArea area, int limite) {
+    private void configurarLimiteTextArea(TextArea area) {
         area.textProperty().addListener((obs, viejo, nuevo) -> {
-            if (nuevo != null && nuevo.length() > limite) {
+            if (nuevo != null && nuevo.length() > VentanaRegistroTriageController.LIMITE_TEXTO_AREA) {
                 area.setText(viejo);
             }
         });
@@ -105,6 +136,7 @@ public class VentanaRegistroTriageController {
         comboTriage.setPromptText("Seleccione nivel");
         comboDerechohab.setPromptText("Seleccione derechohabiencia");
         comboMedico.setPromptText("Seleccione médico");
+        btnRegistrar.setDisable(true);
 
         iniciarReloj();
         btnMunicipio.setDisable(true);
@@ -144,9 +176,13 @@ public class VentanaRegistroTriageController {
     private void cargarCombos() {
         cargarDerechohabiencia();
         cargarMedicos();
-        comboTriage.getItems().addAll("Verde", "Amarillo", "Rojo");
+        comboTriage.getItems().addAll("Verde", "Amarillo", "Naranja", "Rojo");
+        comboMedico.setEditable(true);
+        comboMedico.valueProperty().addListener((ov, t, t1) -> {
+        });
     }
 
+    // TODO: Mover a clase propia.
     private void cargarDerechohabiencia() {
         try (Connection c = ConexionBD.conectar();
              Statement s = c.createStatement();
@@ -157,18 +193,69 @@ public class VentanaRegistroTriageController {
                 mapaDerechohab.put(desc, rs.getInt("Cve_dh"));
                 comboDerechohab.getItems().add(desc);
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            log.error("Error al cargar derechohab", e);
+        }
     }
 
+    // TODO: Mover a clase propia.
     private void cargarMedicos() {
         try (Connection c = ConexionBD.conectar();
              Statement s = c.createStatement();
-             ResultSet rs = s.executeQuery("SELECT Med_nombre FROM tb_medicos")) {
+             ResultSet rs = s.executeQuery("SELECT Med_nombre FROM tb_medicos ORDER BY Med_nombre")) {
 
+            listaMedicos.clear();
             while (rs.next()) {
-                comboMedico.getItems().add(rs.getString("Med_nombre"));
+                listaMedicos.add(rs.getString("Med_nombre"));
             }
-        } catch (SQLException ignored) {}
+            comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
+            configurarFiltroMedico();
+        } catch (SQLException e) {
+            log.error("Error al cargar medicos", e);
+        }
+    }
+
+    private void configurarFiltroMedico() {
+        TextField editor = comboMedico.getEditor();
+
+        editor.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (Boolean.TRUE.equals(newVal)) {
+                javafx.application.Platform.runLater(() -> {
+                    if (!comboMedico.isShowing()) {
+                        comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
+                        comboMedico.show();
+                    }
+                });
+            }
+        });
+
+        editor.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null || nuevo.isEmpty()) {
+                javafx.application.Platform.runLater(() -> comboMedico.setItems(FXCollections.observableArrayList(listaMedicos)));
+                return;
+            }
+
+            // Si el texto es una selección exacta, no filtramos para evitar que el dropdown parpadee
+            if (listaMedicos.contains(nuevo)) {
+                return;
+            }
+
+            String filtro = nuevo.toLowerCase();
+            ObservableList<String> filtrados = FXCollections.observableArrayList(
+                    listaMedicos.stream()
+                            .filter(item -> item.toLowerCase().contains(filtro))
+                            .collect(java.util.stream.Collectors.toList())
+            );
+
+            javafx.application.Platform.runLater(() -> {
+                comboMedico.setItems(filtrados);
+                if (!filtrados.isEmpty()) {
+                    comboMedico.show();
+                } else {
+                    comboMedico.hide();
+                }
+            });
+        });
     }
 
     // === EVENTOS ===
@@ -178,6 +265,24 @@ public class VentanaRegistroTriageController {
         btnSalir.setOnAction(e -> cerrarVentana());
         btnMunicipio.setOnAction(e -> seleccionarMunicipio());
         btnEntidad.setOnAction(e -> seleccionarEntidad());
+        seleccionarFecha();
+    }
+
+    private void seleccionarFecha() {
+        dpFechaNac.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Edad edad = new Edad();
+                edad.calcularEdad(newVal);
+                txtEdadAnos.setText(String.valueOf(edad.getAnos()));
+                txtEdadMeses.setText(String.valueOf(edad.getMeses()));
+                txtEdadDias.setText(String.valueOf(edad.getDias()));
+                log.debug("Edad calculada: {}", edad);
+            } else {
+                txtEdadAnos.clear();
+                txtEdadMeses.clear();
+                txtEdadDias.clear();
+            }
+        });
     }
 
     private void configurarValidaciones() {
@@ -198,6 +303,7 @@ public class VentanaRegistroTriageController {
         Map<String, String[]> colores = Map.of(
                 "verde", new String[]{"#2ecc71", "Urgencia menor - Paciente estable"},
                 "amarillo", new String[]{"#f1c40f", "Urgencia - Atención prioritaria"},
+                "naranja", new String[]{"#ff8000", "Urgencia mayor"},
                 "rojo", new String[]{"#e74c3c", "Emergencia - Riesgo vital inmediato"}
         );
 
@@ -217,112 +323,92 @@ public class VentanaRegistroTriageController {
 
         if (nombreMedico == null) {
             mostrarAlerta("Sesión inválida", "Reinicie sesión", Alert.AlertType.ERROR);
+            log.error("Usuario sin sesión válida intentó registrar paciente");
             return;
         }
 
-        try (Connection conn = ConexionBD.conectar()) {
+        boolean exito = ConexionBD.executeInTransaction(conn -> {
             conn.setAutoCommit(false);
-            int folio = obtenerSiguienteFolio(conn);
-
-            if (folio > 0 && insertarPacienteCompleto(conn, folio, nombreMedico)) {
+            UrgenciasData ud = new UrgenciasData();
+            int folio = ud.obtenerFolio(conn);
+            if (folio <= 0) return false;
+            InsertarPacienteDTO dto = formatearPacienteDTO(folio, nombreMedico);
+            if (dto == null) return false;
+            boolean insertado = ud.insertarPaciente(dto, conn);
+            if (insertado) {
                 conn.commit();
                 registrarAuditoria(folio, username);
+                log.debug("Paciente registrado con folio {}", folio);
                 mostrarAlerta("Éxito", "Paciente registrado\nFolio: " + folio, Alert.AlertType.INFORMATION);
                 limpiarCampos();
             } else {
                 conn.rollback();
+                log.warn("Error al registrar paciente con folio {}, realizando rollback", folio);
                 mostrarAlerta("Error", "No se pudo registrar", Alert.AlertType.ERROR);
             }
-        } catch (SQLException e) {
-            mostrarAlerta("Error BD", e.getMessage(), Alert.AlertType.ERROR);
+            return insertado;
+        });
+        if (!exito) {
+            mostrarAlerta("Error en la BD.", "Error en la operación.", Alert.AlertType.ERROR);
+            log.error("Error al registrar paciente");
         }
     }
 
-    private int obtenerSiguienteFolio(Connection conn) throws SQLException {
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT MAX(Folio) FROM tb_urgencias")) {
-            return rs.next() ? rs.getInt(1) + 1 : 1000;
+    private InsertarPacienteDTO formatearPacienteDTO(int folio, String nombreMedico) {
+        LocalDate fechaNac = dpFechaNac.getValue();
+        Edad edad = new Edad();
+        edad.calcularEdad(fechaNac);
+        if (fechaNac == null) {
+            log.warn("Fecha nacimiento no especificada");
+            return null;
         }
-    }
-
-    private boolean insertarPacienteCompleto(Connection conn, int folio, String nombreMedico) throws SQLException {
-        String sql = "INSERT INTO tb_urgencias (" +
-                "Folio, A_paterno, A_materno, Nombre, Edad, F_nac, Telefono, Domicilio, " +
-                "Derechohabiencia, No_afiliacion, Referencia, Reingreso, Hospitalizado, " +
-                "Exp_clinico, CURP, Sintomas, Nom_med, TRIAGE, Nombre_ts, Turno, " +
-                "Fecha, Hora_registro, Estado_pac, Sexo, Municipio_resid, Entidad_resid, " +
-                "Ocupacion, Religion, Edo_civil, Observaciones_ts, Municipio_completo, Entidad_completa" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                "CURDATE(), ?, 1, ?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            int i = 1;
-            ps.setInt(i++, folio);
-            ps.setString(i++, txtApPaterno.getText().trim());
-            ps.setString(i++, txtApMaterno.getText().trim());
-            ps.setString(i++, txtNombre.getText().trim());
-            ps.setInt(i++, obtenerEdad());
-
-            java.sql.Date fechaNac = obtenerFechaNacimiento();
-            if (fechaNac != null) {
-                ps.setDate(i++, fechaNac);
-            } else {
-                ps.setNull(i++, Types.DATE);
-            }
-
-            ps.setString(i++, txtTelefono.getText().trim());
-            ps.setString(i++, txtDomicilio.getText().trim());
-
-            Integer cveDerechohab = obtenerCodigoDerechohab();
-            if (cveDerechohab != null) ps.setInt(i++, cveDerechohab);
-            else ps.setNull(i++, Types.INTEGER);
-
-            ps.setString(i++, txtNoAfiliacion.getText().trim());
-            ps.setString(i++, txtReferencia.getText().trim());
-            ps.setBoolean(i++, chkReingreso.isSelected());
-            ps.setBoolean(i++, chkHospitalizado.isSelected());
-            ps.setString(i++, txtExpediente.getText().trim());
-            ps.setString(i++, txtCURP.getText().trim());
-            ps.setString(i++, txtSintomas.getText().trim());
-            ps.setString(i++, comboMedico.getValue());
-            ps.setString(i++, comboTriage.getValue());
-            ps.setString(i++, nombreMedico);
-            ps.setString(i++, turno);
-            ps.setString(i++, txtHora.getText().trim());
-
-            Integer codigoSexo = obtenerCodigoSexo();
-            if (codigoSexo != null) ps.setInt(i++, codigoSexo);
-            else ps.setNull(i++, Types.INTEGER);
-
-            ps.setString(i++, obtenerCodigoMunicipio());
-            ps.setString(i++, obtenerCodigoEntidad(txtEntidadSel.getText().trim()));
-
-            ps.setString(i++, txtOcupacion.getText().trim());
-            ps.setString(i++, txtReligion.getText().trim());
-            ps.setString(i++, txtEstadoCivil.getText().trim());
-            ps.setString(i++, txtObservaciones.getText().trim());
-
-            ps.setString(i++, txtMunicipioSel.getText().trim());
-            ps.setString(i++, txtEntidadSel.getText().trim());
-
-            return ps.executeUpdate() > 0;
+        Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
+        if (cveDerechoHabiente == null) {
+            log.warn("Derechohabiente no especificado");
+            return null;
         }
+        Integer codigoSexo = obtenerCodigoSexo();
+        if (codigoSexo == null) {
+            log.warn("Sexo no especificado");
+            return null;
+        }
+
+        return new InsertarPacienteDTO(
+                folio,
+                txtApPaterno.getText().trim(),
+                txtApMaterno.getText().trim(),
+                txtNombre.getText().trim(),
+                edad.getAnos(),
+                Date.valueOf(fechaNac),
+                txtTelefono.getText().trim(),
+                txtDomicilio.getText().trim(),
+                cveDerechoHabiente,
+                txtNoAfiliacion.getText().trim(),
+                txtReferencia.getText().trim(),
+                chkReingreso.isSelected(),
+                chkHospitalizado.isSelected(),
+                txtExpediente.getText().trim(),
+                txtCURP.getText().trim(),
+                txtSintomas.getText().trim(),
+                comboMedico.getValue(),
+                comboTriage.getValue(),
+                nombreMedico,
+                turno,
+                txtHora.getText().trim(),
+                codigoSexo,
+                obtenerCodigoMunicipio(),
+                obtenerCodigoEntidad(txtEntidadSel.getText().trim()),
+                txtOcupacion.getText().trim(),
+                txtReligion.getText().trim(),
+                txtEstadoCivil.getText().trim(),
+                txtObservaciones.getText().trim(),
+                txtMunicipioSel.getText().trim(),
+                txtEntidadSel.getText().trim()
+        );
     }
 
     // === MÉTODOS AUXILIARES ===
-    private int obtenerEdad() {
-        try { return Integer.parseInt(txtEdad.getText().trim()); }
-        catch (Exception e) { return 0; }
-    }
-
-    private java.sql.Date obtenerFechaNacimiento() {
-        LocalDate fecha = dpFechaNac.getValue();
-        return fecha != null ? java.sql.Date.valueOf(fecha) : null;
-    }
-
-    private Integer obtenerCodigoDerechohab() {
+    private Integer obtenerCodigoDerechoHabiente() {
         String valor = comboDerechohab.getValue();
         return valor != null ? mapaDerechohab.get(valor) : null;
     }
@@ -330,10 +416,11 @@ public class VentanaRegistroTriageController {
     private Integer obtenerCodigoSexo() {
         String sexo = comboSexo.getValue();
         if (sexo == null) return null;
-        return sexo.equalsIgnoreCase("masculino") ? 1 :
+        return sexo.equalsIgnoreCase("masculino") ? Integer.valueOf(1) :
                 sexo.equalsIgnoreCase("femenino") ? 2 : null;
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoMunicipio() {
         String municipio = txtMunicipioSel.getText().trim();
         String entidad = txtEntidadSel.getText().trim();
@@ -349,10 +436,12 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString("MPO") : "999";
         } catch (SQLException e) {
+            log.error("Error al obtener código municipio, usando determinado 999", e);
             return "999";
         }
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoEntidad(String nombreEntidad) {
         if (nombreEntidad == null || nombreEntidad.isEmpty()) return "97";
 
@@ -362,6 +451,7 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString("EDO") : "97";
         } catch (SQLException e) {
+            log.error("Error al obtener código entidad, usando determinado 97", e);
             return "97";
         }
     }
@@ -389,55 +479,17 @@ public class VentanaRegistroTriageController {
                 !txtEntidadSel.getText().isEmpty();
     }
 
-    private String limpiarTexto(String texto) {
-        if (texto == null) return "";
-        return texto.replace('Á', 'A').replace('É', 'E').replace('Í', 'I')
-                .replace('Ó', 'O').replace('Ú', 'U').replace('Ü', 'U')
-                .replace('Ñ', 'X')
-                .replaceAll("\\b(DE|LA|DEL|LAS|LOS|Y|MC|VON|VAN|DA|DI|EL)\\b", "");
-    }
-
-    private String obtenerPrimerNombreReal(String nombreCompleto) {
-        String[] nombres = nombreCompleto.split(" ");
-        if (nombres.length > 1 && Arrays.asList("MARIA", "MA", "JOSE", "J").contains(nombres[0].toUpperCase())) {
-            return nombres[1];
-        }
-        return nombres.length > 0 ? nombres[0] : "X";
-    }
-
-    private char obtenerPrimeraVocalInterna(String texto) {
-        if (texto.length() < 2) return 'X';
-        for (int i = 1; i < texto.length(); i++) {
-            char c = texto.charAt(i);
-            if ("AEIOU".indexOf(c) != -1) return c;
-        }
-        return 'X';
-    }
-
-    private char obtenerPrimeraConsonanteInterna(String texto) {
-        if (texto.length() < 2) return 'X';
-        for (int i = 1; i < texto.length(); i++) {
-            char c = texto.charAt(i);
-            if ("BCDFGHJKLMNÑPQRSTVWXYZ".indexOf(c) != -1) return c;
-        }
-        return 'X';
-    }
-
-    private String obtenerCodigoCURPEntidad(String entidad) {
-        return MAPA_ENTIDADES_CURP.getOrDefault(entidad.toUpperCase(), "NE");
-    }
-
     private static Map<String, String> initMapaEntidadesCURP() {
         Map<String, String> mapa = new HashMap<>();
         mapa.put("AGUASCALIENTES", "AS");
         mapa.put("BAJA CALIFORNIA", "BC");
         mapa.put("BAJA CALIFORNIA SUR", "BS");
         mapa.put("CAMPECHE", "CC");
-        mapa.put("COAHUILA", "CL");
-        mapa.put("COLIMA", "CM");
         mapa.put("CHIAPAS", "CS");
         mapa.put("CHIHUAHUA", "CH");
         mapa.put("CIUDAD DE MÉXICO", "DF");
+        mapa.put("COAHUILA", "CL");
+        mapa.put("COLIMA", "CM");
         mapa.put("DURANGO", "DG");
         mapa.put("GUANAJUATO", "GT");
         mapa.put("GUERRERO", "GR");
@@ -466,6 +518,7 @@ public class VentanaRegistroTriageController {
     }
 
     // === SELECTORES ENTIDAD/MUNICIPIO ===
+    // TODO: Mover operaciones de BD.
     @FXML
     private void seleccionarEntidad() {
         mostrarDialogoSeleccion("Seleccionar Entidad", "entidades",
@@ -473,6 +526,7 @@ public class VentanaRegistroTriageController {
                 txtEntidadSel, true);
     }
 
+    // TODO: Mover operaciones de BD.
     @FXML
     private void seleccionarMunicipio() {
         if (txtEntidadSel.getText().isEmpty()) {
@@ -488,6 +542,7 @@ public class VentanaRegistroTriageController {
                 txtMunicipioSel, false, codigoEntidad);
     }
 
+    // TODO: Mover operaciones de BD.
     private void mostrarDialogoSeleccion(String titulo, String tipo, String sql, TextField objetivo, boolean habilitarMunicipio, String... parametros) {
         try (Connection conn = ConexionBD.conectar()) {
 
@@ -519,13 +574,11 @@ public class VentanaRegistroTriageController {
             dialogo.setResultConverter(boton -> boton == ButtonType.OK ? lista.getSelectionModel().getSelectedItem() : null);
 
             dialogo.showAndWait().ifPresent(seleccion -> {
-                if (seleccion != null) {
-                    if (seleccion.equals("ESCRIBIR MANUALMENTE")) {
-                        mostrarDialogoTextoManual(tipo.equals("entidades") ? "Entidad" : "Municipio", objetivo);
-                    } else {
-                        objetivo.setText(seleccion);
-                        if (habilitarMunicipio) btnMunicipio.setDisable(false);
-                    }
+                if (seleccion.equals("ESCRIBIR MANUALMENTE")) {
+                    mostrarDialogoTextoManual(tipo.equals("entidades") ? "Entidad" : "Municipio", objetivo);
+                } else {
+                    objetivo.setText(seleccion);
+                    if (habilitarMunicipio) btnMunicipio.setDisable(false);
                 }
             });
 
@@ -533,7 +586,7 @@ public class VentanaRegistroTriageController {
             ps.close();
 
         } catch (SQLException e) {
-            System.err.println("Error SQL en mostrarDialogoSeleccion: " + e.getMessage());
+            log.error("Error SQL en mostrarDialogoSeleccion: {}", e.getMessage());
             mostrarAlerta("Error", "Error cargando " + tipo + ": " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -543,12 +596,13 @@ public class VentanaRegistroTriageController {
         dialogo.setTitle("Escribir " + campo);
         dialogo.setContentText(campo + ":");
         dialogo.showAndWait().ifPresent(valor -> {
-            if (valor != null && !valor.trim().isEmpty()) {
+            if (!valor.trim().isEmpty()) {
                 objetivo.setText(valor.trim());
             }
         });
     }
 
+    // TODO: Mover operaciones de BD.
     private String obtenerCodigoEntidadDesdeNombre(String entidad) {
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement ps = conn.prepareStatement("SELECT EDO FROM tblt_entidad WHERE DESCRIP = ?")) {
@@ -556,6 +610,7 @@ public class VentanaRegistroTriageController {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? rs.getString(1) : "97";
         } catch (SQLException e) {
+            log.error("Error al Obtener Código Entidad desde Nombre, usando determinado 97", e);
             return "97";
         }
     }
@@ -563,31 +618,44 @@ public class VentanaRegistroTriageController {
     // === UTILIDADES ===
     private void registrarAuditoria(int folio, String username) {
         new Thread(() -> {
-            try (Connection conn = ConexionBD.conectar();
-                 PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO tb_auditoria (username, accion, tabla_afectada, registro_id) VALUES (?,?,?,?)")) {
-                ps.setString(1, username);
-                ps.setString(2, "Registro triage");
-                ps.setString(3, "tb_urgencias");
-                ps.setInt(4, folio);
-                ps.executeUpdate();
-            } catch (SQLException ignored) {}
+            AuditoriaData auditoriaData = new AuditoriaData();
+            auditoriaData.registrarAuditoriaRegistroTriage(username, folio);
         }).start();
     }
 
     private void limpiarCampos() {
-        txtApPaterno.clear(); txtApMaterno.clear(); txtNombre.clear();
-        txtEdad.clear(); txtTelefono.clear(); txtDomicilio.clear();
-        txtNoAfiliacion.clear(); txtReferencia.clear(); txtExpediente.clear();
-        txtCURP.clear(); txtSintomas.clear(); txtObservaciones.clear();
-        txtMunicipioSel.clear(); txtEntidadSel.clear(); txtOcupacion.clear();
-        txtReligion.clear(); txtEstadoCivil.clear();
-        comboTriage.setValue(null); comboDerechohab.setValue(null);
-        comboMedico.setValue(null); comboSexo.setValue(null);
-        dpFechaNac.setValue(null); chkReingreso.setSelected(false);
+        txtApPaterno.clear();
+        txtApMaterno.clear();
+        txtTelefono.clear();
+        txtDomicilio.clear();
+        txtNoAfiliacion.clear();
+        txtReferencia.clear();
+        txtExpediente.clear();
+        txtCURP.clear();
+        txtSintomas.clear();
+        txtObservaciones.clear();
+        txtMunicipioSel.clear();
+        txtEntidadSel.clear();
+        txtOcupacion.clear();
+        txtReligion.clear();
+        txtEstadoCivil.clear();
+        comboTriage.setValue(null);
+        comboDerechohab.setValue(null);
+        comboMedico.setValue(null);
+        comboMedico.getEditor().setText("");
+        comboMedico.setItems(FXCollections.observableArrayList(listaMedicos));
+        comboSexo.setValue(null);
+        dpFechaNac.setValue(null);
+        chkReingreso.setSelected(false);
         chkHospitalizado.setSelected(false);
         btnTriageColor.setStyle("-fx-background-color:lightgray;");
         lblTriageDescripcion.setText("");
+        txtNombre.clear();
+        txtEdadAnos.clear();
+        txtEdadMeses.clear();
+        txtEdadDias.clear();
+        txtPeso.clear();
+        txtTalla.clear();
     }
 
     @FXML
@@ -603,7 +671,7 @@ public class VentanaRegistroTriageController {
         alerta.showAndWait();
     }
 
-
+    // TODO: Mover a clase propia.
     private String generarCURP() {
         try {
             String paterno = limpiarTextoParaCURP(txtApPaterno.getText().trim().toUpperCase());
@@ -648,7 +716,7 @@ public class VentanaRegistroTriageController {
             return curp.toString();
 
         } catch (Exception e) {
-            System.err.println("Error generando CURP: " + e.getMessage());
+            log.error("Error generando CURP: {}", e.getMessage());
             return "";
         }
     }
@@ -674,6 +742,7 @@ public class VentanaRegistroTriageController {
         return limpio.replaceAll("\\s+", " ").trim();
     }
 
+    // TODO: Mover a clase propia.
     private String obtenerPrimerNombreRealExacto(String nombreCompleto) {
         if (nombreCompleto == null || nombreCompleto.isEmpty()) return "X";
 
@@ -698,6 +767,7 @@ public class VentanaRegistroTriageController {
         return nombres.length > 0 ? nombres[0] : "X";
     }
 
+    // TODO: Mover a clase propia.
     private char obtenerPrimeraVocalInternaExacta(String texto) {
         if (texto == null || texto.length() < 2) return 'X';
 
@@ -711,6 +781,7 @@ public class VentanaRegistroTriageController {
         return 'X'; // Si no encuentra vocal interna
     }
 
+    // TODO: Mover a clase propia.
     private char obtenerPrimeraConsonanteInternaExacta(String texto) {
         if (texto == null || texto.length() < 2) return 'X';
 
@@ -729,45 +800,9 @@ public class VentanaRegistroTriageController {
         return 'X'; // Si no encuentra consonante interna
     }
 
+    // TODO: Mover a clase propia.
     private String obtenerCodigoCURPEntidadExacto(String entidad) {
-        // Mapa completo de códigos de entidad federativa
-        Map<String, String> mapaCompleto = new HashMap<>();
-
-        // Agrega TODOS los estados
-        mapaCompleto.put("AGUASCALIENTES", "AS");
-        mapaCompleto.put("BAJA CALIFORNIA", "BC");
-        mapaCompleto.put("BAJA CALIFORNIA SUR", "BS");
-        mapaCompleto.put("CAMPECHE", "CC");
-        mapaCompleto.put("CHIAPAS", "CS");
-        mapaCompleto.put("CHIHUAHUA", "CH");
-        mapaCompleto.put("CIUDAD DE MÉXICO", "DF");
-        mapaCompleto.put("COAHUILA", "CL");
-        mapaCompleto.put("COLIMA", "CM");
-        mapaCompleto.put("DURANGO", "DG");
-        mapaCompleto.put("GUANAJUATO", "GT");
-        mapaCompleto.put("GUERRERO", "GR");
-        mapaCompleto.put("HIDALGO", "HG");
-        mapaCompleto.put("JALISCO", "JC");
-        mapaCompleto.put("MÉXICO", "MC");
-        mapaCompleto.put("MICHOACÁN", "MN");
-        mapaCompleto.put("MORELOS", "MS");
-        mapaCompleto.put("NAYARIT", "NT");
-        mapaCompleto.put("NUEVO LEÓN", "NL");
-        mapaCompleto.put("OAXACA", "OC");
-        mapaCompleto.put("PUEBLA", "PL");
-        mapaCompleto.put("QUERÉTARO", "QT");
-        mapaCompleto.put("QUINTANA ROO", "QR");
-        mapaCompleto.put("SAN LUIS POTOSÍ", "SP");
-        mapaCompleto.put("SINALOA", "SL");
-        mapaCompleto.put("SONORA", "SR");
-        mapaCompleto.put("TABASCO", "TC");
-        mapaCompleto.put("TAMAULIPAS", "TS");
-        mapaCompleto.put("TLAXCALA", "TL");
-        mapaCompleto.put("VERACRUZ", "VZ");
-        mapaCompleto.put("YUCATÁN", "YN");
-        mapaCompleto.put("ZACATECAS", "ZS");
-        mapaCompleto.put("NACIDO EN EL EXTRANJERO", "NE");
-        mapaCompleto.put("EXTRANJERO", "NE");
+        var mapaCompleto = initMapaEntidadesCURP();
 
         // Buscar coincidencia exacta o parcial
         for (Map.Entry<String, String> entry : mapaCompleto.entrySet()) {
@@ -775,10 +810,10 @@ public class VentanaRegistroTriageController {
                 return entry.getValue();
             }
         }
-
         return "NE"; // No especificado
     }
 
+    // TODO: Mover a clase propia.
     private char calcularDigitoVerificadorSimple(String curp15) {
         // Para propósitos de demo, usar un dígito simple
         // En la realidad, RENAPO usa un algoritmo complejo

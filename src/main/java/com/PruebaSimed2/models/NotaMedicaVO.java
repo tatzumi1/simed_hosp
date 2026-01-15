@@ -2,8 +2,13 @@
 
 package com.PruebaSimed2.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 public class NotaMedicaVO {
     private int idNota;
     private int folioPaciente;
@@ -41,124 +46,10 @@ public class NotaMedicaVO {
     }
 
     // Constructor vacío
-    public NotaMedicaVO() {}
+    public NotaMedicaVO() {
+    }
 
     // Getters y Setters
-
-    public String getMujerEdadFertil() { return mujerEdadFertil; }
-    public void setMujerEdadFertil(String mujerEdadFertil) { this.mujerEdadFertil = mujerEdadFertil; }
-
-    public int getIdNota() {
-        return idNota;
-    }
-
-    public void setIdNota(int idNota) {
-        this.idNota = idNota;
-    }
-
-    public int getFolioPaciente() {
-        return folioPaciente;
-    }
-
-    public void setFolioPaciente(int folioPaciente) {
-        this.folioPaciente = folioPaciente;
-    }
-
-    public int getNumeroNota() {
-        return numeroNota;
-    }
-
-    public void setNumeroNota(int numeroNota) {
-        this.numeroNota = numeroNota;
-    }
-
-    public String getNota() {
-        return nota;
-    }
-
-    public void setNota(String nota) {
-        this.nota = nota;
-    }
-
-    public String getIndicaciones() {
-        return indicaciones;
-    }
-
-    public void setIndicaciones(String indicaciones) {
-        this.indicaciones = indicaciones;
-    }
-
-    public String getMedicoAutor() {
-        return medicoAutor;
-    }
-
-    public void setMedicoAutor(String medicoAutor) {
-        this.medicoAutor = medicoAutor;
-    }
-
-    public String getCedulaMedico() {
-        return cedulaMedico;
-    }
-
-    public void setCedulaMedico(String cedulaMedico) {
-        this.cedulaMedico = cedulaMedico;
-    }
-
-    public LocalDateTime getFechaCreacion() {
-        return fechaCreacion;
-    }
-
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public String getEstadoPaciente() {
-        return estadoPaciente;
-    }
-
-    public void setEstadoPaciente(String estadoPaciente) {
-        this.estadoPaciente = estadoPaciente;
-    }
-
-    public boolean isEditablePorMedico() {
-        return editablePorMedico;
-    }
-
-    public void setEditablePorMedico(boolean editablePorMedico) {
-        this.editablePorMedico = editablePorMedico;
-    }
-
-    public String getPermisoEdicionOtorgadoPor() {
-        return permisoEdicionOtorgadoPor;
-    }
-
-    public void setPermisoEdicionOtorgadoPor(String permisoEdicionOtorgadoPor) {
-        this.permisoEdicionOtorgadoPor = permisoEdicionOtorgadoPor;
-    }
-
-    public LocalDateTime getFechaPermisoEdicion() {
-        return fechaPermisoEdicion;
-    }
-
-    public void setFechaPermisoEdicion(LocalDateTime fechaPermisoEdicion) {
-        this.fechaPermisoEdicion = fechaPermisoEdicion;
-    }
-
-    public LocalDateTime getFechaEdicionRealizada() {
-        return fechaEdicionRealizada;
-    }
-
-    public void setFechaEdicionRealizada(LocalDateTime fechaEdicionRealizada) {
-        this.fechaEdicionRealizada = fechaEdicionRealizada;
-    }
 
     // Métodos de compatibilidad - para que funcione con el código existente
     public String getContenido() {

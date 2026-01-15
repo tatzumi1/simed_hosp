@@ -1,7 +1,13 @@
 // src/main/java/com/PruebaSimed2/models/Usuario.java
 package com.PruebaSimed2.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Usuario {
+    // Getters y Setters (usa Alt+Insert para generarlos)
     private int id;
     private String username;
     private String email;
@@ -22,22 +28,4 @@ public class Usuario {
         this.primerLogin = primerLogin;
     }
 
-    // Getters y Setters (usa Alt+Insert para generarlos)
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
-
-    public boolean isActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo = activo; }
-
-    public boolean isPrimerLogin() { return primerLogin; }
-    public void setPrimerLogin(boolean primerLogin) { this.primerLogin = primerLogin; }
 }

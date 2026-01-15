@@ -10,6 +10,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
 import java.io.File;
@@ -25,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class InterconsultaController {
 
     @FXML
@@ -88,12 +91,12 @@ public class InterconsultaController {
             sesion.inicializar(usuario, rol, usuarioId);
         }
 
-        System.out.println(" Usuario en interconsulta: " + usuario + " - Rol: " + rol);
-        System.out.println("Nombre médico en sesión: " + sesion.getNombreMedico());
+        log.debug("Usuario en interconsulta: {} - Rol: {}", usuario, rol);
+        log.debug("Nombre médico en sesión: {}", sesion.getNombreMedico());
     }
 
     /**
-     *  OBTENER ID DE USUARIO DESDE BD
+     * OBTENER ID DE USUARIO DESDE BD
      */
     private int obtenerIdUsuarioDesdeBD(String username) {
         String sql = "SELECT id_usuario FROM tb_usuarios WHERE username = ?";
@@ -108,7 +111,7 @@ public class InterconsultaController {
                 return rs.getInt("id_usuario");
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo ID de usuario: " + e.getMessage());
+            log.error("Error obteniendo ID de usuario: {}", e.getMessage());
         }
         return 0;
     }
@@ -131,19 +134,21 @@ public class InterconsultaController {
             int filas = pstmt.executeUpdate();
 
             if (filas > 0) {
-                System.out.println(" Permiso otorgado para interconsulta - ID: " + idInterconsulta);
+                log.debug("Permiso otorgado para interconsulta - ID: {}", idInterconsulta);
                 registrarEnHistorialPermisosInterconsulta(idInterconsulta, "INTERCONSULTA", "OTORGAR");
                 return true;
             }
             return false;
 
         } catch (SQLException e) {
-            System.err.println("Error otorgando permiso para interconsulta: " + e.getMessage());
+            log.error("Error otorgando permiso para interconsulta: {}", e.getMessage());
             return false;
         }
     }
 
+    @Getter
     public static class DatosCaptura {
+        // Getters
         private String tipoUrgencia;
         private String motivoUrgencia;
         private String tipoCama;
@@ -155,23 +160,17 @@ public class InterconsultaController {
             this.tipoCama = tipoCama;
             this.medico = medico;
         }
-
-        // Getters
-        public String getTipoUrgencia() { return tipoUrgencia; }
-        public String getMotivoUrgencia() { return motivoUrgencia; }
-        public String getTipoCama() { return tipoCama; }
-        public String getMedico() { return medico; }
     }
 
     private DatosCaptura datosCaptura;
 
     public void setDatosCaptura(String tipoUrgencia, String motivoUrgencia, String tipoCama, String medico) {
         this.datosCaptura = new DatosCaptura(tipoUrgencia, motivoUrgencia, tipoCama, medico);
-        System.out.println(" Datos de captura recibidos en InterconsultaController:");
-        System.out.println("   - Tipo Urgencia: " + tipoUrgencia);
-        System.out.println("   - Motivo Urgencia: " + motivoUrgencia);
-        System.out.println("   - Tipo Cama: " + tipoCama);
-        System.out.println("   - Médico: " + medico);
+        log.debug(" Datos de captura recibidos en InterconsultaController:");
+        log.debug("- Tipo Urgencia: {}", tipoUrgencia);
+        log.debug("- Motivo Urgencia: {}", motivoUrgencia);
+        log.debug("- Tipo Cama: {}", tipoCama);
+        log.debug("- Médico: {}", medico);
     }
 
     @FXML
@@ -263,7 +262,7 @@ public class InterconsultaController {
                 cmbEspecialistas.getItems().add(rs.getString("Nombre"));
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando especialistas: " + e.getMessage());
+            log.error("Error cargando especialistas: {}", e.getMessage());
         }
     }
 
@@ -288,9 +287,9 @@ public class InterconsultaController {
                 primeraHoraCreacion = rs.getString("Hora");
                 esPrimeraGuardada = false; // Ya existe una interconsulta, no es la primera
 
-                System.out.println(" FECHA/HORA DE CREACIÓN ORIGINAL INTERCONSULTA:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug(" FECHA/HORA DE CREACIÓN ORIGINAL INTERCONSULTA:");
+                log.debug("Fecha: {}", primeraFechaCreacion);
+                log.debug("Hora: {}", primeraHoraCreacion);
 
                 // CARGAR CAMPOS SEPARADOS
                 txtSintomas.setText(rs.getString("sintomas"));
@@ -302,10 +301,10 @@ public class InterconsultaController {
                 cmbEspecialistas.setValue(rs.getString("Medico"));
                 actualizarCedula();
 
-                System.out.println(" Interconsulta temporal existente cargada - ID: " + idInterconsultaActual);
+                log.debug("Interconsulta temporal existente cargada - ID: {}", idInterconsultaActual);
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando interconsulta existente: " + e.getMessage());
+            log.error("Error cargando interconsulta existente: {}", e.getMessage());
         }
     }
 
@@ -321,10 +320,10 @@ public class InterconsultaController {
                 if (rs.next()) {
                     txtCedula.setText(rs.getString("Cedula"));
                     this.universidadEspecialista = rs.getString("universidad");
-                    System.out.println(" Universidad del especialista: " + universidadEspecialista);
+                    log.debug("Universidad del especialista: {}", universidadEspecialista);
                 }
             } catch (SQLException e) {
-                System.err.println(" Error obteniendo cédula y universidad: " + e.getMessage());
+                log.error("Error obteniendo cédula y universidad: {}", e.getMessage());
             }
         }
     }
@@ -355,12 +354,12 @@ public class InterconsultaController {
             String cedulaActual = txtCedula.getText();
             String especialidadActual = txtEspecialidad.getText().trim(); // Ahora es TextField
 
-            System.out.println(" INICIANDO GUARDADO TEMPORAL INTERCONSULTA ===================");
-            System.out.println(" Especialidad: " + especialidadActual);
-            System.out.println(" Síntomas: " + sintomasActual.length() + " chars");
-            System.out.println(" Signos Vitales: " + signosVitalesActual.length() + " chars");
-            System.out.println(" Diagnóstico: " + diagnosticoActual.length() + " chars");
-            System.out.println(" Indicaciones: " + indicacionesActual.length() + " chars");
+            log.debug(" INICIANDO GUARDADO TEMPORAL INTERCONSULTA ===================");
+            log.debug(" Especialidad: {}", especialidadActual);
+            log.debug(" Síntomas: {} chars", sintomasActual.length());
+            log.debug(" Signos Vitales: {} chars", signosVitalesActual.length());
+            log.debug(" Diagnóstico: {} chars", diagnosticoActual.length());
+            log.debug(" Indicaciones: {} chars", indicacionesActual.length());
 
             int filasAfectadas = 0;
 
@@ -400,7 +399,7 @@ public class InterconsultaController {
                     if (esPrimeraGuardada && primeraFechaCreacion != null && primeraHoraCreacion != null) {
                         pstmt.setDate(10, new java.sql.Date(primeraFechaCreacion.getTime()));
                         pstmt.setString(11, primeraHoraCreacion);
-                        System.out.println(" Usando fecha/hora original de primera creación");
+                        log.debug(" Usando fecha/hora original de primera creación");
                     }
 
                     filasAfectadas = pstmt.executeUpdate();
@@ -409,7 +408,7 @@ public class InterconsultaController {
                         ResultSet rs = pstmt.getGeneratedKeys();
                         if (rs.next()) {
                             idInterconsultaActual = rs.getInt(1);
-                            System.out.println(" NUEVA INTERCONSULTA TEMPORAL CREADA - ID: " + idInterconsultaActual);
+                            log.debug(" NUEVA INTERCONSULTA TEMPORAL CREADA - ID: {}", idInterconsultaActual);
 
                             // Si es primera guardada, marcar como no primera para próximas
                             if (esPrimeraGuardada) {
@@ -439,8 +438,8 @@ public class InterconsultaController {
                     // IMPORTANTE: NO actualizamos Fecha ni Hora
 
                     filasAfectadas = pstmt.executeUpdate();
-                    System.out.println(" INTERCONSULTA TEMPORAL ACTUALIZADA - ID: " + idInterconsultaActual);
-                    System.out.println(" Fecha y hora ORIGINALES preservadas (no se modifican)");
+                    log.debug(" INTERCONSULTA TEMPORAL ACTUALIZADA - ID: {}", idInterconsultaActual);
+                    log.debug(" Fecha y hora ORIGINALES preservadas (no se modifican)");
                 }
             }
 
@@ -457,12 +456,12 @@ public class InterconsultaController {
             }
 
         } catch (SQLException e) {
-            System.err.println(" ERROR EN TRANSACCIÓN: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" ERROR EN TRANSACCIÓN: {}", e.getMessage());
+            log.error(e);
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException rollbackEx) {
-                System.err.println(" ERROR AL REVERTIR: " + rollbackEx.getMessage());
+                log.error(" ERROR AL REVERTIR: {}", rollbackEx.getMessage());
             }
             mostrarAlerta("Error de Base de Datos", "Error al guardar: " + e.getMessage(), Alert.AlertType.ERROR);
         } finally {
@@ -472,7 +471,7 @@ public class InterconsultaController {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.err.println(" Error cerrando conexión: " + e.getMessage());
+                log.error("Error cerrando conexión: {}", e.getMessage());
             }
         }
     }
@@ -488,12 +487,12 @@ public class InterconsultaController {
             if (rs.next()) {
                 primeraFechaCreacion = rs.getDate("Fecha");
                 primeraHoraCreacion = rs.getString("Hora");
-                System.out.println(" FECHA/HORA DE CREACIÓN INTERCONSULTA GUARDADA:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug("FECHA/HORA DE CREACIÓN INTERCONSULTA GUARDADA:");
+                log.debug("Fecha: {}", primeraFechaCreacion);
+                log.debug("Hora: {}", primeraHoraCreacion);
             }
         } catch (SQLException e) {
-            System.err.println(" Error guardando fecha/hora creación interconsulta: " + e.getMessage());
+            log.error("Error guardando fecha/hora creación interconsulta: {}", e.getMessage());
         }
     }
 
@@ -528,12 +527,11 @@ public class InterconsultaController {
                 if (rs.next()) {
                     fechaHoraOriginal[0] = rs.getString("Fecha");
                     fechaHoraOriginal[1] = rs.getString("Hora");
-                    System.out.println("FECHA/HORA ORIGINAL INTERCONSULTA: " +
-                            fechaHoraOriginal[0] + " " + fechaHoraOriginal[1]);
+                    log.debug("FECHA/HORA ORIGINAL INTERCONSULTA: {} {}", fechaHoraOriginal[0], fechaHoraOriginal[1]);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error obteniendo fecha/hora original: " + e.getMessage());
+            log.error("Error obteniendo fecha/hora original: {}", e.getMessage());
         }
 
         // Ejecutar en hilo separado
@@ -605,11 +603,11 @@ public class InterconsultaController {
                 }
 
             } catch (SQLException e) {
-                System.err.println(" Error SQL en guardado definitivo: " + e.getMessage());
+                log.error(" Error SQL en guardado definitivo: {}", e.getMessage());
                 try {
                     if (conn != null) conn.rollback();
                 } catch (SQLException ex) {
-                    System.err.println(" Error en rollback: " + ex.getMessage());
+                    log.error(" Error en rollback: {}", ex.getMessage());
                 }
                 Platform.runLater(() ->
                         mostrarAlerta("Error", "Error al guardar: " + e.getMessage(), Alert.AlertType.ERROR));
@@ -620,7 +618,7 @@ public class InterconsultaController {
                         conn.close();
                     }
                 } catch (SQLException e) {
-                    System.err.println(" Error cerrando conexión: " + e.getMessage());
+                    log.error(" Error cerrando conexión: {}", e.getMessage());
                 }
 
                 if (!exito) {
@@ -660,15 +658,15 @@ public class InterconsultaController {
             int filasActualizadas = pstmt.executeUpdate();
 
             if (filasActualizadas > 0) {
-                System.out.println(" PACIENTE ACTUALIZADO A OBSERVACIÓN - Folio: " + folioPaciente + " (ID Estado: " + idObservacion + ")");
+                log.debug("PACIENTE ACTUALIZADO A OBSERVACIÓN - Folio: {} (ID Estado: {})", folioPaciente, idObservacion);
             } else {
-                System.out.println(" Paciente ya estaba en OBSERVACIÓN - Folio: " + folioPaciente);
+                log.debug("Paciente ya estaba en OBSERVACIÓN - Folio: {}", folioPaciente);
             }
 
             pstmt.close();
 
         } catch (SQLException e) {
-            System.err.println(" Error actualizando estado a observación: " + e.getMessage());
+            log.error("Error actualizando estado a observación: {}", e.getMessage());
         }
     }
 
@@ -676,12 +674,12 @@ public class InterconsultaController {
                                       String indicaciones, String especialista, String especialidad,
                                       String fecha, String hora) {
         try {
-            System.out.println(" GENERANDO PDF INTERCONSULTA:");
-            System.out.println("   Fecha BD: " + fecha);
-            System.out.println("   Hora BD: " + hora);
-            System.out.println("   Especialista: " + especialista);
-            System.out.println("   Especialidad: " + especialidad);
-            System.out.println("   Folio: " + folioPaciente);
+            log.debug(" GENERANDO PDF INTERCONSULTA:");
+            log.debug("   Fecha BD: {}", fecha);
+            log.debug("   Hora BD: {}", hora);
+            log.debug("   Especialista: {}", especialista);
+            log.debug("   Especialidad: {}", especialidad);
+            log.debug("   Folio: {}", folioPaciente);
 
             //  LLAMAR AL PDFGenerator NUEVO (solo necesita folio y número de interconsulta)
             boolean exito = PDFGenerator.generarInterconsultaPDF(
@@ -691,9 +689,9 @@ public class InterconsultaController {
             );
 
             if (exito) {
-                System.out.println(" PDF de interconsulta generado automáticamente");
-                System.out.println("   Fecha: " + fecha);
-                System.out.println("   Hora: " + hora);
+                log.debug(" PDF de interconsulta generado automáticamente");
+                log.debug("   Fecha: {}", fecha);
+                log.debug("   Hora: {}", hora);
                 abrirPDFInterconsultaReciente();
 
                 // Cerrar ventana después de 3 segundos
@@ -707,16 +705,16 @@ public class InterconsultaController {
                             }
                         });
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error(e);
                     }
                 }).start();
             } else {
-                System.err.println(" Error generando PDF de interconsulta");
+                log.error(" Error generando PDF de interconsulta");
             }
 
         } catch (Exception e) {
-            System.err.println(" Error generando PDF automático de interconsulta: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error generando PDF automático de interconsulta: {}", e.getMessage());
+            log.error(e);
         }
     }
 
@@ -771,12 +769,12 @@ public class InterconsultaController {
                 datos.put("curp", rs.getString("CURP"));          // CURP
                 datos.put("telefono", rs.getString("Telefono"));  // Teléfono
 
-                System.out.println(" DATOS PACIENTE INTERCONSULTA:");
-                System.out.println("   CURP: " + datos.get("curp"));
-                System.out.println("   Teléfono: " + datos.get("telefono"));
+                log.debug(" DATOS PACIENTE INTERCONSULTA:");
+                log.debug("   CURP: {}", datos.get("curp"));
+                log.debug("   Teléfono: {}", datos.get("telefono"));
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo datos paciente: " + e.getMessage());
+            log.error(" Error obteniendo datos paciente: {}", e.getMessage());
         }
 
         // Valores por defecto
@@ -824,7 +822,7 @@ public class InterconsultaController {
                     Arrays.sort(archivos, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
                     File pdfMasReciente = archivos[0];
                     java.awt.Desktop.getDesktop().open(pdfMasReciente);
-                    System.out.println(" Abriendo PDF de interconsulta: " + pdfMasReciente.getName());
+                    log.debug("Abriendo PDF de interconsulta: {}", pdfMasReciente.getName());
                 } else {
                     mostrarAlerta("Error", "No se encontró el PDF generado", Alert.AlertType.WARNING);
                 }
@@ -832,7 +830,7 @@ public class InterconsultaController {
                 mostrarAlerta("Error", "No se encontró la carpeta de PDFs", Alert.AlertType.WARNING);
             }
         } catch (Exception e) {
-            System.err.println(" Error abriendo PDF: " + e.getMessage());
+            log.error(" Error abriendo PDF: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el PDF: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -955,9 +953,9 @@ public class InterconsultaController {
 
     public void setModoEdicion(InterconsultaVO interconsulta) {
         try {
-            System.out.println(" CARGANDO INTERCONSULTA PARA EDICIÓN:");
-            System.out.println("   ID: " + interconsulta.getIdInterconsulta());
-            System.out.println("   Estado: " + interconsulta.getEstado());
+            log.debug(" CARGANDO INTERCONSULTA PARA EDICIÓN:");
+            log.debug("   ID: {}", interconsulta.getIdInterconsulta());
+            log.debug("   Estado: {}", interconsulta.getEstado());
 
             this.modoEdicion = true;
             this.interconsultaEnEdicion = interconsulta;
@@ -977,7 +975,7 @@ public class InterconsultaController {
 
             // 1. ADMIN y JEFATURA siempre pueden editar
             if (esAdmin || esJefatura) {
-                System.out.println(" ADMIN/JEFATURA - PERMISOS TOTALES");
+                log.debug(" ADMIN/JEFATURA - PERMISOS TOTALES");
                 btnGuardarDefinitivo.setDisable(false);
                 btnGuardarTemporal.setDisable(false);
                 return;
@@ -992,11 +990,11 @@ public class InterconsultaController {
             boolean puedeEditar = (esEspecialistaAutor && esInterconsultaTemporal) ||
                     (esEspecialistaAutor && tienePermiso);
 
-            System.out.println(" VERIFICACIÓN (ESPECIALISTA NORMAL):");
-            System.out.println(" ¿Es Especialista Autor? " + esEspecialistaAutor);
-            System.out.println(" ¿Es Temporal? " + esInterconsultaTemporal);
-            System.out.println(" ¿Tiene Permiso? " + tienePermiso);
-            System.out.println(" ¿PUEDE EDITAR? " + puedeEditar);
+            log.debug(" VERIFICACIÓN (ESPECIALISTA NORMAL):");
+            log.debug(" ¿Es Especialista Autor? {}", esEspecialistaAutor);
+            log.debug(" ¿Es Temporal? {}", esInterconsultaTemporal);
+            log.debug(" ¿Tiene Permiso? {}", tienePermiso);
+            log.debug(" ¿PUEDE EDITAR? {}", puedeEditar);
 
             if (puedeEditar) {
                 btnGuardarDefinitivo.setDisable(false);
@@ -1005,23 +1003,24 @@ public class InterconsultaController {
                     btnGuardarTemporal.setDisable(true);
                     btnGuardarTemporal.setStyle("-fx-background-color: #cccccc; -fx-text-fill: #666666;");
                     btnGuardarTemporal.setTooltip(new Tooltip("No puede guardar como temporal con permiso de edición"));
-                    System.out.println("Permiso activado - Solo puede guardar como DEFINITIVA");
+                    log.debug("Permiso activado - Solo puede guardar como DEFINITIVA");
                 } else {
                     btnGuardarTemporal.setDisable(false);
                 }
 
-                System.out.println("BOTONES HABILITADOS");
+                log.debug("BOTONES HABILITADOS");
             } else {
                 btnGuardarDefinitivo.setDisable(true);
                 btnGuardarTemporal.setDisable(true);
-                System.out.println(" BOTONES DESHABILITADOS");
+                log.debug(" BOTONES DESHABILITADOS");
             }
 
         } catch (Exception e) {
-            System.err.println(" Error cargando interconsulta para edición: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error cargando interconsulta para edición: {}", e.getMessage());
+            log.error(e);
         }
     }
+
     private void obtenerFechaHoraOriginalInterconsulta(int idInterconsulta) {
         String sql = "SELECT Fecha, Hora FROM tb_inter WHERE id_inter = ?";
 
@@ -1034,12 +1033,12 @@ public class InterconsultaController {
             if (rs.next()) {
                 primeraFechaCreacion = rs.getDate("Fecha");
                 primeraHoraCreacion = rs.getString("Hora");
-                System.out.println(" FECHA/HORA ORIGINAL DE INTERCONSULTA:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug(" FECHA/HORA ORIGINAL DE INTERCONSULTA:");
+                log.debug("   Fecha: {}", primeraFechaCreacion);
+                log.debug("   Hora: {}", primeraHoraCreacion);
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo fecha/hora original interconsulta: " + e.getMessage());
+            log.error(" Error obteniendo fecha/hora original interconsulta: {}", e.getMessage());
         }
     }
 
@@ -1061,14 +1060,14 @@ public class InterconsultaController {
                 txtIndicaciones.setText(rs.getString("Nota")); // Nota = Indicaciones en interconsulta
                 txtEspecialidad.setText(rs.getString("especialidad"));
 
-                System.out.println("Campos separados cargados correctamente");
+                log.debug("Campos separados cargados correctamente");
             } else {
-                System.out.println("️ No se encontraron campos separados, usando campo combinado");
+                log.warn("️ No se encontraron campos separados, usando campo combinado");
                 cargarDesdeCampoCombinado(interconsultaEnEdicion.getContenido());
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando campos separados: " + e.getMessage());
+            log.error(" Error cargando campos separados: {}", e.getMessage());
             // Fallback: intentar cargar desde campo combinado
             cargarDesdeCampoCombinado(interconsultaEnEdicion.getContenido());
         }
@@ -1111,9 +1110,9 @@ public class InterconsultaController {
                         }
                     }
                 }
-                System.out.println(" Campos cargados desde texto combinado");
+                log.debug(" Campos cargados desde texto combinado");
             } catch (Exception e) {
-                System.err.println(" Error parseando campo combinado: " + e.getMessage());
+                log.error(" Error parseando campo combinado: {}", e.getMessage());
                 // Si falla, cargar todo en el campo de indicaciones
                 txtIndicaciones.setText(contenidoCombinado);
             }
@@ -1140,7 +1139,7 @@ public class InterconsultaController {
                 return rs.getString("Med_nombre");
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo nombre médico: " + e.getMessage());
+            log.error(" Error obteniendo nombre médico: {}", e.getMessage());
         }
 
         return username;
@@ -1170,17 +1169,16 @@ public class InterconsultaController {
                             int filas = pstmt.executeUpdate();
 
                             if (filas > 0) {
-                                System.out.println(" Permiso interconsulta revocado - ID: " +
-                                        interconsultaEnEdicion.getIdInterconsulta());
+                                log.info(" Permiso interconsulta revocado - ID: {}", interconsultaEnEdicion.getIdInterconsulta());
                             }
                         }
                     } catch (SQLException e) {
-                        System.err.println("Error revocando permiso interconsulta: " + e.getMessage());
+                        log.error("Error revocando permiso interconsulta: {}", e.getMessage());
                         // No bloquear la UI, solo log
                     }
                 }).start();
             } else {
-                System.out.println(" Admin/Jefatura - Permiso interconsulta NO se revoca");
+                log.info(" Admin/Jefatura - Permiso interconsulta NO se revoca");
             }
         }
     }
@@ -1203,10 +1201,10 @@ public class InterconsultaController {
             pstmt.setInt(6, idInterconsulta);
 
             pstmt.executeUpdate();
-            System.out.println(" Historial interconsulta registrado - " + accion);
+            log.debug(" Historial interconsulta registrado - {}", accion);
 
         } catch (SQLException e) {
-            System.err.println(" Error registrando en historial de interconsulta: " + e.getMessage());
+            log.error(" Error registrando en historial de interconsulta: {}", e.getMessage());
         }
     }
 
@@ -1225,8 +1223,6 @@ public class InterconsultaController {
         interconsultaEnEdicion = null;
         datosCaptura = null;
 
-        System.out.println(" Recursos del controlador de interconsulta limpiados");
+        log.debug(" Recursos del controlador de interconsulta limpiados");
     }
-
-
 }

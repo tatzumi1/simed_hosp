@@ -11,22 +11,35 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
 
+@Log4j2
 public class RegistroUsuarioController {
 
-    @FXML private TextField txtNombreCompleto;
-    @FXML private TextField txtEmail;
-    @FXML private TextField txtUsername;
-    @FXML private ComboBox<String> cbRol;
-    @FXML private Label lblMensaje;
-    @FXML private VBox vboxDatosMedico;
-    @FXML private TextField txtCedulaProfesional;
-    @FXML private VBox vboxUniversidad;
-    @FXML private TextField txtUniversidad;
-    @FXML private VBox vboxJefaturaUrgencias;
-    @FXML private TextField txtCedulaJefatura;
+    @FXML
+    private TextField txtNombreCompleto;
+    @FXML
+    private TextField txtEmail;
+    @FXML
+    private TextField txtUsername;
+    @FXML
+    private ComboBox<String> cbRol;
+    @FXML
+    private Label lblMensaje;
+    @FXML
+    private VBox vboxDatosMedico;
+    @FXML
+    private TextField txtCedulaProfesional;
+    @FXML
+    private VBox vboxUniversidad;
+    @FXML
+    private TextField txtUniversidad;
+    @FXML
+    private VBox vboxJefaturaUrgencias;
+    @FXML
+    private TextField txtCedulaJefatura;
 
 
     private Usuario usuarioAdmin;
@@ -34,9 +47,9 @@ public class RegistroUsuarioController {
     public void setUsuarioAdmin(Usuario usuario) {
         if (usuario != null) {
             this.usuarioAdmin = usuario;
-            System.out.println(" Admin registrando: " + usuario.getUsername());
+            log.debug(" Admin registrando: {}", usuario.getUsername());
         } else {
-            System.out.println(" Usuario admin es NULL - usando admin por defecto");
+            log.debug(" Usuario admin es NULL - usando admin por defecto");
             this.usuarioAdmin = new Usuario();
             this.usuarioAdmin.setUsername("admin_sistema");
             this.usuarioAdmin.setRol("ADMIN");
@@ -120,7 +133,7 @@ public class RegistroUsuarioController {
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         int idUsuario = generatedKeys.getInt(1);
-                        System.out.println("Usuario registrado con ID: " + idUsuario);
+                        log.debug("Usuario registrado con ID: {}", idUsuario);
                     }
                 }
 
@@ -132,8 +145,7 @@ public class RegistroUsuarioController {
                 if (esMedicoUrgencias) {
                     // Guardar en tb_medicos (SOLO médico urgencias)
                     int nuevaCveMed = generarNuevaCveMed(conn, "tb_medicos");
-                    System.out.println("DEBUG: Insertando en tb_medicos con ID: " + nuevaCveMed +
-                            ", Nombre: " + nombreCompleto + ", Cédula: " + cedula);
+                    log.debug("DEBUG: Insertando en tb_medicos con ID: {}, Nombre: {}, Cédula: {}", nuevaCveMed, nombreCompleto, cedula);
 
                     String sqlMedico = "INSERT INTO tb_medicos (Cve_med, Med_nombre, Ced_prof) VALUES (?, ?, ?)";
                     try (PreparedStatement pstmtMedico = conn.prepareStatement(sqlMedico)) {
@@ -141,14 +153,12 @@ public class RegistroUsuarioController {
                         pstmtMedico.setString(2, nombreCompleto); // Nombre completo para combobox
                         pstmtMedico.setString(3, cedula);
                         pstmtMedico.executeUpdate();
-                        System.out.println("Registrado en tb_medicos: " + nombreCompleto);
+                        log.info("Registrado en tb_medicos: {}", nombreCompleto);
                     }
-                }
-                else if (esJefaturaUrgencias) {
+                } else if (esJefaturaUrgencias) {
                     // Guardar en tb_medicos como JEFATURA
                     int nuevaCveMed = generarNuevaCveMed(conn, "tb_medicos");
-                    System.out.println("DEBUG: Insertando JEFATURA en tb_medicos con ID: " + nuevaCveMed +
-                            ", Nombre: " + nombreCompleto + ", Cédula: " + cedulaJefatura);
+                    log.debug("DEBUG: Insertando JEFATURA en tb_medicos con ID: {}, Nombre: {}, Cédula: {}", nuevaCveMed, nombreCompleto, cedulaJefatura);
 
                     String sqlMedico = "INSERT INTO tb_medicos (Cve_med, Med_nombre, Ced_prof) VALUES (?, ?, ?)";
                     try (PreparedStatement pstmtMedico = conn.prepareStatement(sqlMedico)) {
@@ -156,15 +166,12 @@ public class RegistroUsuarioController {
                         pstmtMedico.setString(2, nombreCompleto);
                         pstmtMedico.setString(3, cedulaJefatura);
                         pstmtMedico.executeUpdate();
-                        System.out.println("Jefatura registrada en tb_medicos: " + nombreCompleto);
+                        log.info("Jefatura registrada en tb_medicos: {}", nombreCompleto);
                     }
-                }
-                else if (esMedicoEspecialista) {
+                } else if (esMedicoEspecialista) {
                     // Guardar en tb_medesp con universidad
                     int nuevaCveMed = generarNuevaCveMed(conn, "tb_medesp");
-                    System.out.println("DEBUG: Insertando en tb_medesp con ID: " + nuevaCveMed +
-                            ", Nombre: " + nombreCompleto + ", Cédula: " + cedula +
-                            ", Universidad: " + universidad);
+                    log.debug("DEBUG: Insertando en tb_medesp con ID: {}, Nombre: {}, Cédula: {}, Universidad: {}", nuevaCveMed, nombreCompleto, cedula, universidad);
 
                     String sqlMedEsp = "INSERT INTO tb_medesp (Cve_med, Nombre, Cedula, universidad) VALUES (?, ?, ?, ?)";
                     try (PreparedStatement pstmtMedEsp = conn.prepareStatement(sqlMedEsp)) {
@@ -173,7 +180,7 @@ public class RegistroUsuarioController {
                         pstmtMedEsp.setString(3, cedula);
                         pstmtMedEsp.setString(4, universidad);
                         pstmtMedEsp.executeUpdate();
-                        System.out.println("Médico especialista registrado en tb_medesp: " + nombreCompleto + " - Universidad: " + universidad);
+                        log.info("Médico especialista registrado en tb_medesp: {} - Universidad: {}", nombreCompleto, universidad);
                     }
                 }
 
@@ -189,14 +196,13 @@ public class RegistroUsuarioController {
             }
 
         } catch (SQLException e) {
-            System.err.println("ERROR SQL registrando usuario: " + e.getMessage());
-            e.printStackTrace();
+            log.error("ERROR SQL registrando usuario: {}", e.getMessage(), e);
             if (conn != null) {
                 try {
                     conn.rollback(); // Revertir en caso de error
-                    System.err.println("Transacción revertida debido a error");
+                    log.error("Transacción revertida debido a error");
                 } catch (SQLException ex) {
-                    System.err.println("Error al revertir transacción: " + ex.getMessage());
+                    log.error("Error al revertir transacción: {}", ex.getMessage());
                 }
             }
         } finally {
@@ -204,7 +210,9 @@ public class RegistroUsuarioController {
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                    log.error("Error al cerrar conexión: {}", e.getMessage());
+                }
             }
         }
         return false;
@@ -231,18 +239,16 @@ public class RegistroUsuarioController {
             if (rs.next()) {
                 boolean existe = rs.getInt("existe") > 0;
                 if (existe) {
-                    System.err.println("ADVERTENCIA: La cédula " + cedula + " ya existe para rol " + rol);
+                    log.error("ADVERTENCIA: La cédula {} ya existe para rol {}", cedula, rol);
                 }
                 return existe;
             }
 
         } catch (SQLException e) {
-            System.err.println("Error verificando cédula: " + e.getMessage());
+            log.error("Error verificando cédula: {}", e.getMessage());
         }
         return false;
     }
-
-    // nuervo
 
     // Método para generar nueva Cve_med automáticamente BUSCANDO HUECOS
     private int generarNuevaCveMed(Connection conn, String tabla) throws SQLException {
@@ -275,15 +281,15 @@ public class RegistroUsuarioController {
             sql = "SELECT COALESCE(MAX(Cve_med), 0) + 1 as nuevo_id FROM " + tabla;
         }
 
-        System.out.println("DEBUG: Buscando ID disponible para tabla: " + tabla);
-        System.out.println("DEBUG: SQL: " + sql);
+        log.debug("DEBUG: Buscando ID disponible para tabla: {}", tabla);
+        log.debug("DEBUG: SQL: {}", sql);
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             if (rs.next()) {
                 int nuevoId = rs.getInt("nuevo_id");
-                System.out.println("DEBUG: ID encontrado: " + nuevoId + " para tabla: " + tabla);
+                log.debug("DEBUG: ID encontrado: {} para tabla: {}", nuevoId, tabla);
 
                 // VERIFICAR EXTRA: que realmente no exista
                 String verificarSql = "SELECT COUNT(*) as existe FROM " + tabla + " WHERE Cve_med = ?";
@@ -291,8 +297,7 @@ public class RegistroUsuarioController {
                     verificarPstmt.setInt(1, nuevoId);
                     try (ResultSet verificarRs = verificarPstmt.executeQuery()) {
                         if (verificarRs.next() && verificarRs.getInt("existe") > 0) {
-                            System.err.println("ERROR: El ID " + nuevoId + " ya existe en " + tabla +
-                                    ". Buscando siguiente...");
+                            log.error("ERROR: El ID {} ya existe en {}. Buscando siguiente...", nuevoId, tabla);
                             // Si por alguna rareza ya existe, buscar el siguiente
                             return generarSiguienteIdManual(conn, tabla, nuevoId);
                         }
@@ -302,7 +307,7 @@ public class RegistroUsuarioController {
                 return nuevoId;
             }
 
-            System.out.println("DEBUG: No se encontró ID, usando 1");
+            log.debug("DEBUG: No se encontró ID, usando 1");
             return 1; // Si no hay registros, empezar en 1
         }
     }
@@ -318,7 +323,7 @@ public class RegistroUsuarioController {
                 pstmt.setInt(1, id);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next() && rs.getInt("existe") == 0) {
-                        System.out.println("DEBUG: Encontrado ID manual: " + id);
+                        log.debug("DEBUG: Encontrado ID manual: {}", id);
                         return id;
                     }
                 }
@@ -342,10 +347,8 @@ public class RegistroUsuarioController {
 
     private void registrarAuditoria(String accion, String detalles) {
         // Aquí puedes implementar tu sistema de auditoría
-        System.out.println(" AUDITORÍA - " + accion + ": " + detalles);
+        log.debug(" AUDITORÍA - {}: {}", accion, detalles);
     }
-
-
 
 
     @FXML
@@ -445,7 +448,4 @@ public class RegistroUsuarioController {
             mostrarMensaje("Error al registrar el usuario", "red");
         }
     }
-
-
-
 }

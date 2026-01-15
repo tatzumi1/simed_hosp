@@ -2,9 +2,12 @@
 package com.PruebaSimed2.utils;
 
 import com.PruebaSimed2.database.ConexionBD;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.net.InetAddress;
 
+@Log4j2
 public class LoggerDB {
 
     public static void log(String nivel, String modulo, String usuario,
@@ -43,7 +46,7 @@ public class LoggerDB {
                 pstmt.close();
 
             } catch (SQLException e) {
-                System.err.println(" [LOG FALLÓ] " + nivel + " | " + usuario + " | " + accion);
+                log.error(" [LOG FALLÓ] {} | {} | {}", nivel, usuario, accion);
             } finally {
                 ConexionBD.safeClose(conn);
             }

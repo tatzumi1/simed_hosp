@@ -8,6 +8,7 @@ import com.PruebaSimed2.utils.PDFGeneratorDiario;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,21 +35,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
 import java.io.File;
+
 import javafx.util.Pair;
+import lombok.extern.log4j.Log4j2;
+
 import java.util.Optional;
 
+@Log4j2
 public class ModuloEstadisticaController implements Initializable {
-    @FXML private TextField txtFechaDiaria;
-    @FXML private ComboBox<String> cbMes;
-    @FXML private ComboBox<Integer> cbAnio;
-    @FXML private ComboBox<String> cbTipoProductividad;
-    @FXML private TableView<EstadisticaMedico> tablaEstadisticas;
-    @FXML private VBox panelEstadisticas;
+    @FXML
+    private TextField txtFechaDiaria;
+    @FXML
+    private ComboBox<String> cbMes;
+    @FXML
+    private ComboBox<Integer> cbAnio;
+    @FXML
+    private ComboBox<String> cbTipoProductividad;
+    @FXML
+    private TableView<EstadisticaMedico> tablaEstadisticas;
+    @FXML
+    private VBox panelEstadisticas;
 
     // Nuevos botones
-    @FXML private Button btnVerFoliosDia;
-    @FXML private Button btnImprimirRango;
-    @FXML private Button btnImprimirUnFolio;
+    @FXML
+    private Button btnVerFoliosDia;
+    @FXML
+    private Button btnImprimirRango;
+    @FXML
+    private Button btnImprimirUnFolio;
 
     private Usuario usuarioLogueado;
     private List<Integer> foliosDelDiaActual = new ArrayList<>();
@@ -65,9 +80,17 @@ public class ModuloEstadisticaController implements Initializable {
         }
 
         // Getters
-        public String getMedico() { return medico; }
-        public int getCantidad() { return cantidad; }
-        public double getPorcentaje() { return porcentaje; }
+        public String getMedico() {
+            return medico;
+        }
+
+        public int getCantidad() {
+            return cantidad;
+        }
+
+        public double getPorcentaje() {
+            return porcentaje;
+        }
     }
 
     public void setUsuarioLogueado(Usuario usuario) {
@@ -153,7 +176,7 @@ public class ModuloEstadisticaController implements Initializable {
 
         } catch (Exception e) {
             mostrarAlerta("Error", "No se pudieron obtener los folios: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            log.error("Error al obtener los folios: {}", e.getMessage(), e);
         }
     }
 
@@ -259,7 +282,7 @@ public class ModuloEstadisticaController implements Initializable {
         Label labelHasta = new Label("Hasta (posición):");
         Label labelInfo = new Label(String.format("Folios reales: %d - %d",
                 foliosDelDiaActual.get(0),
-                foliosDelDiaActual.get(foliosDelDiaActual.size()-1)));
+                foliosDelDiaActual.get(foliosDelDiaActual.size() - 1)));
         labelInfo.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d;");
 
         grid.add(labelDesde, 0, 0);
@@ -300,8 +323,8 @@ public class ModuloEstadisticaController implements Initializable {
                             "Folios reales: %d al %d\n\n" +
                             "¿Continuar?",
                     (hasta - desde + 1),
-                    foliosDelDiaActual.get(desde-1),
-                    foliosDelDiaActual.get(hasta-1)
+                    foliosDelDiaActual.get(desde - 1),
+                    foliosDelDiaActual.get(hasta - 1)
             ));
 
             Optional<ButtonType> confirmResult = confirmacion.showAndWait();
@@ -363,7 +386,7 @@ public class ModuloEstadisticaController implements Initializable {
 
         } catch (Exception e) {
             mostrarAlerta("Error", "Error al procesar el rango de folios: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            log.error("Error al procesar el rango de folios: {}", e.getMessage());
         }
     }
 
@@ -485,7 +508,7 @@ public class ModuloEstadisticaController implements Initializable {
 
         } catch (Exception e) {
             mostrarAlerta("Error", "Error al procesar el folio individual: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
+            log.error("Error al procesar el folio individual: {}", e.getMessage());
         }
     }
 
@@ -516,8 +539,6 @@ public class ModuloEstadisticaController implements Initializable {
         return false;
     }
     // de aqui arriba no mover -------------------------------------------
-
-
 
 
     // ========== MÉTODOS PARA GRÁFICAS ==========
@@ -587,20 +608,20 @@ public class ModuloEstadisticaController implements Initializable {
                 return new ArrayList<>();
             }
 
-            System.out.println("=== PASO 1: Personas encontradas para " + tipo + " ===");
-            System.out.println("Total: " + todasPersonas.size());
+            log.debug("=== PASO 1: Personas encontradas para {} ===", tipo);
+            log.debug("Total: {}", todasPersonas.size());
             for (int i = 0; i < Math.min(5, todasPersonas.size()); i++) {
-                System.out.println("  " + (i+1) + ". " + todasPersonas.get(i));
+                log.debug("  {}. {}", i + 1, todasPersonas.get(i));
             }
             if (todasPersonas.size() > 5) {
-                System.out.println("  ... y " + (todasPersonas.size() - 5) + " más");
+                log.debug("  ... y {} más", todasPersonas.size() - 5);
             }
 
             // 2. Obtener estadísticas REALES de quienes sí trabajaron
             Map<String, Integer> estadisticasReales = obtenerEstadisticasReales(mes, año, tipo);
 
-            System.out.println("=== PASO 2: Estadísticas reales ===");
-            System.out.println("Con actividad: " + estadisticasReales.size());
+            log.debug("=== PASO 2: Estadísticas reales ===");
+            log.debug("Con actividad: {}", estadisticasReales.size());
             estadisticasReales.forEach((nombre, cantidad) -> {
                 System.out.println("  " + nombre + ": " + cantidad);
             });
@@ -631,23 +652,20 @@ public class ModuloEstadisticaController implements Initializable {
             tablaEstadisticas.setItems(datos);
             panelEstadisticas.setVisible(true);
 
-            System.out.println("=== RESULTADO FINAL ===");
-            System.out.println("Tipo: " + tipo);
-            System.out.println("Total personas en lista: " + datos.size());
-            System.out.println("Total registros trabajados: " + totalGeneral);
-            System.out.println("Orden: " + datos.get(0).getMedico() + " (" + datos.get(0).getCantidad() + ") → " +
-                    datos.get(datos.size()-1).getMedico() + " (" + datos.get(datos.size()-1).getCantidad() + ")");
+            log.debug("=== RESULTADO FINAL ===");
+            log.debug("Tipo: {}", tipo);
+            log.debug("Total personas en lista: {}", datos.size());
+            log.debug("Total registros trabajados: {}", totalGeneral);
+            log.debug("Orden: {} ({}) → {} ({})", datos.get(0).getMedico(), datos.get(0).getCantidad(), datos.get(datos.size() - 1).getMedico(), datos.get(datos.size() - 1).getCantidad());
 
             return datos;
 
         } catch (SQLException e) {
-            System.err.println("Error obteniendo estadísticas: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error obteniendo estadísticas: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudieron obtener las estadísticas: " + e.getMessage(), Alert.AlertType.ERROR);
             return new ArrayList<>();
         }
     }
-
 
 
     private List<String> obtenerTodasLasPersonasPorTipo(String tipo) throws SQLException {
@@ -691,7 +709,7 @@ public class ModuloEstadisticaController implements Initializable {
                 return personas;
         }
 
-        System.out.println("Ejecutando SQL para " + tipo + ": " + sql);
+        log.debug("Ejecutando SQL para {}: {}", tipo, sql);
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -800,7 +818,7 @@ public class ModuloEstadisticaController implements Initializable {
             return;
         }
 
-        System.out.println("Generando vista previa para fecha: " + fecha);
+        log.debug("Generando vista previa para fecha: {}", fecha);
 
         // Generar PDF en memoria
         InputStream pdfStream = PDFGeneratorDiario.generarPDFDiario(fecha, false);
@@ -828,19 +846,32 @@ public class ModuloEstadisticaController implements Initializable {
     // MÉTODOS AUXILIARES
     private int obtenerNumeroMes(String mes) {
         switch (mes.toLowerCase()) {
-            case "enero": return 1;
-            case "febrero": return 2;
-            case "marzo": return 3;
-            case "abril": return 4;
-            case "mayo": return 5;
-            case "junio": return 6;
-            case "julio": return 7;
-            case "agosto": return 8;
-            case "septiembre": return 9;
-            case "octubre": return 10;
-            case "noviembre": return 11;
-            case "diciembre": return 12;
-            default: return 1;
+            case "enero":
+                return 1;
+            case "febrero":
+                return 2;
+            case "marzo":
+                return 3;
+            case "abril":
+                return 4;
+            case "mayo":
+                return 5;
+            case "junio":
+                return 6;
+            case "julio":
+                return 7;
+            case "agosto":
+                return 8;
+            case "septiembre":
+                return 9;
+            case "octubre":
+                return 10;
+            case "noviembre":
+                return 11;
+            case "diciembre":
+                return 12;
+            default:
+                return 1;
         }
     }
 

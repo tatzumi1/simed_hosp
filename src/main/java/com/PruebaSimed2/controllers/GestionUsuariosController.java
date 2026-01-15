@@ -21,6 +21,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,30 +30,48 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
 import javafx.util.Pair;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.Dialog;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 
+@Log4j2
 public class GestionUsuariosController {
 
 
-    @FXML private TextField txtBuscar;
-    @FXML private ComboBox<String> cbFiltroRol;
-    @FXML private ComboBox<String> cbFiltroEstado;
-    @FXML private Label lblResultados;
-    @FXML private Label lblContador;
-    @FXML private TableView<UsuarioVO> tablaUsuarios;
-    @FXML private TableColumn<UsuarioVO, String> colUsername;
-    @FXML private TableColumn<UsuarioVO, String> colEmail;
-    @FXML private TableColumn<UsuarioVO, String> colRol;
-    @FXML private TableColumn<UsuarioVO, Boolean> colActivo;
-    @FXML private TableColumn<UsuarioVO, String> colPrimerLogin;
-    @FXML private TableColumn<UsuarioVO, String> colUltimoLogin;
-    @FXML private TableColumn<UsuarioVO, String> colAcciones;
-    @FXML private Label lblMensaje;
+    @FXML
+    private TextField txtBuscar;
+    @FXML
+    private ComboBox<String> cbFiltroRol;
+    @FXML
+    private ComboBox<String> cbFiltroEstado;
+    @FXML
+    private Label lblResultados;
+    @FXML
+    private Label lblContador;
+    @FXML
+    private TableView<UsuarioVO> tablaUsuarios;
+    @FXML
+    private TableColumn<UsuarioVO, String> colUsername;
+    @FXML
+    private TableColumn<UsuarioVO, String> colEmail;
+    @FXML
+    private TableColumn<UsuarioVO, String> colRol;
+    @FXML
+    private TableColumn<UsuarioVO, Boolean> colActivo;
+    @FXML
+    private TableColumn<UsuarioVO, String> colPrimerLogin;
+    @FXML
+    private TableColumn<UsuarioVO, String> colUltimoLogin;
+    @FXML
+    private TableColumn<UsuarioVO, String> colAcciones;
+    @FXML
+    private Label lblMensaje;
 
     private ObservableList<UsuarioVO> usuariosCompleta = FXCollections.observableArrayList();
     private ObservableList<UsuarioVO> usuariosFiltrada = FXCollections.observableArrayList();
@@ -81,31 +100,51 @@ public class GestionUsuariosController {
         }
 
         // Getters
-        public String getUsername() { return username.get(); }
-        public String getEmail() { return email.get(); }
-        public String getRol() { return rol.get(); }
-        public boolean isActivo() { return activo.get(); }
-        public String getPrimerLogin() { return primerLogin.get(); }
-        public String getUltimoLogin() { return ultimoLogin.get(); }
-        public int getIdUsuario() { return idUsuario; }
+        public String getUsername() {
+            return username.get();
+        }
+
+        public String getEmail() {
+            return email.get();
+        }
+
+        public String getRol() {
+            return rol.get();
+        }
+
+        public boolean isActivo() {
+            return activo.get();
+        }
+
+        public String getPrimerLogin() {
+            return primerLogin.get();
+        }
+
+        public String getUltimoLogin() {
+            return ultimoLogin.get();
+        }
+
+        public int getIdUsuario() {
+            return idUsuario;
+        }
     }
 
 
     public void setUsuarioAdmin(Usuario usuario) {
-        System.out.println(" DEBUG - setUsuarioAdmin llamado");
-        System.out.println(" DEBUG - Usuario: " + (usuario != null ? usuario.getUsername() : "NULL"));
-        System.out.println(" DEBUG - Rol: " + (usuario != null ? usuario.getRol() : "NULL"));
+        log.debug("setUsuarioAdmin llamado");
+        log.debug("Usuario: {}", usuario != null ? usuario.getUsername() : "NULL");
+        log.debug("Rol: {}", usuario != null ? usuario.getRol() : "NULL");
 
         //  VALIDAR QUE SOLO ADMINS PUEDAN ACCEDER
         if (usuario == null) {
-            System.out.println(" DEBUG - Usuario es NULL");
+            log.debug("Usuario es NULL");
             mostrarMensaje(" Error: Usuario no identificado", "red");
             return;
         }
 
 
         if (usuario.getRol() == null || !usuario.getRol().toUpperCase().contains("ADMIN")) {
-            System.out.println(" DEBUG - Usuario NO es admin: " + usuario.getRol());
+            log.debug("Usuario NO es admin: {}", usuario.getRol());
             mostrarMensaje(" Acceso denegado. Solo administradores pueden gestionar usuarios.", "red");
 
             // Cerrar ventana automáticamente si no es admin
@@ -116,13 +155,11 @@ public class GestionUsuariosController {
             return;
         }
 
-        System.out.println(" DEBUG - Usuario ES admin, continuando...");
+        log.debug("Usuario ES admin, continuando...");
         this.usuarioAdmin = usuario;
-        System.out.println(" Admin gestionando usuarios: " + usuario.getUsername());
+        log.debug("Admin gestionando usuarios: {}", usuario.getUsername());
         cargarUsuarios();
     }
-
-
 
 
     @FXML
@@ -200,7 +237,6 @@ public class GestionUsuariosController {
         String sql = "SELECT id_usuario, username, email, rol, activo, primer_login, ultimo_login " +
                 "FROM tb_usuarios ORDER BY rol, username";
         try (Connection conn = ConexionBD.conectar();
-        //try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -230,7 +266,7 @@ public class GestionUsuariosController {
             mostrarMensaje(" " + usuariosCompleta.size() + " usuarios cargados", "green");
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando usuarios: " + e.getMessage());
+            log.error("Error cargando usuarios: {}", e.getMessage());
             mostrarMensaje(" Error al cargar usuarios: " + e.getMessage(), "red");
         }
     }
@@ -258,7 +294,7 @@ public class GestionUsuariosController {
                 mostrarMensaje("  Error: No se pudo resetear la contraseña", "red");
             }
         } catch (SQLException e) {
-            System.err.println("  Error reseteando password: " + e.getMessage());
+            log.error("Error reseteando password: {}", e.getMessage());
             mostrarMensaje("  Error al resetear contraseña: " + e.getMessage(), "red");
         }
     }
@@ -279,13 +315,13 @@ public class GestionUsuariosController {
             int filas = pstmt.executeUpdate();
 
             if (filas > 0) {
-                mostrarMensaje( "Usuario " + usuario.getUsername() + " " +
+                mostrarMensaje("Usuario " + usuario.getUsername() + " " +
                         (usuario.isActivo() ? "desactivado" : "activado"), "green");
                 cargarUsuarios();
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cambiando estado: " + e.getMessage());
+            log.error("Error cambiando estado: {}", e.getMessage());
             mostrarMensaje(" Error al cambiar estado", "red");
         }
     }
@@ -305,8 +341,8 @@ public class GestionUsuariosController {
             stage.show();
 
         } catch (Exception e) {
-            System.err.println(" Error abriendo registro de usuario: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error abriendo registro de usuario: {}", e.getMessage());
+            log.error("StackTrace:", e);
         }
     }
 
@@ -577,10 +613,11 @@ public class GestionUsuariosController {
             return filas > 0;
 
         } catch (SQLException e) {
-            System.err.println("  Error cambiando rol: " + e.getMessage());
+            log.error("Error cambiando rol: {}", e.getMessage());
             return false;
         }
     }
+
     // Método para cambiar rol con datos médicos
     private boolean actualizarRolConDatos(int idUsuario, String nuevoRol, String cedula, String universidad) {
         Connection conn = null;
@@ -636,13 +673,21 @@ public class GestionUsuariosController {
 
         } catch (SQLException e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    log.error("Error al hacer rollback");
+                }
             }
-            System.err.println("Error cambiando rol con datos: " + e.getMessage());
+            log.error("Error cambiando rol con datos: {}", e.getMessage());
             return false;
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException e) {}
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    log.error("Error al cerrar la conexión");
+                }
             }
         }
     }
@@ -709,6 +754,7 @@ public class GestionUsuariosController {
             mostrarMensaje(" Error al verificar datos: " + e.getMessage(), "red");
         }
     }
+
     // ===== MÉTODO PARA ABRIR LA VENTANA DE LOGOS
     @FXML
     private void abrirConfigurarLogos() {
@@ -723,7 +769,7 @@ public class GestionUsuariosController {
             stage.showAndWait(); // se cierra cuando el admin da "Guardar y cerrar"
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error al cargar la ventana de logos: {}", e.getMessage());
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setContentText("No se pudo abrir la ventana de logos.\nVerifica que el archivo configurar_logos.fxml esté en la carpeta resources/fxml/");

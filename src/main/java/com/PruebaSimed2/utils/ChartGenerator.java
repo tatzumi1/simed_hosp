@@ -1,6 +1,7 @@
 package com.PruebaSimed2.utils;
 
 import com.PruebaSimed2.controllers.ModuloEstadisticaController.EstadisticaMedico;
+import lombok.extern.log4j.Log4j2;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -8,10 +9,12 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+
 import java.io.File;
 import java.awt.Color;
 import java.util.List;
 
+@Log4j2
 public class ChartGenerator {
 
     // Método para generar gráfica de barras en AZUL MARINO
@@ -73,8 +76,7 @@ public class ChartGenerator {
             return tempFile;
 
         } catch (Exception e) {
-            System.err.println("Error generando gráfica de barras: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando gráfica de barras: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -133,8 +135,7 @@ public class ChartGenerator {
             return tempFile;
 
         } catch (Exception e) {
-            System.err.println("Error generando gráfica horizontal: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando gráfica horizontal: {}", e.getMessage(), e);
             return null;
         }
     }
