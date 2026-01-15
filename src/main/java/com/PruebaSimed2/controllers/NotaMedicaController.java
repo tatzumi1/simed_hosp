@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.PruebaSimed2.utils.NameGenerator.generateName;
+
 @Log4j2
 public class NotaMedicaController {
 
@@ -630,11 +632,7 @@ public class NotaMedicaController {
 
             if (rs.next()) {
                 // Nombre completo con apellidos
-                String nombreCompleto = construirNombreCompleto(
-                        rs.getString("A_paterno"),
-                        rs.getString("A_materno"),
-                        rs.getString("Nombre")
-                );
+                String nombreCompleto = generateName(rs.getString("A_paterno"), rs.getString("A_materno"), rs.getString("Nombre"));
 
                 // Datos básicos
                 datos.put("nombre", nombreCompleto);
@@ -675,23 +673,6 @@ public class NotaMedicaController {
         datos.putIfAbsent("telefono", "No especificado");  // Por defecto para Teléfono
 
         return datos;
-    }
-
-
-    private String construirNombreCompleto(String aPaterno, String aMaterno, String nombre) {
-        StringBuilder nombreCompleto = new StringBuilder();
-
-        if (aPaterno != null && !aPaterno.trim().isEmpty()) {
-            nombreCompleto.append(aPaterno).append(" ");
-        }
-        if (aMaterno != null && !aMaterno.trim().isEmpty()) {
-            nombreCompleto.append(aMaterno).append(" ");
-        }
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            nombreCompleto.append(nombre);
-        }
-
-        return nombreCompleto.length() > 0 ? nombreCompleto.toString().trim() : "No especificado";
     }
 
     private boolean verificarLimitesDatos() {

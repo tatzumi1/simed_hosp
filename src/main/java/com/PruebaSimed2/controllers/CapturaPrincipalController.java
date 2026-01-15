@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.PruebaSimed2.utils.NameGenerator.generateName;
+
 @Log4j2
 public class CapturaPrincipalController {
 
@@ -206,11 +208,7 @@ public class CapturaPrincipalController {
             txtTriage.setText(triage != null ? triage : "No especificado");
             aplicarColorTriage(triage);
 
-            String nombreCompleto = construirNombreCompleto(
-                    dto.getApellidoPaterno(),
-                    dto.getApellidoMaterno(),
-                    dto.getNombre()
-            );
+            String nombreCompleto = generateName(dto.getApellidoPaterno(), dto.getApellidoMaterno(), dto.getNombre());
             txtNombre.setText(nombreCompleto);
             txtEdad.setText(String.valueOf(dto.getEdad()));
             txtSexo.setText(obtenerDescripcionSexo(String.valueOf(dto.getSexo())));
@@ -329,11 +327,7 @@ public class CapturaPrincipalController {
             aplicarColorTriage(triage);
 
             // Nombre completo
-            String nombreCompleto = construirNombreCompleto(
-                    (String) datos.get("a_paterno"),
-                    (String) datos.get("a_materno"),
-                    (String) datos.get("nombre")
-            );
+            String nombreCompleto = generateName((String) datos.get("a_paterno"), (String) datos.get("a_materno"), (String) datos.get("nombre"));
             txtNombre.setText(nombreCompleto);
 
             // Demás datos
@@ -368,19 +362,7 @@ public class CapturaPrincipalController {
     }
 
     private String construirNombreCompleto(String aPaterno, String aMaterno, String nombre) {
-        StringBuilder nombreCompleto = new StringBuilder();
-
-        if (aPaterno != null && !aPaterno.trim().isEmpty()) {
-            nombreCompleto.append(aPaterno).append(" ");
-        }
-        if (aMaterno != null && !aMaterno.trim().isEmpty()) {
-            nombreCompleto.append(aMaterno).append(" ");
-        }
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            nombreCompleto.append(nombre);
-        }
-
-        return !nombreCompleto.isEmpty() ? nombreCompleto.toString().trim() : "No especificado";
+        return generateName(aPaterno, aMaterno, nombre);
     }
 
     private String obtenerDescripcionSexo(String codigoSexo) {
