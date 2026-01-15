@@ -3,6 +3,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.EntidadData;
 import com.PruebaSimed2.database.MunicipioData;
 import com.PruebaSimed2.database.UrgenciasData;
 import com.PruebaSimed2.models.InterconsultaVO;
@@ -294,7 +295,7 @@ public class CapturaPrincipalController {
         }
 
         entidadCode = entidadCode.trim();
-        log.debug("\uD83D\uDD0D Procesando entidad: '{}'", entidadCode);
+        log.debug("Procesando entidad: '{}'", entidadCode);
 
         // CASO A: Si ya es texto, usarlo directamente
         if (!entidadCode.matches("\\d+")) {
@@ -305,23 +306,9 @@ public class CapturaPrincipalController {
         // CASO B: Si es número, buscar en tblt_entidad
         log.debug("   Es número, buscando en tblt_entidad...");
 
-        String sql = "SELECT DESCRIP FROM tblt_entidad WHERE EDO = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, entidadCode);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String nombre = rs.getString("DESCRIP");
-                    log.debug(" Entidad encontrada: {}", nombre);
-                    return nombre;
-                } else {
-                    log.debug(" Entidad no encontrada en tblt_entidad");
-                    return null;
-                }
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ed = new EntidadData();
+            return ed.obtenerEntidades(conn, entidadCode);
         } catch (SQLException e) {
             log.error("Error obteniendo entidad: {}", e.getMessage());
             return null;
