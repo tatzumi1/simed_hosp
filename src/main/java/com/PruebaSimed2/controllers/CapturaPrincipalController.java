@@ -3,6 +3,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.MunicipioData;
 import com.PruebaSimed2.database.UrgenciasData;
 import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.models.NotaMedicaVO;
@@ -251,47 +252,35 @@ public class CapturaPrincipalController {
 
         log.debug(" Procesando municipio: '{}'", municipioCode);
 
-        // CASO A: Si ya es texto (ej: "poza rica"), usarlo directamente
+        // CASO A: Si ya es texto (ej.: "poza rica"), usarlo directamente
         if (!municipioCode.matches("\\d+")) {
-            log.debug("   Es texto, usando directamente: {}", municipioCode);
+            log.debug("Es texto, usando directamente: {}", municipioCode);
             return municipioCode;
         }
 
         // CASO B: Si es número, buscar en tblt_mpo
-        log.debug("   Es número, buscando en tblt_mpo...");
+        log.debug("Es número, buscando en tblt_mpo...");
 
-        String sql = "SELECT DESCRIP FROM tblt_mpo WHERE MPO = ? AND EDO = ?";
+        try (Connection conn = ConexionBD.conectar()) {
+            var md = new MunicipioData();
+            String nombre = md.obtenerDescripcionMunicipio(conn, municipioCode, entidadCode);
 
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, municipioCode);
-            pstmt.setString(2, entidadCode);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String nombre = rs.getString("DESCRIP");
-                    log.debug(" Municipio encontrado: {}", nombre);
-                    return nombre;
-                } else {
-                    log.debug(" Municipio no encontrado en tblt_mpo");
-
-                    // Intentar sin ceros a la izquierda
-                    if (municipioCode.matches("0+\\d+")) {
-                        String sinCeros = municipioCode.replaceFirst("^0+", "");
-                        log.debug("   Intentando sin ceros: '{}'", sinCeros);
-
-                        pstmt.setString(1, sinCeros);
-                        ResultSet rs2 = pstmt.executeQuery();
-                        if (rs2.next()) {
-                            String nombre = rs2.getString("DESCRIP");
-                            log.debug(" Municipio encontrado (sin ceros): {}", nombre);
-                            return nombre;
-                        }
+            if (nombre != null) {
+                log.debug(" Municipio encontrado: {}", nombre);
+                return nombre;
+            } else {
+                log.debug("Municipio no encontrado en tblt_mpo, intentando sin ceros a la izquierda...");
+                if (municipioCode.matches("0+\\d+")) {
+                    String sinCeros = municipioCode.replaceFirst("^0+", "");
+                    log.debug("Intentando sin ceros: '{}'", sinCeros);
+                    nombre = md.obtenerDescripcionMunicipio(conn, sinCeros, entidadCode);
+                    if (nombre != null) {
+                        log.debug("Municipio encontrado (sin ceros): {}", nombre);
+                        return nombre;
                     }
-
-                    return null;
                 }
+                log.warn("Municipio no encontrado en tblt_mpo ni sin ceros a la izquierda");
+                return null;
             }
         } catch (SQLException e) {
             log.error("Error obteniendo municipio: {}", e.getMessage());
