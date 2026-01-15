@@ -2,10 +2,7 @@
 
 package com.PruebaSimed2.controllers;
 
-import com.PruebaSimed2.database.ConexionBD;
-import com.PruebaSimed2.database.EntidadData;
-import com.PruebaSimed2.database.MunicipioData;
-import com.PruebaSimed2.database.UrgenciasData;
+import com.PruebaSimed2.database.*;
 import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.models.NotaMedicaVO;
 import com.PruebaSimed2.utils.PDFGenerator;
@@ -378,6 +375,7 @@ public class CapturaPrincipalController {
 
             if (texto.contains("rojo")) color = "#e74c3c";
             else if (texto.contains("amarillo")) color = "#f1c40f";
+            else if (texto.contains("naranja")) color = "#ff8000";
             else if (texto.contains("verde")) color = "#2ecc71";
             else color = "#95a5a6";
 
@@ -391,17 +389,9 @@ public class CapturaPrincipalController {
      * OBTENER ID DE USUARIO DESDE BD - CORREGIDO
      */
     private int obtenerIdUsuarioDesdeBD(String username) {
-        String sql = "SELECT id_usuario FROM tb_usuarios WHERE username = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("id_usuario");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UsuarioData();
+            return ud.obtenerIdUsuarioPorUsername(conn, username);
         } catch (SQLException e) {
             log.error(" Error obteniendo ID de usuario: {}", e.getMessage());
         }
