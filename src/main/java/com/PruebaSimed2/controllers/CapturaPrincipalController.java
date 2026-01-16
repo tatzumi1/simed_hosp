@@ -845,32 +845,15 @@ public class CapturaPrincipalController {
     }
 
     private boolean otorgarPermisoInterconsultaEnBD(int idInterconsulta) {
-        String sql = "UPDATE tb_inter SET " +
-                "editable_por_medico = TRUE, " +
-                "permiso_edicion_otorgado_por = ?, " +
-                "fecha_permiso_edicion = NOW(), " +
-                "fecha_edicion_realizada = NULL " +
-                "WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, usuarioLogueado);
-            pstmt.setInt(2, idInterconsulta);
-
-            int filas = pstmt.executeUpdate();
-
-            if (filas > 0) {
-                log.debug(" Permiso otorgado para interconsulta - ID: {}", idInterconsulta);
-
-                //  REGISTRAR EN HISTORIAL
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
+            if (id.tienePermisoInterconsulta(conn, usuarioLogueado, idInterconsulta)) {
                 registrarEnHistorialPermisosInterconsulta(idInterconsulta);
                 return true;
             } else {
                 log.warn(" No se pudo otorgar permiso para interconsulta");
                 return false;
             }
-
         } catch (SQLException e) {
             log.error(" Error otorgando permiso para interconsulta: {}", e.getMessage());
             return false;

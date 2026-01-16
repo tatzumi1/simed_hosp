@@ -11,6 +11,7 @@ import java.sql.SQLException;
 public class InterData {
     private static final String CONTEO_INTERCONSULTAS = "SELECT COUNT(*) as total FROM tb_inter WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
     private static final String OBTENER_SINTOMAS_POR_INTERCONSULTA = "SELECT sintomas FROM tb_inter WHERE id_inter = ?";
+    private static final String TIENE_PERMISO_INTERCONSULTA = "UPDATE tb_inter SET editable_por_medico = TRUE, permiso_edicion_otorgado_por = ?, fecha_permiso_edicion = NOW(), fecha_edicion_realizada = NULL WHERE id_inter = ?";
 
     public int obtenerConteoInterconsultas(Connection connection, int folioPaciente) {
         try (PreparedStatement stmt = connection.prepareStatement(CONTEO_INTERCONSULTAS)) {
@@ -45,6 +46,24 @@ public class InterData {
         } catch (SQLException e) {
             log.error("Error al obtener sintomas de la interconsulta con id: {}", idInterconsulta, e);
             return "Sin síntomas registrados";
+        }
+    }
+
+    public boolean tienePermisoInterconsulta(Connection connection, String usuarioLogueado, int idInterconsulta) {
+        try (PreparedStatement stmt = connection.prepareStatement(TIENE_PERMISO_INTERCONSULTA)) {
+            stmt.setString(1, usuarioLogueado);
+            stmt.setInt(2, idInterconsulta);
+            int filas = stmt.executeUpdate();
+            if (filas > 0) {
+                log.debug(" Permiso otorgado para interconsulta - ID: {}", idInterconsulta);
+                return true;
+            } else {
+                log.debug(" No se pudo otorgar permiso para interconsulta - ID: {}", idInterconsulta);
+                return false;
+            }
+        } catch (SQLException e) {
+            log.error("Error al otorgar permiso para interconsulta: {}", e.getMessage());
+            return false;
         }
     }
 }
