@@ -358,10 +358,6 @@ public class CapturaPrincipalController {
         }
     }
 
-    private String construirNombreCompleto(String aPaterno, String aMaterno, String nombre) {
-        return generateName(aPaterno, aMaterno, nombre);
-    }
-
     private String obtenerDescripcionSexo(String codigoSexo) {
         if ("1".equals(codigoSexo)) return "Masculino";
         if ("2".equals(codigoSexo)) return "Femenino";
@@ -383,11 +379,6 @@ public class CapturaPrincipalController {
         }
     }
 
-    // ==================== MÉTODOS AUXILIARES MEJORADOS ====================
-
-    /**
-     * OBTENER ID DE USUARIO DESDE BD - CORREGIDO
-     */
     private int obtenerIdUsuarioDesdeBD(String username) {
         try (Connection conn = ConexionBD.conectar()) {
             var ud = new UsuarioData();
@@ -395,7 +386,7 @@ public class CapturaPrincipalController {
         } catch (SQLException e) {
             log.error(" Error obteniendo ID de usuario: {}", e.getMessage());
         }
-        return 0; // Valor por defecto si no se encuentra
+        return 0;
     }
 
     private String obtenerNombreMedicoDesdeUsuario(String username) {
@@ -535,27 +526,10 @@ public class CapturaPrincipalController {
     private void cargarContadores() {
         new Thread(() -> {
             try (Connection conn = ConexionBD.conectar()) {
-                // CONTAR NOTAS (INCLUYENDO TEMPORALES)
-                String sqlNotas = "SELECT COUNT(*) as total FROM tb_notas WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
-                try (PreparedStatement pstmt = conn.prepareStatement(sqlNotas)) {
-                    pstmt.setInt(1, folioPaciente);
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        int total = rs.getInt("total");
-                        Platform.runLater(() -> lblContadorNotas.setText(String.valueOf(total)));
-                    }
-                }
-
-                // CONTAR INTERCONSULTAS (INCLUYENDO TEMPORALES)
-                String sqlInter = "SELECT COUNT(*) as total FROM tb_inter WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
-                try (PreparedStatement pstmt = conn.prepareStatement(sqlInter)) {
-                    pstmt.setInt(1, folioPaciente);
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        int total = rs.getInt("total");
-                        Platform.runLater(() -> lblContadorInterconsultas.setText(String.valueOf(total)));
-                    }
-                }
+                var nd = new NotasData();
+                var id = new InterData();
+                Platform.runLater(() -> lblContadorNotas.setText(String.valueOf(nd.obtenerConteoNotas(conn, folioPaciente))));
+                Platform.runLater(() -> lblContadorInterconsultas.setText(String.valueOf(id.obtenerConteoInterconsultas(conn, folioPaciente))));
             } catch (SQLException e) {
                 log.error(" Error cargando contadores: {}", e.getMessage());
             }
