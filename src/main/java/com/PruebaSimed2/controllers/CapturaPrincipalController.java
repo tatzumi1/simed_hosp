@@ -31,12 +31,11 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 import static com.PruebaSimed2.utils.NameGenerator.generateName;
+import static java.util.Arrays.asList;
 
 @Log4j2
 public class CapturaPrincipalController {
@@ -310,7 +309,6 @@ public class CapturaPrincipalController {
         }
     }
 
-    // Método actualizarUIDatosPaciente corregido
     private void actualizarUIDatosPaciente(Map<String, Object> datos) {
         try {
             // Información básica
@@ -578,7 +576,7 @@ public class CapturaPrincipalController {
 
             // COLUMNA SÍNTOMAS
             TableColumn<NotaMedicaVO, String> colSintomas = new TableColumn<>("Síntomas");
-            colSintomas.setCellFactory(tc -> crearCeldaConTooltip());
+            colSintomas.setCellFactory(tc -> crearCeldaGenericaConTooltip());
             colSintomas.setCellValueFactory(cellData -> {
                 String sintomas = obtenerSintomasNota(cellData.getValue().getIdNota());
                 return new SimpleStringProperty(sintomas);
@@ -604,7 +602,7 @@ public class CapturaPrincipalController {
                     new SimpleStringProperty(cellData.getValue().isEditablePorMedico() ? "SÍ" : "NO"));
             colEditable.setPrefWidth(70);
 
-            tablaNotasMedicas.getColumns().addAll(colNumeroNota, colSintomas, colMedico, colFecha, colEstado, colEditable);
+            tablaNotasMedicas.getColumns().addAll(asList(colNumeroNota, colSintomas, colMedico, colFecha, colEstado, colEditable));
         }
     }
 
@@ -622,7 +620,7 @@ public class CapturaPrincipalController {
         return colFecha;
     }
 
-    private TableCell<NotaMedicaVO, String> crearCeldaConTooltip() {
+    private <T> TableCell<T, String> crearCeldaGenericaConTooltip() {
         return new TableCell<>() {
             private final Tooltip tooltip = new Tooltip();
             private final Label label = new Label();
@@ -682,7 +680,7 @@ public class CapturaPrincipalController {
             colEstadoInter.setCellValueFactory(new PropertyValueFactory<>("estado"));
             colEstadoInter.setPrefWidth(90);
 
-            tablaInterconsultas.getColumns().addAll(colNumeroInter, colSintomasInter, colEspecialista, colFechaInter, colEstadoInter);
+            tablaInterconsultas.getColumns().addAll(asList(colNumeroInter, colSintomasInter, colEspecialista, colFechaInter, colEstadoInter));
         }
     }
 
@@ -702,49 +700,13 @@ public class CapturaPrincipalController {
 
     private TableColumn<InterconsultaVO, String> getInterconsultaVOStringTableColumn() {
         TableColumn<InterconsultaVO, String> colSintomasInter = new TableColumn<>("Síntomas");
-        colSintomasInter.setCellFactory(tc -> crearCeldaConTooltipInterconsulta());
-        //colSintomasInter.setCellFactory(tc -> crearCeldaConTooltip());
+        colSintomasInter.setCellFactory(tc -> crearCeldaGenericaConTooltip());
         colSintomasInter.setCellValueFactory(cellData -> {
             String sintomas = obtenerSintomasInterconsulta(cellData.getValue().getIdInterconsulta());
             return new SimpleStringProperty(sintomas);
         });
         colSintomasInter.setPrefWidth(220);
         return colSintomasInter;
-    }
-
-    private TableCell<InterconsultaVO, String> crearCeldaConTooltipInterconsulta() {
-        return new TableCell<>() {
-            private final Tooltip tooltip = new Tooltip();
-            private final Label label = new Label();
-
-            {
-                label.setWrapText(true);
-                label.setMaxWidth(200);
-                label.setPrefWidth(200);
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-
-                setOnMouseClicked(event -> {
-                    if (event.getClickCount() == 2 && !isEmpty()) {
-                        mostrarSintomasCompletos(getItem());
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                    setTooltip(null);
-                } else {
-                    String preview = item.length() > 60 ? item.substring(0, 60) + "..." : item;
-                    label.setText(preview);
-                    setGraphic(label);
-                    tooltip.setText(item);
-                    setTooltip(tooltip);
-                }
-            }
-        };
     }
 
     // ==================== MÉTODOS AUXILIARES PARA TABLAS ====================
