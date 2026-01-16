@@ -3,6 +3,7 @@
 package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.database.MedicoData;
 import com.PruebaSimed2.models.NotaMedicaVO;
 import com.PruebaSimed2.utils.PDFGenerator;
 import com.PruebaSimed2.utils.SesionUsuario;
@@ -13,15 +14,11 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import java.sql.*;
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Date;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.PruebaSimed2.utils.NameGenerator.generateName;
 
@@ -222,18 +219,14 @@ public class NotaMedicaController {
     private void actualizarCedula() {
         String medicoSeleccionado = cmbMedicos.getValue();
         if (medicoSeleccionado != null) {
-            try (Connection conn = ConexionBD.conectar();
-                 PreparedStatement pstmt = conn.prepareStatement("SELECT Ced_prof FROM tb_medicos WHERE Med_nombre = ?")) {
-
-                pstmt.setString(1, medicoSeleccionado);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next()) {
-                    txtCedula.setText(rs.getString("Ced_prof"));
-                }
+            try (Connection conn = ConexionBD.conectar()) {
+                var md = new MedicoData();
+                txtCedula.setText(md.obtenerCedulaPorNombre(conn, medicoSeleccionado));
             } catch (SQLException e) {
                 log.error(" Error obteniendo cédula: {}", e.getMessage());
             }
+        } else {
+            log.warn("No hay medico seleccionado");
         }
     }
 

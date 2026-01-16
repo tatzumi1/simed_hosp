@@ -555,18 +555,14 @@ public class CapturaPrincipalController {
     private void actualizarCedulaMedico() {
         String medicoSeleccionado = cmbMedicoActual.getValue();
         if (medicoSeleccionado != null) {
-            try (Connection conn = ConexionBD.conectar();
-                 PreparedStatement pstmt = conn.prepareStatement("SELECT Ced_prof FROM tb_medicos WHERE Med_nombre = ?")) {
-
-                pstmt.setString(1, medicoSeleccionado);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next()) {
-                    txtCedulaMedico.setText(rs.getString("Ced_prof"));
-                }
+            try (Connection conn = ConexionBD.conectar()) {
+                var md = new MedicoData();
+                txtCedulaMedico.setText(md.obtenerCedulaPorNombre(conn, medicoSeleccionado));
             } catch (SQLException e) {
                 log.error(" Error obteniendo cédula: {}", e.getMessage());
             }
+        } else {
+            log.warn("Medico no seleccionado");
         }
     }
 
