@@ -712,15 +712,9 @@ public class CapturaPrincipalController {
     // ==================== MÉTODOS AUXILIARES PARA TABLAS ====================
 
     private String obtenerSintomasNota(int idNota) {
-        String sql = "SELECT sintomas FROM tb_notas WHERE id_nota = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, idNota);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String sintomas = rs.getString("sintomas");
-                return sintomas != null ? sintomas : "Sin síntomas registrados";
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
+            return nd.obtenerSintomasPorNota(conn, idNota);
         } catch (SQLException e) {
             log.error(" Error obteniendo síntomas: {}", e.getMessage());
         }
