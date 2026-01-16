@@ -722,15 +722,9 @@ public class CapturaPrincipalController {
     }
 
     private String obtenerSintomasInterconsulta(int idInterconsulta) {
-        String sql = "SELECT sintomas FROM tb_inter WHERE id_inter = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, idInterconsulta);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String sintomas = rs.getString("sintomas");
-                return sintomas != null ? sintomas : "Sin síntomas registrados";
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
+            return id.obtenerSintomasPorInterconsulta(conn, idInterconsulta);
         } catch (SQLException e) {
             log.error(" Error obteniendo síntomas de interconsulta: {}", e.getMessage());
         }
