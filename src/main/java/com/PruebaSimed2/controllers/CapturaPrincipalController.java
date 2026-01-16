@@ -2,6 +2,7 @@
 
 package com.PruebaSimed2.controllers;
 
+import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
 import com.PruebaSimed2.database.*;
 import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.models.NotaMedicaVO;
@@ -997,36 +998,24 @@ public class CapturaPrincipalController {
             conn = ConexionBD.conectar();
             conn.setAutoCommit(false);
 
-            String tipoUrgencia = cmbTipoUrgencia.getValue();
-            String motivoUrgencia = cmbMotivoUrgencia.getValue();
-            String tipoCama = cmbTipoCama.getValue();
-            String medico = cmbMedicoActual.getValue();
+            var ud = new UrgenciasData();
+            var dto = new ActualizarCapturaPrincipalDTO(
+                    obtenerClaveDesdeDescripcion("tblt_cveurg", cmbTipoUrgencia.getValue()),
+                    obtenerClaveDesdeDescripcion("tblt_cvemotatn", cmbMotivoUrgencia.getValue()),
+                    obtenerClaveDesdeDescripcion("tblt_cvecama", cmbTipoCama.getValue()),
+                    obtenerClaveMedico(cmbMedicoActual.getValue()),
+                    cmbMedicoActual.getValue(),
+                    folioPaciente
+            );
 
-            String sql = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
-
-            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setInt(1, obtenerClaveDesdeDescripcion("tblt_cveurg", tipoUrgencia));
-                pstmt.setInt(2, obtenerClaveDesdeDescripcion("tblt_cvemotatn", motivoUrgencia));
-                pstmt.setInt(3, obtenerClaveDesdeDescripcion("tblt_cvecama", tipoCama));
-                pstmt.setInt(4, obtenerClaveMedico(medico));
-                pstmt.setString(5, medico);
-                pstmt.setInt(6, folioPaciente);
-
-                int filas = pstmt.executeUpdate();
-
-                if (filas > 0) {
-                    conn.commit();
-                    deshabilitarCamposNuevaInformacion();
-                    capturaGuardada = true;
-
-                    // NUEVA LÍNEA: Actualizar botones según estado
-                    configurarBotonesSegunEstadoPaciente();
-
-                    log.debug("Captura completa guardada - Folio: {}", folioPaciente);
-                    return true;
-                }
+            if (ud.actualizarCapturaPrincipal(conn, dto)) {
+                conn.commit();
+                deshabilitarCamposNuevaInformacion();
+                capturaGuardada = true;
+                configurarBotonesSegunEstadoPaciente();
+                log.debug("Captura completa guardada - Folio: {}", folioPaciente);
+                return true;
             }
-
         } catch (SQLException e) {
             log.error("Error guardando captura: {}", e.getMessage());
             try {

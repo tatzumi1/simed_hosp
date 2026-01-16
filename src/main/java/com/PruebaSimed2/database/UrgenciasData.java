@@ -1,5 +1,6 @@
 package com.PruebaSimed2.database;
 
+import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
 import com.PruebaSimed2.DTO.Urgencias.CargarDatosPacienteDTO;
 import com.PruebaSimed2.DTO.Urgencias.InsertarPacienteDTO;
 import lombok.extern.log4j.Log4j2;
@@ -22,7 +23,6 @@ public class UrgenciasData {
             "CURDATE(), ?, 1, ?, ?, ?, " +
             "?, ?, ?, ?, ?, ?)";
     private static final String OBTENER_ID_MAXIMO = "SELECT COALESCE(MAX(Folio), 0) + 1 FROM tb_urgencias";
-
     private static final String CARGAR_DATOS_PACIENTE = "SELECT u.*, " +
             "m.DESCRIP as NombreMunicipio, e.DESCRIP as NombreEntidad, " +
             "dh.Derechohabiencia as NombreDerechohabiencia " +
@@ -31,6 +31,8 @@ public class UrgenciasData {
             "LEFT JOIN tblt_entidad e ON u.Entidad_resid = e.EDO " +
             "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
             "WHERE u.Folio = ?";
+    private static final String ACTUALIZAR_CAPTURA_PRINCIPAL = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
+
     public boolean insertarPaciente(InsertarPacienteDTO dto, Connection connection) {
         log.debug("Insertando paciente en la base de datos: {}", dto);
         try (PreparedStatement stmt = connection.prepareStatement(INSERT_PACIENTE)) {
@@ -122,5 +124,27 @@ public class UrgenciasData {
             log.error("Error al cargar datos del paciente: {}", e.getMessage());
         }
         return null;
+    }
+
+    public boolean actualizarCapturaPrincipal(Connection connection, ActualizarCapturaPrincipalDTO dto) {
+        try (PreparedStatement statement = connection.prepareStatement(ACTUALIZAR_CAPTURA_PRINCIPAL)) {
+            statement.setInt(1, dto.getCveUrg());
+            statement.setInt(2, dto.getCveMotatn());
+            statement.setInt(3, dto.getCveCama());
+            statement.setInt(4, dto.getCveMedico());
+            statement.setString(5, dto.getMedico());
+            statement.setInt(6, dto.getFolioPaciente());
+            int filas = statement.executeUpdate();
+            if (filas > 0) {
+                log.info("Captura principal actualizada correctamente");
+                return true;
+            } else {
+                log.warn("No se pudo actualizar captura principal");
+                return false;
+            }
+        } catch (SQLException e) {
+            log.error("Error actualizando captura principal: {}", e.getMessage());
+            return false;
+        }
     }
 }
