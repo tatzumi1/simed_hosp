@@ -30,8 +30,10 @@ import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.PruebaSimed2.utils.NameGenerator.generateName;
 import static java.util.Arrays.asList;
@@ -1278,14 +1280,9 @@ public class CapturaPrincipalController {
     }
 
     private int obtenerEstadoPacienteActual() {
-        String sql = "SELECT Estado_pac FROM tb_urgencias WHERE Folio = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("Estado_pac");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            return ud.obtenerEstadoPaciente(conn, folioPaciente);
         } catch (SQLException e) {
             log.error("Error obteniendo estado del paciente: {}", e.getMessage());
         }

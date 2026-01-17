@@ -34,6 +34,7 @@ public class UrgenciasData {
             "WHERE u.Folio = ?";
     private static final String CARGAR_NUEVA_INFORMACION = "SELECT Tipo_urg, Motivo_urg, Tipo_cama, Cve_med, Nom_med, Estado_pac FROM tb_urgencias WHERE Folio = ?";
     private static final String ACTUALIZAR_CAPTURA_PRINCIPAL = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
+    private static final String OBTENER_ESTADO_PACIENTE = "SELECT Estado_pac FROM tb_urgencias WHERE Folio = ?";
 
     public boolean insertarPaciente(InsertarPacienteDTO dto, Connection connection) {
         log.debug("Insertando paciente en la base de datos: {}", dto);
@@ -171,6 +172,24 @@ public class UrgenciasData {
         } catch (SQLException e) {
             log.error("Error actualizando captura principal: {}", e.getMessage());
             return false;
+        }
+    }
+
+    public int obtenerEstadoPaciente(Connection connection, int folio) {
+        try (PreparedStatement statement = connection.prepareStatement(OBTENER_ESTADO_PACIENTE)) {
+            statement.setInt(1, folio);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                int estado = rs.getInt("Estado_pac");
+                log.debug("Estado del paciente con folio {}: {}", folio, estado);
+                return estado;
+            } else {
+                log.warn("Estado del paciente con folio {} no encontrado", folio);
+                return 1;
+            }
+        } catch (SQLException e) {
+            log.error("Error al obtener el estado del paciente con folio: {}", folio, e);
+            return 1;
         }
     }
 }
