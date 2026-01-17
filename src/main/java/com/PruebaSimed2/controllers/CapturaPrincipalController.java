@@ -1081,42 +1081,10 @@ public class CapturaPrincipalController {
     }
 
     private void cargarInterconsultasDelPaciente() {
-        String sql = "SELECT id_inter, Folio, Num_inter, Nota, sintomas, signos_vitales, diagnostico, especialidad, " +
-                "Medico, Cedula, Fecha, Hora, Estado, estado_paciente, " +
-                "editable_por_medico, permiso_edicion_otorgado_por, " +
-                "fecha_permiso_edicion, fecha_edicion_realizada " +
-                "FROM tb_inter WHERE Folio = ? ORDER BY Num_inter DESC";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
             interconsultasData.clear();
-
-            while (rs.next()) {
-                LocalDateTime fechaHora = obtenerFechaHoraDesdeBD(rs.getString("Fecha"), rs.getString("Hora"));
-
-                InterconsultaVO interconsulta = new InterconsultaVO(
-                        rs.getInt("id_inter"),
-                        rs.getInt("Folio"),
-                        rs.getInt("Num_inter"),
-                        rs.getString("Nota"),
-                        rs.getString("Medico"),
-                        rs.getString("Cedula"),
-                        fechaHora,
-                        rs.getString("Estado"),
-                        rs.getString("estado_paciente"),
-                        rs.getBoolean("editable_por_medico"),
-                        rs.getString("permiso_edicion_otorgado_por"),
-                        rs.getTimestamp("fecha_permiso_edicion") != null ?
-                                rs.getTimestamp("fecha_permiso_edicion").toLocalDateTime() : null
-                );
-
-                interconsultasData.add(interconsulta);
-            }
-
+            interconsultasData.addAll(id.obtenerInterconsultasPorPaciente(conn, folioPaciente));
             Platform.runLater(() -> {
                 if (tablaInterconsultas != null) {
                     tablaInterconsultas.setItems(interconsultasData);
