@@ -1325,16 +1325,20 @@ public class CapturaPrincipalController {
         }
     }
 
+    private void ocultarSeccionesComunes() {
+        txtFechaAtencion.setVisible(false);
+        txtHoraAtencion.setVisible(false);
+        txtCedulaMedico.setVisible(false);
+        cmbTipoUrgencia.setVisible(false);
+        cmbMotivoUrgencia.setVisible(false);
+        cmbTipoCama.setVisible(false);
+        cmbMedicoActual.setVisible(false);
+        rbObservacion.setVisible(false);
+    }
+
     private void ocultarSeccionNuevaInformacion() {
         Platform.runLater(() -> {
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             rbAltaMedica.setVisible(false);
             btnGuardarGeneral.setVisible(false);
         });
@@ -1654,14 +1658,7 @@ public class CapturaPrincipalController {
     private void ocultarSeccionParaEgresado() {
         Platform.runLater(() -> {
             // Ocultar todo excepto RadioButton para Egreso
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             btnGuardarGeneral.setVisible(false);
 
             // Solo mostrar RadioButton de Egreso (pero deshabilitado)
@@ -1673,15 +1670,7 @@ public class CapturaPrincipalController {
 
     private void mostrarSoloRadioButtonsParaEgreso() {
         Platform.runLater(() -> {
-            // Ocultar todos los combos y campos
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-
+            ocultarSeccionesComunes();
             // Mostrar ambos RadioButtons
             rbObservacion.setVisible(true);
             rbObservacion.setDisable(true); // No puede cambiar de Observación
