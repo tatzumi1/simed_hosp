@@ -10,6 +10,7 @@ import java.sql.SQLException;
 @Log4j2
 public class InterData {
     private static final String CONTEO_INTERCONSULTAS = "SELECT COUNT(*) as total FROM tb_inter WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
+    private static final String CONTEO_INTERCONSULTAS_POR_MEDICO = "SELECT COUNT(*) as temp FROM tb_inter WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
     private static final String OBTENER_SINTOMAS_POR_INTERCONSULTA = "SELECT sintomas FROM tb_inter WHERE id_inter = ?";
     private static final String TIENE_PERMISO_INTERCONSULTA = "UPDATE tb_inter SET editable_por_medico = TRUE, permiso_edicion_otorgado_por = ?, fecha_permiso_edicion = NOW(), fecha_edicion_realizada = NULL WHERE id_inter = ?";
 
@@ -27,6 +28,25 @@ public class InterData {
             }
         } catch (SQLException e) {
             log.error("Error al obtener el conteo de interconsultas para el paciente con folio: {}", folioPaciente, e);
+            return 0;
+        }
+    }
+
+    public int obtenerConteoInterconsultasPorMedico(Connection connection, int folioPaciente, String medico) {
+        try (PreparedStatement statement = connection.prepareStatement(CONTEO_INTERCONSULTAS_POR_MEDICO)) {
+            statement.setInt(1, folioPaciente);
+            statement.setString(2, medico);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                int total = rs.getInt("temp");
+                log.debug("Conteo de interconsultas temporales para el paciente con folio {} y medico {}: {}", folioPaciente, medico, total);
+                return total;
+            } else {
+                log.warn("No se encontraron interconsultas temporales para el paciente con folio {} y medico {}", folioPaciente, medico);
+                return 0;
+            }
+        } catch (SQLException e) {
+            log.error("Error al obtener el conteo de interconsultas por medico para el paciente con folio: {}", folioPaciente, e);
             return 0;
         }
     }

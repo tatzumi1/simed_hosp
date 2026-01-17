@@ -1039,41 +1039,26 @@ public class CapturaPrincipalController {
     private void verificarNotasTemporalesPropias() {
         try (Connection conn = ConexionBD.conectar()) {
             String nombreMedicoActual = sesion.getNombreMedico();
+            var nd = new NotasData();
+            var id = new InterData();
+            if (nd.obtenerConteoNotasPorMedico(conn, folioPaciente, nombreMedicoActual) > 0) {
+                cargarDatosNuevaInfoDesdeBD();
+                deshabilitarCamposNuevaInformacion();
+                habilitarBotonesNotas();
+                capturaGuardada = true;
+                log.debug("Notas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
+            }
 
-            // VERIFICAR NOTAS TEMPORALES PROPIAS
-            String sqlNotas = "SELECT COUNT(*) as temp FROM tb_notas WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlNotas)) {
-                pstmt.setInt(1, folioPaciente);
-                pstmt.setString(2, nombreMedicoActual);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next() && rs.getInt("temp") > 0) {
+            // VERIFICAR INTERCONSULTAS TEMPORALES PROPIAS
+            if (id.obtenerConteoInterconsultasPorMedico(conn, folioPaciente, nombreMedicoActual) > 0) {
+                if (!capturaGuardada) {
                     cargarDatosNuevaInfoDesdeBD();
                     deshabilitarCamposNuevaInformacion();
                     habilitarBotonesNotas();
                     capturaGuardada = true;
-                    log.debug("Notas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
                 }
+                log.debug(" Interconsultas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
             }
-
-            // VERIFICAR INTERCONSULTAS TEMPORALES PROPIAS
-            String sqlInter = "SELECT COUNT(*) as temp FROM tb_inter WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlInter)) {
-                pstmt.setInt(1, folioPaciente);
-                pstmt.setString(2, nombreMedicoActual);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next() && rs.getInt("temp") > 0) {
-                    if (!capturaGuardada) {
-                        cargarDatosNuevaInfoDesdeBD();
-                        deshabilitarCamposNuevaInformacion();
-                        habilitarBotonesNotas();
-                        capturaGuardada = true;
-                    }
-                    log.debug(" Interconsultas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
-                }
-            }
-
         } catch (SQLException e) {
             log.error(" Error verificando notas temporales propias: {}", e.getMessage());
         }

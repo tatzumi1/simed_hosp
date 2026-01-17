@@ -10,6 +10,7 @@ import java.sql.SQLException;
 @Log4j2
 public class NotasData {
     private static final String CONTEO_NOTAS = "SELECT COUNT(*) as total FROM tb_notas WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
+    private static final String CONTEO_NOTAS_POR_MEDICO = "SELECT COUNT(*) as temp FROM tb_notas WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
     private static final String OBTENER_SINTOMAS_POR_NOTA = "SELECT sintomas FROM tb_notas WHERE id_nota = ?";
 
     public int obtenerConteoNotas(Connection connection, int folioPaciente) {
@@ -26,6 +27,25 @@ public class NotasData {
             }
         } catch (SQLException e) {
             log.error("Error al obtener el conteo de notas para el paciente con folio: {}", folioPaciente, e);
+            return 0;
+        }
+    }
+
+    public int obtenerConteoNotasPorMedico(Connection connection, int folioPaciente, String medico) {
+        try (PreparedStatement statement = connection.prepareStatement(CONTEO_NOTAS_POR_MEDICO)) {
+            statement.setInt(1, folioPaciente);
+            statement.setString(2, medico);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                int total = rs.getInt("temp");
+                log.debug("Conteo de notas temporales para el paciente con folio {} y medico {}: {}", folioPaciente, medico, total);
+                return total;
+            } else {
+                log.warn("No se encontraron notas temporales para el paciente con folio {} y medico {}", folioPaciente, medico);
+                return 0;
+            }
+        } catch (SQLException e) {
+            log.error("Error al obtener el conteo de notas por medico para el paciente con folio: {}", folioPaciente, e);
             return 0;
         }
     }
