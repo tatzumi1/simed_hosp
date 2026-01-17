@@ -2,6 +2,7 @@ package com.PruebaSimed2.database;
 
 import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
 import com.PruebaSimed2.DTO.Urgencias.CargarDatosPacienteDTO;
+import com.PruebaSimed2.DTO.Urgencias.CargarNuevaInformacionDTO;
 import com.PruebaSimed2.DTO.Urgencias.InsertarPacienteDTO;
 import lombok.extern.log4j.Log4j2;
 
@@ -31,6 +32,7 @@ public class UrgenciasData {
             "LEFT JOIN tblt_entidad e ON u.Entidad_resid = e.EDO " +
             "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
             "WHERE u.Folio = ?";
+    private static final String CARGAR_NUEVA_INFORMACION = "SELECT Tipo_urg, Motivo_urg, Tipo_cama, Cve_med, Nom_med, Estado_pac FROM tb_urgencias WHERE Folio = ?";
     private static final String ACTUALIZAR_CAPTURA_PRINCIPAL = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
 
     public boolean insertarPaciente(InsertarPacienteDTO dto, Connection connection) {
@@ -124,6 +126,30 @@ public class UrgenciasData {
             log.error("Error al cargar datos del paciente: {}", e.getMessage());
         }
         return null;
+    }
+
+    public CargarNuevaInformacionDTO cargarNuevaInformacion(int folio, Connection connection) {
+        try (PreparedStatement statement = connection.prepareStatement(CARGAR_NUEVA_INFORMACION)) {
+            statement.setInt(1, folio);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                var dto = new CargarNuevaInformacionDTO(
+                        rs.getInt("Tipo_urg"),
+                        rs.getInt("Motivo_urg"),
+                        rs.getInt("Tipo_cama"),
+                        rs.getInt("Cve_med"),
+                        rs.getString("Nom_med"),
+                        rs.getInt("Estado_pac"));
+                log.debug("Nueva información cargada: {}", dto);
+                return dto;
+            } else {
+                log.warn("No se encontraron datos para la urgencia con folio {}", folio);
+                return null;
+            }
+        } catch (SQLException e) {
+            log.error("Error al cargar datos de la urgencia: {}", e.getMessage());
+            return null;
+        }
     }
 
     public boolean actualizarCapturaPrincipal(Connection connection, ActualizarCapturaPrincipalDTO dto) {

@@ -29,8 +29,6 @@ import lombok.extern.log4j.Log4j2;
 import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
@@ -1098,32 +1096,6 @@ public class CapturaPrincipalController {
         }
     }
 
-    private LocalDateTime obtenerFechaHoraDesdeBD(String fechaBD, String horaBD) {
-        if (fechaBD == null) return null;
-
-        try {
-            // Formato: "2024-01-15 14:30:00"
-            if (fechaBD.contains(" ")) {
-                // Ya tiene fecha y hora juntas
-                String fechaHora = fechaBD.replace(" ", "T");
-                return LocalDateTime.parse(fechaHora);
-            }
-
-            // Si viene separado, combinar
-            if (horaBD != null) {
-                String fechaHora = fechaBD + "T" + horaBD;
-                return LocalDateTime.parse(fechaHora);
-            }
-
-            // Solo fecha
-            return LocalDate.parse(fechaBD).atStartOfDay();
-
-        } catch (Exception e) {
-            log.error("Error parseando fecha/hora: {} {}", fechaBD, horaBD);
-            return null;
-        }
-    }
-
     private void cargarYEditarNotaExistente(int idNota) {
         try {
             NotaMedicaVO notaExistente = null;
@@ -1133,7 +1105,6 @@ public class CapturaPrincipalController {
                     break;
                 }
             }
-
             if (notaExistente != null) {
                 tablaNotasMedicas.getSelectionModel().select(notaExistente);
                 editarNotaMedica();
@@ -1144,50 +1115,32 @@ public class CapturaPrincipalController {
     }
 
     private void cargarDatosNuevaInfoDesdeBD() {
-        String sql = "SELECT Tipo_urg, Motivo_urg, Tipo_cama, Cve_med, Nom_med, Estado_pac FROM tb_urgencias WHERE Folio = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                int estadoActual = rs.getInt("Estado_pac");
-
-                // Si ya tiene datos guardados, cargarlos
-                int tipoUrgenciaKey = rs.getInt("Tipo_urg");
-                if (tipoUrgenciaKey > 0) {
-                    String tipoUrgencia = obtenerDescripcionDesdeClave("tblt_cveurg", "Cve_urg", tipoUrgenciaKey);
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            var dto = ud.cargarNuevaInformacion(folioPaciente, conn);
+            if (dto != null) {
+                if (dto.getTipoUrg() > 0) {
+                    String tipoUrgencia = obtenerDescripcionDesdeClave("tblt_cveurg", "Cve_urg", dto.getTipoUrg());
                     cmbTipoUrgencia.setValue(tipoUrgencia);
                 }
-
-                int motivoUrgenciaKey = rs.getInt("Motivo_urg");
-                if (motivoUrgenciaKey > 0) {
-                    String motivoUrgencia = obtenerDescripcionDesdeClave("tblt_cvemotatn", "Cve_motatn", motivoUrgenciaKey);
+                if (dto.getMotivoUrg() > 0) {
+                    String motivoUrgencia = obtenerDescripcionDesdeClave("tblt_cvemotatn", "Cve_motatn", dto.getMotivoUrg());
                     cmbMotivoUrgencia.setValue(motivoUrgencia);
                 }
-
-                int tipoCamaKey = rs.getInt("Tipo_cama");
-                if (tipoCamaKey > 0) {
-                    String tipoCama = obtenerDescripcionDesdeClave("tblt_cvecama", "Cve_cama", tipoCamaKey);
+                if (dto.getTipoCama() > 0) {
+                    String tipoCama = obtenerDescripcionDesdeClave("tblt_cvecama", "Cve_cama", dto.getTipoCama());
                     cmbTipoCama.setValue(tipoCama);
                 }
-
-                String medico = rs.getString("Nom_med");
-                if (medico != null) {
-                    cmbMedicoActual.setValue(medico);
+                if (dto.getNombreMedico() != null) {
+                    cmbMedicoActual.setValue(dto.getNombreMedico());
                     actualizarCedulaMedico();
                 }
-
-                // Configurar RadioButtons según estado actual
-                if (estadoActual == 2) { // Observación
+                if (dto.getEstadoPaciente() == 2) { // Observación
                     rbObservacion.setSelected(true);
-                } else if (estadoActual == 3) { // Egresado
+                } else if (dto.getEstadoPaciente() == 3) { // Egresado
                     rbAltaMedica.setSelected(true);
                 }
             }
-
         } catch (SQLException e) {
             log.error("Error cargando datos de Nueva Info: {}", e.getMessage());
         }
@@ -1759,5 +1712,3 @@ public class CapturaPrincipalController {
         });
     }
 }
-
-
