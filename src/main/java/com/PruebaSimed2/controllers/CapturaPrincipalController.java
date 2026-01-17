@@ -1298,12 +1298,9 @@ public class CapturaPrincipalController {
     }
 
     private void actualizarEstadoPaciente() {
-        String sql = "UPDATE tb_urgencias SET Estado_pac = ? WHERE Folio = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, 2);
-            pstmt.setInt(2, folioPaciente);
-            pstmt.executeUpdate();
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            ud.actualizarEstadoPaciente(conn, folioPaciente, 2);
         } catch (SQLException e) {
             log.error("Error actualizando estado del paciente: {}", e.getMessage());
         }
@@ -1313,10 +1310,8 @@ public class CapturaPrincipalController {
         if (esMedicoInterconsulta()) {
             ocultarSeccionNuevaInformacion();
         } else if (pacienteEgresado()) {
-            // PACIENTE EGRESADO: ocultar TODO excepto RadioButton para EGREESADO
             ocultarSeccionParaEgresado();
         } else if (pacienteEnObservacion()) {
-            // PACIENTE EN OBSERVACIÓN: mostrar pero solo RadioButton
             mostrarSoloRadioButtonsParaEgreso();
         }
 
@@ -1325,7 +1320,6 @@ public class CapturaPrincipalController {
         if (pacienteEnObservacion() && !esMedicoInterconsulta()) {
             cargarDatosNuevaInfoDesdeBD();
             deshabilitarCamposNuevaInformacion();
-            // Pero habilitar RadioButton para egreso
             rbAltaMedica.setDisable(false);
             rbAltaMedica.setVisible(true);
         }

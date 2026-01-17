@@ -34,6 +34,7 @@ public class UrgenciasData {
             "WHERE u.Folio = ?";
     private static final String CARGAR_NUEVA_INFORMACION = "SELECT Tipo_urg, Motivo_urg, Tipo_cama, Cve_med, Nom_med, Estado_pac FROM tb_urgencias WHERE Folio = ?";
     private static final String ACTUALIZAR_CAPTURA_PRINCIPAL = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
+    private static final String ACTUALIZAR_ESTADO_PACIENTE = "UPDATE tb_urgencias SET Estado_pac = ? WHERE Folio = ?";
     private static final String OBTENER_ESTADO_PACIENTE = "SELECT Estado_pac FROM tb_urgencias WHERE Folio = ?";
 
     public boolean insertarPaciente(InsertarPacienteDTO dto, Connection connection) {
@@ -172,6 +173,17 @@ public class UrgenciasData {
         } catch (SQLException e) {
             log.error("Error actualizando captura principal: {}", e.getMessage());
             return false;
+        }
+    }
+
+    public void actualizarEstadoPaciente(Connection connection, int folio, int estado) {
+        try (PreparedStatement statement = connection.prepareStatement(ACTUALIZAR_ESTADO_PACIENTE)) {
+            statement.setInt(1, estado);
+            statement.setInt(2, folio);
+            statement.executeUpdate();
+            log.info("Estado del paciente con folio {} actualizado a {}", folio, estado);
+        } catch (SQLException e) {
+            log.error("Error actualizando estado del paciente con folio: {}", folio, e);
         }
     }
 
