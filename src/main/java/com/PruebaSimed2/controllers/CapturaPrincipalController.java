@@ -1255,18 +1255,9 @@ public class CapturaPrincipalController {
 
     private int obtenerClaveMedico(String nombreMedico) {
         if (nombreMedico == null) return -1;
-
-        String sql = "SELECT Cve_med FROM tb_medicos WHERE Med_nombre = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, nombreMedico);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("Cve_med");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var md = new MedicoData();
+            return md.obtenerClavePorNombre(conn, nombreMedico);
         } catch (SQLException e) {
             log.error(" Error obteniendo clave médico: {}", e.getMessage());
         }
