@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.PruebaSimed2.utils.TypeConversor.convertSqlDateAndSqlTimeToDate;
+
 @Log4j2
 public class InterData {
     private static final String CONTEO_INTERCONSULTAS = "SELECT COUNT(*) as total FROM tb_inter WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
@@ -90,7 +92,7 @@ public class InterData {
                         rs.getString("Nota"),
                         rs.getString("Medico"),
                         rs.getString("Cedula"),
-                        rs.getTimestamp("Fecha").toLocalDateTime(),
+                        convertSqlDateAndSqlTimeToDate(rs.getDate("Fecha"), rs.getTime("Hora")),
                         rs.getString("Estado"),
                         rs.getString("estado_paciente"),
                         rs.getBoolean("editable_por_medico"),
