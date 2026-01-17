@@ -1066,50 +1066,15 @@ public class CapturaPrincipalController {
 
     // ==================== MÉTODOS DE CARGA DESDE BD ====================
     private void cargarNotasDelPaciente() {
-        String sql = "SELECT id_nota, Folio, Num_nota, Nota, Indicaciones, sintomas, signos_vitales, diagnostico, " +
-                "Medico, Cedula, Fecha, Hora, Estado, estado_paciente, " +
-                "editable_por_medico, permiso_edicion_otorgado_por, " +
-                "fecha_permiso_edicion, rol_usuario_otorga, fecha_edicion_realizada " +
-                "FROM tb_notas WHERE Folio = ? ORDER BY Num_nota DESC";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
             notasData.clear();
-
-            while (rs.next()) {
-                // CONVERTIR FECHA Y HORA CORRECTAMENTE
-                LocalDateTime fechaHora = obtenerFechaHoraDesdeBD(rs.getString("Fecha"), rs.getString("Hora"));
-
-                NotaMedicaVO nota = new NotaMedicaVO(
-                        rs.getInt("id_nota"),
-                        rs.getInt("Folio"),
-                        rs.getInt("Num_nota"),
-                        rs.getString("Nota"),
-                        rs.getString("Medico"),
-                        rs.getString("Cedula"),
-                        fechaHora,
-                        rs.getString("Estado"),
-                        rs.getString("estado_paciente"),
-                        rs.getBoolean("editable_por_medico"),
-                        rs.getString("permiso_edicion_otorgado_por"),
-                        rs.getTimestamp("fecha_permiso_edicion") != null ?
-                                rs.getTimestamp("fecha_permiso_edicion").toLocalDateTime() : null
-                );
-
-                nota.setIndicaciones(rs.getString("Indicaciones"));
-                notasData.add(nota);
-            }
-
+            notasData.addAll(nd.obtenerNotasPaciente(conn, folioPaciente));
             Platform.runLater(() -> {
                 tablaNotasMedicas.setItems(notasData);
                 tablaNotasMedicas.refresh();
                 log.debug("si {} notas cargadas para folio: {}", notasData.size(), folioPaciente);
             });
-
         } catch (SQLException e) {
             log.error(" Error cargando notas: {}", e.getMessage());
         }
