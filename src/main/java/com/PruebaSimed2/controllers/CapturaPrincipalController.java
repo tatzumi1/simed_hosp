@@ -1693,4 +1693,44 @@ public class CapturaPrincipalController {
             btnGuardarGeneral.setVisible(true);
         });
     }
+
+    private void deshabilitarElementosUI() {
+        // Lista de elementos a deshabilitar (todos excepto los permitidos)
+        txtFolio.setDisable(true);
+        txtFechaRegistro.setDisable(true);
+        txtHoraRegistro.setDisable(true);
+        txtTriage.setDisable(true);
+        txtNombre.setDisable(true);
+        txtEdad.setDisable(true);
+        txtSexo.setDisable(true);
+        txtMunicipio.setDisable(true);
+        txtEntidad.setDisable(true);
+        txtDerechohabiencia.setDisable(true);
+        txtReferencia.setDisable(true);
+        txtMedicoIngreso.setDisable(true);
+        txtDomicilio.setDisable(true);
+        txtSintomas.setDisable(true);
+        btnColorTriage.setDisable(true);
+        txtFechaAtencion.setDisable(true);
+        txtHoraAtencion.setDisable(true);
+        txtCedulaMedico.setDisable(true);
+
+        // Los siguientes permanecen habilitados según el requerimiento:
+        // cmbTipoUrgencia, cmbMotivoUrgencia, cmbTipoCama, cmbMedicoActual, rbObservacion, rbAltaMedica
+
+        // Otros elementos UI
+        tablaNotasMedicas.setDisable(true);
+        tablaInterconsultas.setDisable(true);
+        btnVisualizarNotaMedica.setDisable(true);
+        btnEditarNotaMedica.setDisable(true);
+        btnImprimirNotaMedica.setDisable(true);
+        btnVisualizarInterconsulta.setDisable(true);
+        btnEditarInterconsulta.setDisable(true);
+        btnImprimirInterconsulta.setDisable(true);
+        btnNuevaNotaMedica.setDisable(true);
+        btnNuevaInterconsulta.setDisable(true);
+        btnOtorgarPermiso.setDisable(true);
+        btnOtorgarPermisoInterconsulta.setDisable(true);
+        btnGuardarGeneral.setDisable(true);
+    }
 }
