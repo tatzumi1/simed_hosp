@@ -22,6 +22,7 @@ public class NotasData {
             "editable_por_medico, permiso_edicion_otorgado_por, " +
             "fecha_permiso_edicion, rol_usuario_otorga, fecha_edicion_realizada " +
             "FROM tb_notas WHERE Folio = ? ORDER BY Num_nota DESC";
+    private static final String OTORGAR_PERMISO_EDICION = "UPDATE tb_notas SET editable_por_medico = TRUE, permiso_edicion_otorgado_por = ?, fecha_permiso_edicion = NOW(), fecha_edicion_realizada = NULL WHERE id_nota = ?";
 
     public int obtenerConteoNotas(Connection connection, int folioPaciente) {
         try (PreparedStatement stmt = connection.prepareStatement(CONTEO_NOTAS)) {
@@ -108,6 +109,24 @@ public class NotasData {
         } catch (SQLException e) {
             log.error("Error al obtener notas para paciente con folio {}: {}", folioPaciente, e.getMessage(), e);
             return List.of();
+        }
+    }
+
+    public boolean otorgarPermisoEdicion(Connection connection, String usuario, int idNota) {
+        try (PreparedStatement ps = connection.prepareStatement(OTORGAR_PERMISO_EDICION)) {
+            ps.setString(1, usuario);
+            ps.setInt(2, idNota);
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                log.info("Permiso de edición otorgado para nota con ID {}", idNota);
+                return true;
+            } else {
+                log.warn("No se pudo otorgar permiso de edición para nota con ID {}", idNota);
+                return false;
+            }
+        } catch (SQLException e) {
+            log.error("Error al otorgar permiso de edición para nota con ID {}: {}", idNota, e.getMessage(), e);
+            return false;
         }
     }
 }

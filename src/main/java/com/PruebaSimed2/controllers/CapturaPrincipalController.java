@@ -2,6 +2,7 @@
 
 package com.PruebaSimed2.controllers;
 
+import com.PruebaSimed2.DTO.HistorialPermisos.InsertarPermisoDTO;
 import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
 import com.PruebaSimed2.database.*;
 import com.PruebaSimed2.models.InterconsultaVO;
@@ -1325,16 +1326,20 @@ public class CapturaPrincipalController {
         }
     }
 
+    private void ocultarSeccionesComunes() {
+        txtFechaAtencion.setVisible(false);
+        txtHoraAtencion.setVisible(false);
+        txtCedulaMedico.setVisible(false);
+        cmbTipoUrgencia.setVisible(false);
+        cmbMotivoUrgencia.setVisible(false);
+        cmbTipoCama.setVisible(false);
+        cmbMedicoActual.setVisible(false);
+        rbObservacion.setVisible(false);
+    }
+
     private void ocultarSeccionNuevaInformacion() {
         Platform.runLater(() -> {
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             rbAltaMedica.setVisible(false);
             btnGuardarGeneral.setVisible(false);
         });
@@ -1470,56 +1475,23 @@ public class CapturaPrincipalController {
     }
 
     private void registrarEnHistorialPermisosInterconsulta(int idInterconsulta) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_inter WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idInterconsulta);
-            pstmt.setString(2, "INTERCONSULTA");
-            pstmt.setString(3, "OTORGAR");
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idInterconsulta);
-
-            pstmt.executeUpdate();
-            log.info(" Historial interconsulta registrado - OTORGAR - ID: {}", idInterconsulta);
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoInter(conn, new InsertarPermisoDTO(idInterconsulta, "INTERCONSULTA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
             log.error(" Error registrando en historial de interconsulta: {}", e.getMessage());
         }
     }
 
     private boolean otorgarPermisoEnBD(int idNota) {
-        String sql = "UPDATE tb_notas SET " +
-                "editable_por_medico = TRUE, " +
-                "permiso_edicion_otorgado_por = ?, " +
-                "fecha_permiso_edicion = NOW(), " +
-                "fecha_edicion_realizada = NULL " +
-                "WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, usuarioLogueado);
-            pstmt.setInt(2, idNota);
-
-            int filas = pstmt.executeUpdate();
-
-            if (filas > 0) {
-                log.info(" Permiso otorgado - ID Nota: {}", idNota);
-
-                //  REGISTRAR EN HISTORIAL
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
+            if (nd.otorgarPermisoEdicion(conn, usuarioLogueado, idNota)) {
                 registrarEnHistorialPermisos(idNota);
                 return true;
             } else {
-                log.warn(" No se pudo otorgar permiso");
                 return false;
             }
-
         } catch (SQLException e) {
             log.error(" Error otorgando permiso: {}", e.getMessage());
             return false;
@@ -1527,24 +1499,9 @@ public class CapturaPrincipalController {
     }
 
     private void registrarEnHistorialPermisos(int idNota) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_notas WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idNota);
-            pstmt.setString(2, "MEDICA");
-            pstmt.setString(3, "OTORGAR");
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idNota);
-
-            pstmt.executeUpdate();
-            log.info(" Historial registrado - OTORGAR - ID Nota: {}", idNota);
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idNota, "MEDICA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
             log.error(" Error registrando en historial: {}", e.getMessage());
         }
@@ -1654,14 +1611,7 @@ public class CapturaPrincipalController {
     private void ocultarSeccionParaEgresado() {
         Platform.runLater(() -> {
             // Ocultar todo excepto RadioButton para Egreso
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             btnGuardarGeneral.setVisible(false);
 
             // Solo mostrar RadioButton de Egreso (pero deshabilitado)
@@ -1673,15 +1623,7 @@ public class CapturaPrincipalController {
 
     private void mostrarSoloRadioButtonsParaEgreso() {
         Platform.runLater(() -> {
-            // Ocultar todos los combos y campos
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-
+            ocultarSeccionesComunes();
             // Mostrar ambos RadioButtons
             rbObservacion.setVisible(true);
             rbObservacion.setDisable(true); // No puede cambiar de Observación
