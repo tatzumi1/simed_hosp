@@ -2,6 +2,7 @@
 
 package com.PruebaSimed2.controllers;
 
+import com.PruebaSimed2.DTO.HistorialPermisos.InsertarPermisoDTO;
 import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
 import com.PruebaSimed2.database.*;
 import com.PruebaSimed2.models.InterconsultaVO;
@@ -1474,24 +1475,9 @@ public class CapturaPrincipalController {
     }
 
     private void registrarEnHistorialPermisosInterconsulta(int idInterconsulta) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_inter WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idInterconsulta);
-            pstmt.setString(2, "INTERCONSULTA");
-            pstmt.setString(3, "OTORGAR");
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idInterconsulta);
-
-            pstmt.executeUpdate();
-            log.info(" Historial interconsulta registrado - OTORGAR - ID: {}", idInterconsulta);
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idInterconsulta, "INTERCONSULTA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
             log.error(" Error registrando en historial de interconsulta: {}", e.getMessage());
         }
