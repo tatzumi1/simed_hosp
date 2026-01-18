@@ -97,6 +97,7 @@ public class UrgenciasData {
 
     public CargarDatosPacienteDTO cardarDatosPaciente(int folio, Connection connection) {
         try (PreparedStatement stmt = connection.prepareStatement(CARGAR_DATOS_PACIENTE)) {
+            stmt.setInt(1, folio);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 log.debug("Datos del paciente con folio {} encontrado.", folio);

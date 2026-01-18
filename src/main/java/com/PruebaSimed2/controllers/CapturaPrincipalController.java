@@ -114,6 +114,7 @@ public class CapturaPrincipalController {
         configurarColumnasInterconsultas();
         verificarNotasTemporalesPropias();
         configurarVisibilidadSegunRol();
+        deshabilitarElementosUI();
     }
 
     public void setUsuarioLogueado(String usuario, String rol) {
@@ -155,8 +156,16 @@ public class CapturaPrincipalController {
     }
 
     private void configurarEventos() {
-        // Combos médicos
-        cmbMedicoActual.setOnAction(e -> actualizarCedulaMedico());
+        // Listeners para habilitar UI
+        cmbTipoUrgencia.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbMotivoUrgencia.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbTipoCama.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbMedicoActual.valueProperty().addListener((obs, oldVal, newVal) -> {
+            actualizarCedulaMedico();
+            validarCamposRequeridosYActivarUI();
+        });
+        rbObservacion.selectedProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        rbAltaMedica.selectedProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
 
         // Botones de notas
         btnNuevaNotaMedica.setOnAction(e -> abrirNotaMedica());
@@ -1143,6 +1152,7 @@ public class CapturaPrincipalController {
                 } else if (dto.getEstadoPaciente() == 3) { // Egresado
                     rbAltaMedica.setSelected(true);
                 }
+                validarCamposRequeridosYActivarUI();
             }
         } catch (SQLException e) {
             log.error("Error cargando datos de Nueva Info: {}", e.getMessage());
@@ -1636,8 +1646,55 @@ public class CapturaPrincipalController {
         });
     }
 
+    private void habilitarElementosUI() {
+        txtFolio.setDisable(false);
+        txtFechaRegistro.setDisable(false);
+        txtHoraRegistro.setDisable(false);
+        txtTriage.setDisable(false);
+        txtNombre.setDisable(false);
+        txtEdad.setDisable(false);
+        txtSexo.setDisable(false);
+        txtMunicipio.setDisable(false);
+        txtEntidad.setDisable(false);
+        txtDerechohabiencia.setDisable(false);
+        txtReferencia.setDisable(false);
+        txtMedicoIngreso.setDisable(false);
+        txtDomicilio.setDisable(false);
+        txtSintomas.setDisable(false);
+        btnColorTriage.setDisable(false);
+        txtFechaAtencion.setDisable(false);
+        txtHoraAtencion.setDisable(false);
+        txtCedulaMedico.setDisable(false);
+        tablaNotasMedicas.setDisable(false);
+        tablaInterconsultas.setDisable(false);
+        btnVisualizarNotaMedica.setDisable(false);
+        btnEditarNotaMedica.setDisable(false);
+        btnImprimirNotaMedica.setDisable(false);
+        btnVisualizarInterconsulta.setDisable(false);
+        btnEditarInterconsulta.setDisable(false);
+        btnImprimirInterconsulta.setDisable(false);
+        btnNuevaNotaMedica.setDisable(false);
+        btnNuevaInterconsulta.setDisable(false);
+        btnOtorgarPermiso.setDisable(false);
+        btnOtorgarPermisoInterconsulta.setDisable(false);
+        btnGuardarGeneral.setDisable(false);
+    }
+
+    private void validarCamposRequeridosYActivarUI() {
+        boolean camposCompletos = cmbTipoUrgencia.getValue() != null &&
+                cmbMotivoUrgencia.getValue() != null &&
+                cmbTipoCama.getValue() != null &&
+                cmbMedicoActual.getValue() != null &&
+                (rbObservacion.isSelected() || rbAltaMedica.isSelected());
+
+        if (camposCompletos) {
+            habilitarElementosUI();
+        } else {
+            deshabilitarElementosUI();
+        }
+    }
+
     private void deshabilitarElementosUI() {
-        // Lista de elementos a deshabilitar (todos excepto los permitidos)
         txtFolio.setDisable(true);
         txtFechaRegistro.setDisable(true);
         txtHoraRegistro.setDisable(true);
@@ -1656,11 +1713,6 @@ public class CapturaPrincipalController {
         txtFechaAtencion.setDisable(true);
         txtHoraAtencion.setDisable(true);
         txtCedulaMedico.setDisable(true);
-
-        // Los siguientes permanecen habilitados según el requerimiento:
-        // cmbTipoUrgencia, cmbMotivoUrgencia, cmbTipoCama, cmbMedicoActual, rbObservacion, rbAltaMedica
-
-        // Otros elementos UI
         tablaNotasMedicas.setDisable(true);
         tablaInterconsultas.setDisable(true);
         btnVisualizarNotaMedica.setDisable(true);
