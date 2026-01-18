@@ -357,11 +357,11 @@ public class VentanaRegistroTriageController {
     private InsertarPacienteDTO formatearPacienteDTO(int folio, String nombreMedico) {
         LocalDate fechaNac = dpFechaNac.getValue();
         Edad edad = new Edad();
-        edad.calcularEdad(fechaNac);
         if (fechaNac == null) {
+            fechaNac = LocalDate.now();
             log.warn("Fecha nacimiento no especificada");
-            return null;
         }
+        edad.calcularEdad(fechaNac);
         Integer cveDerechoHabiente = obtenerCodigoDerechoHabiente();
         if (cveDerechoHabiente == null) {
             log.warn("Derechohabiente no especificado");
@@ -373,7 +373,7 @@ public class VentanaRegistroTriageController {
             return null;
         }
 
-        return new InsertarPacienteDTO(
+        var dto = new InsertarPacienteDTO(
                 folio,
                 txtApPaterno.getText().trim(),
                 txtApMaterno.getText().trim(),
@@ -405,6 +405,8 @@ public class VentanaRegistroTriageController {
                 txtMunicipioSel.getText().trim(),
                 txtEntidadSel.getText().trim()
         );
+        dto.validarDto();
+        return dto;
     }
 
     // === MÉTODOS AUXILIARES ===
