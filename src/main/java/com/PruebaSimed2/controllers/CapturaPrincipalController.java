@@ -1477,7 +1477,7 @@ public class CapturaPrincipalController {
     private void registrarEnHistorialPermisosInterconsulta(int idInterconsulta) {
         try (Connection conn = ConexionBD.conectar()) {
             var hd = new HistorialPermisosData();
-            hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idInterconsulta, "INTERCONSULTA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
+            hd.otorgarPermisoInter(conn, new InsertarPermisoDTO(idInterconsulta, "INTERCONSULTA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
             log.error(" Error registrando en historial de interconsulta: {}", e.getMessage());
         }
@@ -1517,24 +1517,10 @@ public class CapturaPrincipalController {
     }
 
     private void registrarEnHistorialPermisos(int idNota) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_notas WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idNota);
-            pstmt.setString(2, "MEDICA");
-            pstmt.setString(3, "OTORGAR");
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idNota);
-
-            pstmt.executeUpdate();
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idNota, "MEDICA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
             log.info(" Historial registrado - OTORGAR - ID Nota: {}", idNota);
-
         } catch (SQLException e) {
             log.error(" Error registrando en historial: {}", e.getMessage());
         }
