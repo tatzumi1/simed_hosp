@@ -114,7 +114,7 @@ public class CapturaPrincipalController {
         configurarColumnasInterconsultas();
         verificarNotasTemporalesPropias();
         configurarVisibilidadSegunRol();
-        deshabilitarElementosUI();
+        validarCamposRequeridosYActivarUI();
     }
 
     public void setUsuarioLogueado(String usuario, String rol) {
@@ -1180,18 +1180,23 @@ public class CapturaPrincipalController {
     }
 
     private void deshabilitarCamposNuevaInformacion() {
-        cmbTipoUrgencia.setDisable(true);
-        cmbMotivoUrgencia.setDisable(true);
-        cmbTipoCama.setDisable(true);
-        cmbMedicoActual.setDisable(true);
-        rbObservacion.setDisable(true);
-        rbAltaMedica.setDisable(true);
+        if (cmbTipoUrgencia.getValue() != null &&
+            cmbMotivoUrgencia.getValue() != null &&
+            cmbTipoCama.getValue() != null &&
+            cmbMedicoActual.getValue() != null) {
+            
+            cmbTipoUrgencia.setDisable(true);
+            cmbMotivoUrgencia.setDisable(true);
+            cmbTipoCama.setDisable(true);
+            cmbMedicoActual.setDisable(true);
+            rbObservacion.setDisable(true);
 
-        String estiloGris = "-fx-opacity: 0.7; -fx-background-color: #f5f5f5; -fx-text-fill: #666666;";
-        cmbTipoUrgencia.setStyle(estiloGris);
-        cmbMotivoUrgencia.setStyle(estiloGris);
-        cmbTipoCama.setStyle(estiloGris);
-        cmbMedicoActual.setStyle(estiloGris);
+            String estiloGris = "-fx-opacity: 0.7; -fx-background-color: #f5f5f5; -fx-text-fill: #666666;";
+            cmbTipoUrgencia.setStyle(estiloGris);
+            cmbMotivoUrgencia.setStyle(estiloGris);
+            cmbTipoCama.setStyle(estiloGris);
+            cmbMedicoActual.setStyle(estiloGris);
+        }
     }
 
     private void habilitarBotonesNotas() {
@@ -1323,7 +1328,11 @@ public class CapturaPrincipalController {
         } else if (pacienteEgresado()) {
             ocultarSeccionParaEgresado();
         } else if (pacienteEnObservacion()) {
-            mostrarSoloRadioButtonsParaEgreso();
+            rbAltaMedica.setVisible(true);
+            rbAltaMedica.setDisable(false);
+            rbObservacion.setVisible(true);
+            rbObservacion.setDisable(true);
+            rbObservacion.setSelected(true);
         }
 
         configurarBotonesSegunEstadoPaciente();
