@@ -1484,32 +1484,14 @@ public class CapturaPrincipalController {
     }
 
     private boolean otorgarPermisoEnBD(int idNota) {
-        String sql = "UPDATE tb_notas SET " +
-                "editable_por_medico = TRUE, " +
-                "permiso_edicion_otorgado_por = ?, " +
-                "fecha_permiso_edicion = NOW(), " +
-                "fecha_edicion_realizada = NULL " +
-                "WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, usuarioLogueado);
-            pstmt.setInt(2, idNota);
-
-            int filas = pstmt.executeUpdate();
-
-            if (filas > 0) {
-                log.info(" Permiso otorgado - ID Nota: {}", idNota);
-
-                //  REGISTRAR EN HISTORIAL
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
+            if (nd.otorgarPermisoEdicion(conn, usuarioLogueado, idNota)) {
                 registrarEnHistorialPermisos(idNota);
                 return true;
             } else {
-                log.warn(" No se pudo otorgar permiso");
                 return false;
             }
-
         } catch (SQLException e) {
             log.error(" Error otorgando permiso: {}", e.getMessage());
             return false;
@@ -1520,7 +1502,6 @@ public class CapturaPrincipalController {
         try (Connection conn = ConexionBD.conectar()) {
             var hd = new HistorialPermisosData();
             hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idNota, "MEDICA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
-            log.info(" Historial registrado - OTORGAR - ID Nota: {}", idNota);
         } catch (SQLException e) {
             log.error(" Error registrando en historial: {}", e.getMessage());
         }
