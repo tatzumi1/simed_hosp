@@ -39,6 +39,7 @@ public class JefaturaController {
     @FXML private TableColumn<PacienteEgresado, String> colAltaPor;
     @FXML private TableColumn<PacienteEgresado, String> colFolioDefuncion;
     @FXML private TableColumn<PacienteEgresado, String> colMedicoAlta;
+    @FXML private TableColumn<PacienteEgresado, Void> colAcciones;
 
     @FXML private Label lblTotalEgresados;
 
@@ -490,6 +491,90 @@ public class JefaturaController {
         colAltaPor.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAltaPor()));
         colFolioDefuncion.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getFolioDefuncion()));
         colMedicoAlta.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getMedicoAlta()));
+        configurarColumnaAcciones();
+    }
+
+    private void configurarColumnaAcciones() {
+        colAcciones.setCellFactory(param -> new TableCell<>() {
+            private final Button btnObservacion = new Button("A Observación");
+
+            {
+                btnObservacion.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;");
+                btnObservacion.setOnAction(event -> {
+                    PacienteEgresado paciente = getTableView().getItems().get(getIndex());
+                    handleRegresarAObservacion(paciente);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btnObservacion);
+                }
+            }
+        });
+    }
+
+    private void handleRegresarAObservacion(PacienteEgresado paciente) {
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar Acción");
+        confirmacion.setHeaderText("Regresar paciente a observación");
+        confirmacion.setContentText("¿Está seguro de que desea regresar al paciente " + paciente.getNombreCompleto() + " a observación? " +
+                "Esto eliminará los datos de su egreso actual.");
+
+        confirmacion.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                ejecutarRegresoAObservacion(paciente);
+            }
+        });
+    }
+
+    private void ejecutarRegresoAObservacion(PacienteEgresado paciente) {
+        String updateUrgencias = "UPDATE tb_urgencias SET " +
+                "Estado_pac = 2, " +
+                "Alta_por = NULL, " +
+                "Fecha_alta = NULL, " +
+                "Hora_alta = NULL, " +
+                "Cve_medalta = NULL, " +
+                "Nom_medalta = NULL, " +
+                "Folio_defuncion = NULL, " +
+                "A_hosp = NULL " +
+                "WHERE Folio = ?";
+
+        String deleteEgreso = "DELETE FROM tb_egresos WHERE Folio = ?";
+
+        Connection conn = null;
+        try {
+            conn = ConexionBD.getSafeConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateUrgencias);
+                 PreparedStatement psDelete = conn.prepareStatement(deleteEgreso)) {
+
+                psUpdate.setInt(1, paciente.getFolio());
+                psUpdate.executeUpdate();
+
+                psDelete.setInt(1, paciente.getFolio());
+                psDelete.executeUpdate();
+
+                conn.commit();
+                mostrarAlerta("Éxito", "El paciente ha sido regresado a observación correctamente.", Alert.AlertType.INFORMATION);
+                cargarPacientesEgresados();
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            log.error("Error al regresar paciente a observación: {}", e.getMessage());
+            mostrarAlerta("Error", "No se pudo completar la acción: " + e.getMessage(), Alert.AlertType.ERROR);
+        } finally {
+            ConexionBD.safeClose(conn);
+        }
     }
 
      // ================================================================0
