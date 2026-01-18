@@ -57,11 +57,17 @@
                             <Label text="Fecha de Alta:" GridPane.columnIndex="1" GridPane.rowIndex="0"
                                    style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
                             <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1" alignment="CENTER_LEFT">
-                                <Label fx:id="lblFechaAlta" text="0000-00-00"
-                                       style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                                <StackPane alignment="CENTER_LEFT">
+                                    <Label fx:id="lblFechaAlta" text="0000-00-00"
+                                           style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                                    <DatePicker fx:id="dpFechaAlta" visible="false" managed="false" prefWidth="130"/>
+                                </StackPane>
                                 <Label text="Hora:" style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold;"/>
-                                <Label fx:id="lblHoraAlta" text="00:00:00"
-                                       style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                                <StackPane alignment="CENTER_LEFT">
+                                    <Label fx:id="lblHoraAlta" text="00:00:00"
+                                           style="-fx-text-fill: #2c5aa0; -fx-font-weight: bold; -fx-padding: 8; -fx-background-color: #e6f3ff; -fx-background-radius: 4;"/>
+                                    <TextField fx:id="tfHoraAlta" visible="false" managed="false" prefWidth="100" promptText="HH:mm:ss"/>
+                                </StackPane>
                             </HBox>
 
                             <Label text="Área Hospitalaria Destino:" GridPane.columnIndex="1" GridPane.rowIndex="2"

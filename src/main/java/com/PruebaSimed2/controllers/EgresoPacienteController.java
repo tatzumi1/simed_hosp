@@ -63,6 +63,10 @@ public class EgresoPacienteController {
     @FXML
     private Label lblFechaAlta, lblHoraAlta;
     @FXML
+    private DatePicker dpFechaAlta;
+    @FXML
+    private TextField tfHoraAlta;
+    @FXML
     private CheckBox cbSoloJefatura;
     @FXML
     private TextField tfFolio;
@@ -112,8 +116,45 @@ public class EgresoPacienteController {
         }
     }
 
+    private String rolUsuario;
+
     public void setUsuarioLogueado(String usuario, String rol) {
+        this.rolUsuario = rol;
         log.debug("Usuario logueado: {}, Rol: {}", usuario, rol);
+        configurarEdicionFechaHora();
+    }
+
+    private void configurarEdicionFechaHora() {
+        if (rolUsuario == null) return;
+
+        boolean puedeEditar = "ADMIN".equals(rolUsuario) ||
+                "JEFATURA_URGENCIAS".equals(rolUsuario) ||
+                "ADMINISTRATIVO".equals(rolUsuario);
+
+        if (puedeEditar) {
+            log.debug("Rol con permisos de edición de fecha/hora detectado.");
+
+            // Detener el timer si existe
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
+
+            // Cambiar visibilidad de componentes
+            lblFechaAlta.setVisible(false);
+            lblFechaAlta.setManaged(false);
+            dpFechaAlta.setVisible(true);
+            dpFechaAlta.setManaged(true);
+
+            lblHoraAlta.setVisible(false);
+            lblHoraAlta.setManaged(false);
+            tfHoraAlta.setVisible(true);
+            tfHoraAlta.setManaged(true);
+
+            // Inicializar valores
+            dpFechaAlta.setValue(java.time.LocalDate.now());
+            tfHoraAlta.setText(java.time.LocalTime.now().format(timeFmt));
+        }
     }
 
     @FXML
@@ -139,6 +180,10 @@ public class EgresoPacienteController {
 
         // Cargar datos existentes si los hay
         cargarDatosPacienteExistente();
+
+        // Inicializar dpFechaAlta y tfHoraAlta con valores actuales por defecto
+        if (dpFechaAlta != null) dpFechaAlta.setValue(java.time.LocalDate.now());
+        if (tfHoraAlta != null) tfHoraAlta.setText(java.time.LocalTime.now().format(timeFmt));
 
         // Configurar listeners para mujer en edad fértil
         configurarListeners();
@@ -600,6 +645,16 @@ public class EgresoPacienteController {
 
 
     private void startDateTimeUpdater() {
+        // No iniciar el timer si el usuario ya tiene permisos de edición (ya se detuvo en setUsuarioLogueado)
+        boolean puedeEditar = "ADMIN".equals(rolUsuario) ||
+                "JEFATURA_URGENCIAS".equals(rolUsuario) ||
+                "ADMINISTRATIVO".equals(rolUsuario);
+
+        if (puedeEditar) {
+            log.debug("Saltando startDateTimeUpdater por permisos de edición.");
+            return;
+        }
+
         timer = new Timer(true);
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -725,7 +780,7 @@ public class EgresoPacienteController {
                 "Ira, Eda, Sobres_VSO, Alta_por, Fecha_alta, Hora_alta, Folio_defuncion, Egreso_hosp, Medico_egresa, " +
                 "causa_externa, considera_indigena, considera_afromexicano, migrante_retornado, " +
                 "mujer_edad_fertil, situacion_embarazo, semanas_gestacion) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), CURTIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
                 "Afecc_principal=VALUES(Afecc_principal), Afecc_secund=VALUES(Afecc_secund), Afecc_terciaria=VALUES(Afecc_terciaria), " +
                 "codigo_cie10_afecc1=VALUES(codigo_cie10_afecc1), codigo_cie10_afecc2=VALUES(codigo_cie10_afecc2), codigo_cie10_afecc3=VALUES(codigo_cie10_afecc3), " +
@@ -733,7 +788,7 @@ public class EgresoPacienteController {
                 "Medicamentos_01=VALUES(Medicamentos_01), Medicamentos_02=VALUES(Medicamentos_02), Medicamentos_03=VALUES(Medicamentos_03), " +
                 "Medicamentos_04=VALUES(Medicamentos_04), Medicamentos_05=VALUES(Medicamentos_05), Medicamentos_06=VALUES(Medicamentos_06), " +
                 "Ira=VALUES(Ira), Eda=VALUES(Eda), Sobres_VSO=VALUES(Sobres_VSO), Alta_por=VALUES(Alta_por), " +
-                "Fecha_alta=NOW(), Hora_alta=CURTIME(), Folio_defuncion=VALUES(Folio_defuncion), " +
+                "Fecha_alta=VALUES(Fecha_alta), Hora_alta=VALUES(Hora_alta), Folio_defuncion=VALUES(Folio_defuncion), " +
                 "Egreso_hosp=VALUES(Egreso_hosp), Medico_egresa=VALUES(Medico_egresa), " +
                 "causa_externa=VALUES(causa_externa), considera_indigena=VALUES(considera_indigena), " +
                 "considera_afromexicano=VALUES(considera_afromexicano), migrante_retornado=VALUES(migrante_retornado), " +
@@ -743,7 +798,7 @@ public class EgresoPacienteController {
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // Setear 33 parámetros exactos
+            // Setear 32 parámetros exactos
             ps.setInt(1, folioPaciente);
             ps.setString(2, emptyToNull(descripcionMedico1));  // Afecc_principal = lo que escribió el médico
             ps.setString(3, emptyToNull(descripcionMedico2));  // Afecc_secund = lo que escribió el médico
@@ -770,35 +825,48 @@ public class EgresoPacienteController {
                 ps.setInt(20, 1);
             }
 
-            ps.setString(21, emptyToNull(tfFolioDef.getText()));
-            ps.setString(22, cbAreaHosp.getValue() != null ? cbAreaHosp.getValue() : null);
-            ps.setString(23, cbMedicoAlta.getValue().trim());
+            // FECHA Y HORA DE ALTA
+            boolean puedeEditar = "ADMIN".equals(rolUsuario) ||
+                    "JEFATURA_URGENCIAS".equals(rolUsuario) ||
+                    "ADMINISTRATIVO".equals(rolUsuario);
+
+            if (puedeEditar) {
+                ps.setString(21, dpFechaAlta.getValue() != null ? dpFechaAlta.getValue().toString() : java.time.LocalDate.now().toString());
+                ps.setString(22, emptyToNull(tfHoraAlta.getText()) != null ? tfHoraAlta.getText() : java.time.LocalTime.now().format(timeFmt));
+            } else {
+                ps.setTimestamp(21, new java.sql.Timestamp(System.currentTimeMillis())); // NOW() aprox
+                ps.setTime(22, new java.sql.Time(System.currentTimeMillis())); // CURTIME() aprox
+            }
+
+            ps.setString(23, emptyToNull(tfFolioDef.getText()));
+            ps.setString(24, cbAreaHosp.getValue() != null ? cbAreaHosp.getValue() : null);
+            ps.setString(25, cbMedicoAlta.getValue().trim());
 
             // Nuevos campos
-            ps.setString(24, emptyToNull(taCausaExterna.getText()));
-            ps.setString(25, cbIndigena.getValue());
-            ps.setString(26, cbAfromexicano.getValue());
-            ps.setString(27, cbMigrante.getValue());
-            ps.setString(28, cbMujerFertil.getValue());
+            ps.setString(26, emptyToNull(taCausaExterna.getText()));
+            ps.setString(27, cbIndigena.getValue());
+            ps.setString(28, cbAfromexicano.getValue());
+            ps.setString(29, cbMigrante.getValue());
+            ps.setString(30, cbMujerFertil.getValue());
 
             // Situación embarazo (solo el número)
             String situacion = cbSituacionEmbarazo.getValue();
             if (situacion != null && situacion.length() > 0) {
-                ps.setString(29, situacion.substring(0, 1));
+                ps.setString(31, situacion.substring(0, 1));
             } else {
-                ps.setNull(29, Types.VARCHAR);
+                ps.setNull(31, Types.VARCHAR);
             }
 
             // Semanas gestación
             String semanasText = tfSemanasGestacion.getText();
             if (semanasText != null && !semanasText.trim().isEmpty()) {
                 try {
-                    ps.setInt(30, Integer.parseInt(semanasText.trim()));
+                    ps.setInt(32, Integer.parseInt(semanasText.trim()));
                 } catch (NumberFormatException e) {
-                    ps.setNull(30, Types.INTEGER);
+                    ps.setNull(32, Types.INTEGER);
                 }
             } else {
-                ps.setNull(30, Types.INTEGER);
+                ps.setNull(32, Types.INTEGER);
             }
 
             int filas = ps.executeUpdate();
@@ -832,12 +900,28 @@ public class EgresoPacienteController {
     }
 
     private void actualizarEstadoPaciente() throws Exception {
-        String sql = "UPDATE tb_urgencias SET Estado_pac = 3, Fecha_alta = NOW(), Hora_alta = CURTIME() WHERE Folio = ?";
+        boolean puedeEditar = "ADMIN".equals(rolUsuario) ||
+                "JEFATURA_URGENCIAS".equals(rolUsuario) ||
+                "ADMINISTRATIVO".equals(rolUsuario);
+
+        String sql;
+        if (puedeEditar) {
+            sql = "UPDATE tb_urgencias SET Estado_pac = 3, Fecha_alta = ?, Hora_alta = ? WHERE Folio = ?";
+        } else {
+            sql = "UPDATE tb_urgencias SET Estado_pac = 3, Fecha_alta = NOW(), Hora_alta = CURTIME() WHERE Folio = ?";
+        }
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, folioPaciente);
+            if (puedeEditar) {
+                ps.setString(1, dpFechaAlta.getValue() != null ? dpFechaAlta.getValue().toString() : java.time.LocalDate.now().toString());
+                ps.setString(2, emptyToNull(tfHoraAlta.getText()) != null ? tfHoraAlta.getText() : java.time.LocalTime.now().format(timeFmt));
+                ps.setInt(3, folioPaciente);
+            } else {
+                ps.setInt(1, folioPaciente);
+            }
+
             int filas = ps.executeUpdate();
             log.debug("Estado actualizado a 'Egresado' para folio: {} - Filas afectadas: {}", folioPaciente, filas);
         }
