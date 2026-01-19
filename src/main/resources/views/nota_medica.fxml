@@ -21,12 +21,12 @@
             <ColumnConstraints percentWidth="70"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints percentHeight="10"/> <!-- Médico -->
-            <RowConstraints percentHeight="15"/> <!-- Síntomas -->
-            <RowConstraints percentHeight="10"/> <!-- Signos Vitales -->
-            <RowConstraints percentHeight="10"/> <!-- Diagnóstico -->
-            <RowConstraints percentHeight="30"/> <!-- Nota Médica -->
-            <RowConstraints percentHeight="20"/> <!-- Indicaciones -->
+                <RowConstraints percentHeight="10"/> <!-- Médico (fila 0) -->
+                <RowConstraints percentHeight="12"/> <!-- P: Presentación del paciente (fila 1) -->
+                <RowConstraints percentHeight="12"/> <!-- S: Síntomas (fila 2) -->
+                <RowConstraints percentHeight="22"/> <!-- O: Signos vitales/Observación (fila 3) -->
+                <RowConstraints percentHeight="22"/> <!-- A: Análisis/Diagnóstico (fila 4) -->
+                <RowConstraints percentHeight="22"/> <!-- P: Plan/Indicaciones (fila 5) -->
         </rowConstraints>
 
         <Label text="Médico:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
@@ -36,27 +36,30 @@
         </HBox>
 
         <!-- NUEVOS CAMPOS CON EXPANSIÓN VERTICAL -->
-        <Label text="Presentación del paciente:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <Label text="P:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <TextArea fx:id="txtNota" GridPane.rowIndex="1" GridPane.columnIndex="1"
                   promptText="Describa la presentación del paciente..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Síntomas:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <Label text="S:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <TextArea fx:id="txtSintomas" GridPane.rowIndex="2" GridPane.columnIndex="1"
-                  promptText="Describa los síntomas del paciente..."
+                  promptText="Describa los sígnos y sintomas..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Signos vitales:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <Label text="O:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <TextArea fx:id="txtSignosVitales" GridPane.rowIndex="3" GridPane.columnIndex="1"
-                  promptText="TA: ___/___ mmHg, FC: ___ lpm, FR: ___ rpm, Temp: ___ °C, SatO2: ___ %"
-                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+                  wrapText="true" GridPane.vgrow="ALWAYS">
+            <promptText><![CDATA[Signos vitales: TA: ___/___ mmHg, FC: ___ lpm, FR: ___ rpm, Temp: ___ °C, SatO2: ___ %...
+Exploración física:...
+Resultados de laboratorio:...]]></promptText>
+        </TextArea>
 
-        <Label text="Análisis/Diagnóstico:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <Label text="A:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <TextArea fx:id="txtDiagnostico" GridPane.rowIndex="4" GridPane.columnIndex="1"
                   promptText="Diagnóstico y análisis..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Plan/Indicaciones:" GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <Label text="P/I: " GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <TextArea fx:id="txtIndicaciones" GridPane.rowIndex="5" GridPane.columnIndex="1"
                   promptText="Indicaciones y plan de tratamiento..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>

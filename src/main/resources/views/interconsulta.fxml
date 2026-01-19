@@ -21,40 +21,50 @@
             <ColumnConstraints percentWidth="70"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints percentHeight="15"/> <!-- Especialista -->
-            <RowConstraints percentHeight="20"/> <!-- Síntomas -->
-            <RowConstraints percentHeight="15"/> <!-- Signos Vitales -->
-            <RowConstraints percentHeight="15"/> <!-- Diagnóstico -->
-            <RowConstraints percentHeight="35"/> <!-- Indicaciones -->
+            <RowConstraints percentHeight="10"/> <!-- Especialista -->
+            <RowConstraints percentHeight="12"/> <!-- (P) - NUEVO -->
+            <RowConstraints percentHeight="12"/> <!-- Síntomas (S) -->
+            <RowConstraints percentHeight="22"/> <!-- Signos Vitales (O) -->
+            <RowConstraints percentHeight="22"/> <!-- Diagnóstico (A)-->
+            <RowConstraints percentHeight="22"/> <!-- Indicaciones (P/I)-->
         </rowConstraints>
 
+        <!-- Especialista (fila 0) -->
         <Label text="Especialista:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
         <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
             <ComboBox fx:id="cmbEspecialistas" promptText="Seleccionar especialista" HBox.hgrow="ALWAYS"/>
             <TextField fx:id="txtCedula" promptText="Cédula" prefWidth="120" editable="false"/>
-            <!-- CAMBIO IMPORTANTE: ComboBox → TextField -->
             <TextField fx:id="txtEspecialidad" promptText="Ej: CARDIOLOGÍA" prefWidth="150"/>
         </HBox>
 
-        <!-- NUEVOS CAMPOS CON EXPANSIÓN VERTICAL -->
-        <Label text="Síntomas:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
-        <TextArea fx:id="txtSintomas" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                  promptText="Describa los síntomas del paciente..."
+        <!-- (P) - NUEVO (fila 1) -->
+        <Label text="P:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtP" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                  promptText="Presentacion del paciente..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Signos Vitales:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
-        <TextArea fx:id="txtSignosVitales" GridPane.rowIndex="2" GridPane.columnIndex="1"
-                  promptText="TA: ___/___ mmHg, FC: ___ lpm, FR: ___ rpm, Temp: ___ °C, SatO2: ___ %"
+        <!-- Síntomas (fila 2) -->
+        <Label text="S:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtSintomas" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                  promptText="Describa los signos y síntomas del paciente..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Diagnóstico:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
-        <TextArea fx:id="txtDiagnostico" GridPane.rowIndex="3" GridPane.columnIndex="1"
-                  promptText="Diagnóstico principal..."
+        <!-- Signos Vitales (fila 3 - 22% más espacio) -->
+        <Label text="O:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtSignosVitales" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                  promptText="signos vitales, Exploracion fisica, resultados de laboratorio, etc."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
 
-        <Label text="Indicaciones:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
-        <TextArea fx:id="txtIndicaciones" GridPane.rowIndex="4" GridPane.columnIndex="1"
-                  promptText="Indicaciones y tratamiento..."
+        <!-- Diagnóstico (fila 4 - 22% más espacio) -->
+        <Label text="A:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtDiagnostico" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                  promptText="Analisis, Diagnostico..."
+                  wrapText="true" GridPane.vgrow="ALWAYS"/>
+
+        <!-- Indicaciones (fila 5 - 22% más espacio) -->
+        <Label text="P/I:" GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-font-weight:bold;"/>
+        <TextArea fx:id="txtIndicaciones" GridPane.rowIndex="5" GridPane.columnIndex="1"
+                  promptText="Plan, Indicaciones..."
                   wrapText="true" GridPane.vgrow="ALWAYS"/>
     </GridPane>
 

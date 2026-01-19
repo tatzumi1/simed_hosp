@@ -36,12 +36,12 @@ public class NotaMedicaController {
     @FXML private Button btnGuardarTemporal;
 
     // Constantes para límites de datos
-    private static final int MAX_CHARS_SINTOMAS = 3000;
-    private static final int MAX_CHARS_SIGNOS = 2000;
-    private static final int MAX_CHARS_DIAGNOSTICO = 9000;
-    private static final int MAX_CHARS_NOTA = 11000;  // ahora este es presentacion del paciente
+    private static final int MAX_CHARS_SINTOMAS = 2500;
+    private static final int MAX_CHARS_SIGNOS = 7000;
+    private static final int MAX_CHARS_DIAGNOSTICO = 7000;
+    private static final int MAX_CHARS_NOTA = 2500;  // ahora este es presentacion del paciente
     private static final int MAX_CHARS_INDICACIONES = 7000;
-    private static final int MAX_TOTAL_CHARS = 33000; // Límite total para evitar saturación
+    private static final int MAX_TOTAL_CHARS = 26500; // Límite total para evitar saturación la suma da 26,000
 
     private int folioPaciente;
     private String usuarioLogueado;
@@ -116,7 +116,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_SINTOMAS) {
                 txtSintomas.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Síntomas no puede exceder los " + MAX_CHARS_SINTOMAS + " caracteres",
+                        "El campo S no puede exeder los " + MAX_CHARS_SINTOMAS + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -125,7 +125,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_SIGNOS) {
                 txtSignosVitales.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Signos Vitales no puede exceder los " + MAX_CHARS_SIGNOS + " caracteres",
+                        "El campo O no puede exceder los " + MAX_CHARS_SIGNOS + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -134,7 +134,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_DIAGNOSTICO) {
                 txtDiagnostico.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Análisis/Diagnóstico no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
+                        "El campo A no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -143,7 +143,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_NOTA) {
                 txtNota.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Presentación del Paciente no puede exceder los " + MAX_CHARS_NOTA + " caracteres",
+                        "El campo P no puede exceder los " + MAX_CHARS_NOTA + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -152,7 +152,7 @@ public class NotaMedicaController {
             if (newValue.length() > MAX_CHARS_INDICACIONES) {
                 txtIndicaciones.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Plan/Indicaciones no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
+                        "El campo P/I no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -699,27 +699,27 @@ public class NotaMedicaController {
 
         // Verificar límites individuales/ lo acabo de cmabiar 07/01/26
         if (txtSintomas.getText().length() > MAX_CHARS_SINTOMAS) {
-            camposExcedidos.add("Síntomas (" + txtSintomas.getText().length() + "/" + MAX_CHARS_SINTOMAS + ")");
+            camposExcedidos.add("S (" + txtSintomas.getText().length() + "/" + MAX_CHARS_SINTOMAS + ")");
         }
         totalChars += txtSintomas.getText().length();
 
         if (txtSignosVitales.getText().length() > MAX_CHARS_SIGNOS) {
-            camposExcedidos.add("Signos Vitales (" + txtSignosVitales.getText().length() + "/" + MAX_CHARS_SIGNOS + ")");
+            camposExcedidos.add("O (" + txtSignosVitales.getText().length() + "/" + MAX_CHARS_SIGNOS + ")");
         }
         totalChars += txtSignosVitales.getText().length();
 
         if (txtDiagnostico.getText().length() > MAX_CHARS_DIAGNOSTICO) {
-            camposExcedidos.add("Análisis/Diagnóstico (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
+            camposExcedidos.add("A (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
         }
         totalChars += txtDiagnostico.getText().length();
 
         if (txtNota.getText().length() > MAX_CHARS_NOTA) {
-            camposExcedidos.add("Presentación del Paciente (" + txtNota.getText().length() + "/" + MAX_CHARS_NOTA + ")");
+            camposExcedidos.add("P (" + txtNota.getText().length() + "/" + MAX_CHARS_NOTA + ")");
         }
         totalChars += txtNota.getText().length();
 
         if (txtIndicaciones.getText().length() > MAX_CHARS_INDICACIONES) {
-            camposExcedidos.add("Plan/Indicaciones (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
+            camposExcedidos.add("P/I (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
         }
         totalChars += txtIndicaciones.getText().length();
 
@@ -760,31 +760,31 @@ public class NotaMedicaController {
 
         // Validar campos obligatorios - ACTUALIZAR NOMBRES
         if (txtSintomas.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo SÍNTOMAS es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (S) es obligatorio", Alert.AlertType.ERROR);
             txtSintomas.requestFocus();
             return false;
         }
 
         if (txtSignosVitales.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo SIGNOS VITALES es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (O) es obligatorio", Alert.AlertType.ERROR);
             txtSignosVitales.requestFocus();
             return false;
         }
 
         if (txtDiagnostico.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo ANÁLISIS/DIAGNÓSTICO es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (A) es obligatorio", Alert.AlertType.ERROR);
             txtDiagnostico.requestFocus();
             return false;
         }
 
         if (txtNota.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo PRESENTACIÓN DEL PACIENTE es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (P) es obligatorio", Alert.AlertType.ERROR);
             txtNota.requestFocus();
             return false;
         }
 
         if (txtIndicaciones.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo PLAN/INDICACIONES es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (P/I)  es obligatorio", Alert.AlertType.ERROR);
             txtIndicaciones.requestFocus();
             return false;
         }

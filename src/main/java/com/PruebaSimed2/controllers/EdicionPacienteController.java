@@ -172,6 +172,10 @@ public class EdicionPacienteController {
         datosOriginales.put("Religion", rs.getString("Religion"));
         datosOriginales.put("Edo_civil", rs.getString("Edo_civil"));
         datosOriginales.put("Observaciones_ts", rs.getString("Observaciones_ts"));
+        datosOriginales.put("Entidad_resid", rs.getString("Entidad_resid"));
+        datosOriginales.put("Municipio_resid", rs.getString("Municipio_resid"));
+        datosOriginales.put("Entidad_completa", rs.getString("Entidad_completa"));
+        datosOriginales.put("Municipio_completo", rs.getString("Municipio_completo"));
     }
 
     private void cargarDatosEnInterfaz(ResultSet rs) throws SQLException {
@@ -196,8 +200,8 @@ public class EdicionPacienteController {
         txtCURP.setText(rs.getString("CURP"));
         txtSintomas.setText(rs.getString("Sintomas"));
         txtObservaciones.setText(rs.getString("Observaciones_ts"));
-        txtMunicipioSel.setText(rs.getString("Municipio_resid"));
-        txtEntidadSel.setText(rs.getString("Entidad_resid"));
+        txtMunicipioSel.setText(rs.getString("Municipio_completo"));  // ← Nombre completo
+        txtEntidadSel.setText(rs.getString("Entidad_completa"));     // ← Nombre completo
 
         chkReingreso.setSelected(rs.getBoolean("Reingreso"));
         chkHospitalizado.setSelected(rs.getBoolean("Hospitalizado"));
@@ -240,13 +244,47 @@ public class EdicionPacienteController {
         String sql = "UPDATE tb_urgencias SET " +
                 "A_paterno=?, A_materno=?, Nombre=?, Edad=?, F_nac=?, Sexo=?, Telefono=?, Domicilio=?, " +
                 "Ocupacion=?, Religion=?, Edo_civil=?, Derechohabiencia=?, No_afiliacion=?, Referencia=?, " +
-                "Reingreso=?, Hospitalizado=?, CURP=?, Sintomas=?, Observaciones_ts=? " +
+                "Reingreso=?, Hospitalizado=?, CURP=?, Sintomas=?, Observaciones_ts=?, " +
+                "Entidad_resid=?, Municipio_resid=?, Entidad_completa=?, Municipio_completo=? " + // ← CAMBIÓ (añadidos 2 campos)
                 "WHERE Folio=?";
 
         try (Connection c = ConexionBD.getSafeConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
-            // === SETEOS DE DATOS ===
+            // === PARTE NUEVA: OBTENER CÓDIGOS ===
+            String nombreEntidad = txtEntidadSel.getText().trim();
+            String nombreMunicipio = txtMunicipioSel.getText().trim();
+
+            String codigoEntidad = null;
+            String codigoMunicipio = null;
+
+            // 1. Buscar código de entidad (2 letras) en la BD
+            if (!nombreEntidad.isEmpty() && !"ESCRIBIR MANUALMENTE".equals(nombreEntidad)) {
+                String sqlEntidad = "SELECT EDO FROM tblt_entidad WHERE DESCRIP = ?";
+                try (PreparedStatement psEnt = c.prepareStatement(sqlEntidad)) {
+                    psEnt.setString(1, nombreEntidad);
+                    ResultSet rs = psEnt.executeQuery();
+                    if (rs.next()) {
+                        codigoEntidad = rs.getString("EDO");
+                    }
+                }
+            }
+
+            // 2. Buscar código de municipio (3 letras) en la BD
+            if (!nombreMunicipio.isEmpty() && !"ESCRIBIR MANUALMENTE".equals(nombreMunicipio) && codigoEntidad != null) {
+                String sqlMunicipio = "SELECT MPO FROM tblt_mpo WHERE DESCRIP = ? AND EDO = ?";
+                try (PreparedStatement psMpio = c.prepareStatement(sqlMunicipio)) {
+                    psMpio.setString(1, nombreMunicipio);
+                    psMpio.setString(2, codigoEntidad);
+                    ResultSet rs = psMpio.executeQuery();
+                    if (rs.next()) {
+                        codigoMunicipio = rs.getString("MPO");
+                    }
+                }
+            }
+            // === FIN PARTE NUEVA ===
+
+            // === SETEOS DE DATOS (los primeros 19 igual) ===
             ps.setString(1, txtApPaterno.getText().trim().toUpperCase());
             ps.setString(2, txtApMaterno.getText().trim().toUpperCase());
             ps.setString(3, txtNombre.getText().trim().toUpperCase());
@@ -266,17 +304,45 @@ public class EdicionPacienteController {
             ps.setString(17, txtCURP.getText().trim().toUpperCase());
             ps.setString(18, txtSintomas.getText());
             ps.setString(19, txtObservaciones.getText());
-            ps.setInt(20, folioPaciente);
+
+            // === CAMBIOS AQUÍ (campos 20-23) ===
+            // Campo 20: Entidad_resid (código 2 letras para FK)
+            if (codigoEntidad != null && !codigoEntidad.isEmpty()) {
+                ps.setString(20, codigoEntidad);
+            } else {
+                ps.setNull(20, java.sql.Types.VARCHAR);  // NULL si no hay código
+            }
+
+            // Campo 21: Municipio_resid (código 3 letras para FK)
+            if (codigoMunicipio != null && !codigoMunicipio.isEmpty()) {
+                ps.setString(21, codigoMunicipio);
+            } else {
+                ps.setNull(21, java.sql.Types.VARCHAR);  // NULL si no hay código
+            }
+
+            // Campo 22: Entidad_completa (nombre completo para mostrar)
+            if ("ESCRIBIR MANUALMENTE".equals(nombreEntidad)) {
+                ps.setString(22, "");  // Vacío si escribió manualmente
+            } else {
+                ps.setString(22, nombreEntidad);  // Nombre normal
+            }
+
+            // Campo 23: Municipio_completo (nombre completo para mostrar)
+            if ("ESCRIBIR MANUALMENTE".equals(nombreMunicipio)) {
+                ps.setString(23, "");  // Vacío si escribió manualmente
+            } else {
+                ps.setString(23, nombreMunicipio);  // Nombre normal
+            }
+
+            // Campo 24: Folio (antes era 22, ahora es 24)
+            ps.setInt(24, folioPaciente);
 
             if (ps.executeUpdate() > 0) {
-
-                // ==================== AUDITORÍA CON TU SESIÓN REAL ====================
+                // ==================== AUDITORÍA  ====================
                 try {
-                    // Aquí usamos exactamente tu clase SesionUsuario
                     String nombreCompleto = SesionUsuario.getInstance().getNombreMedico();
                     String username = SesionUsuario.getInstance().getUsername();
 
-                    // Protección por si algo falla (nunca debería, pero por si acaso)
                     if (nombreCompleto == null || nombreCompleto.trim().isEmpty()) {
                         nombreCompleto = "Usuario desconocido";
                     }
@@ -284,7 +350,6 @@ public class EdicionPacienteController {
                         username = "desconocido";
                     }
 
-                    // Detectamos qué cambió
                     StringBuilder cambios = new StringBuilder();
                     String oldPaterno = (String) datosOriginales.getOrDefault("A_paterno", "");
                     String oldMaterno = (String) datosOriginales.getOrDefault("A_materno", "");
@@ -306,21 +371,20 @@ public class EdicionPacienteController {
                             ? "Se modificó: " + cambios.substring(0, cambios.length() - 2)
                             : "Sin cambios detectados";
 
-                    // Insertar en auditoría
                     String sqlAudit = "INSERT INTO tb_auditoria_modificaciones " +
                             "(folio_paciente, capturista, username_capturista, datos_nuevos) " +
                             "VALUES (?, ?, ?, ?)";
 
                     try (PreparedStatement psAudit = c.prepareStatement(sqlAudit)) {
                         psAudit.setInt(1, folioPaciente);
-                        psAudit.setString(2, nombreCompleto);      // ← Nombre completo real
-                        psAudit.setString(3, username);            // ← Username real
+                        psAudit.setString(2, nombreCompleto);
+                        psAudit.setString(3, username);
                         psAudit.setString(4, textoCambios);
                         psAudit.executeUpdate();
                     }
 
                 } catch (Exception ex) {
-                    System.err.println("Advertencia: Falló auditoría (no afecta guardado): " + ex.getMessage());
+                    System.err.println("Advertencia: Falló auditoría: " + ex.getMessage());
                 }
                 // =====================================================================
 
@@ -341,13 +405,40 @@ public class EdicionPacienteController {
 
     @FXML
     private void seleccionarMunicipio() {
+        // PRIMERO NECESITAMOS SABER LA ENTIDAD SELECCIONADA
+        String entidadSeleccionada = txtEntidadSel.getText().trim();
+
+        if (entidadSeleccionada.isEmpty() || "ESCRIBIR MANUALMENTE".equals(entidadSeleccionada)) {
+            mostrarAlerta("Primero seleccione entidad", "Debe seleccionar una entidad válida antes de elegir municipio", Alert.AlertType.WARNING);
+            return;
+        }
+
         try (Connection conn = ConexionBD.getSafeConnection()) {
-            String sql = "SELECT DESCRIP FROM tblt_mpo WHERE DESCRIP NOT IN ('OTRO PAIS', 'OTRO(Escribir Manualmente)') ORDER BY DESCRIP";
-            ResultSet rs = conn.createStatement().executeQuery(sql);
+            // OBTENER EL CÓDIGO DE LA ENTIDAD SELECCIONADA
+            String codigoEntidad = "";
+            try (PreparedStatement psEnt = conn.prepareStatement(
+                    "SELECT EDO FROM tblt_entidad WHERE DESCRIP = ?")) {
+                psEnt.setString(1, entidadSeleccionada);
+                ResultSet rsEnt = psEnt.executeQuery();
+                if (rsEnt.next()) {
+                    codigoEntidad = rsEnt.getString("EDO");
+                }
+            }
+
+            if (codigoEntidad.isEmpty()) {
+                mostrarAlerta("Error", "No se encontró código para la entidad seleccionada", Alert.AlertType.ERROR);
+                return;
+            }
+
+            // AHORA FILTRAR MUNICIPIOS POR ESA ENTIDAD
+            String sql = "SELECT DESCRIP FROM tblt_mpo WHERE EDO = ? AND DESCRIP NOT IN ('OTRO PAIS', 'OTRO(Escribir Manualmente)') ORDER BY DESCRIP";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, codigoEntidad);
+            ResultSet rs = ps.executeQuery();
 
             Dialog<String> dialog = new Dialog<>();
             dialog.setTitle("Seleccionar Municipio");
-            dialog.setHeaderText("Elija un municipio:");
+            dialog.setHeaderText("Municipios de " + entidadSeleccionada + ":");
             ListView<String> listView = new ListView<>();
             while (rs.next()) listView.getItems().add(rs.getString(1));
             listView.getItems().add("ESCRIBIR MANUALMENTE");
@@ -367,7 +458,8 @@ public class EdicionPacienteController {
             });
 
         } catch (SQLException e) {
-            mostrarAlerta("Error", "Error cargando municipios", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "Error cargando municipios: " + e.getMessage(), Alert.AlertType.ERROR);
+            e.printStackTrace();
         }
     }
 
@@ -394,11 +486,11 @@ public class EdicionPacienteController {
                     tid.setHeaderText("Escriba la entidad:");
                     tid.showAndWait().ifPresent(m -> {
                         txtEntidadSel.setText(m.trim());
-                        txtMunicipioSel.clear();
+                        txtMunicipioSel.clear();  // Limpia municipio cuando cambia entidad
                     });
                 } else {
                     txtEntidadSel.setText(sel);
-                    txtMunicipioSel.clear();
+                    txtMunicipioSel.clear();  // Limpia municipio cuando cambia entidad
                 }
             });
 
@@ -496,6 +588,15 @@ public class EdicionPacienteController {
             if ("AEIOU".indexOf(c) == -1 && c != 'Ñ') return c;
         }
         return 'X';
+    }
+
+    private String convertirEntidadACodigo(String nombreEntidad) {
+        if (nombreEntidad == null || nombreEntidad.trim().isEmpty()) {
+            return "";
+        }
+        String nombreUpper = nombreEntidad.toUpperCase();
+        String codigo = CODIGOS_ENTIDADES.get(nombreUpper);
+        return codigo != null ? codigo : "";
     }
 
     private char obtenerDigitoVerificadorSimple() {
