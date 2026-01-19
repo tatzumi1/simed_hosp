@@ -2,8 +2,6 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.text.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -35,7 +33,7 @@
                        style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #002366; -fx-padding: 0 0 5 0;"/>
 
                 <!-- Información Básica del Paciente -->
-                <TitledPane text="Información del Paciente" expanded="true"
+                <TitledPane text="Información del Paciente"
                             style="-fx-border-color: #cccccc; -fx-border-radius: 5;">
                     <VBox spacing="8" style="-fx-padding: 12;">
                         <GridPane hgap="10" vgap="8">
@@ -126,7 +124,7 @@
                 </TitledPane>
 
                 <!-- NOTA MÉDICA - BUSCAR Y GESTIONAR -->
-                <TitledPane text=" Nota Médica - Buscar y Gestionar" expanded="true"
+                <TitledPane text=" Nota Médica - Buscar y Gestionar"
                             style="-fx-border-color: #3498db; -fx-border-radius: 5;">
                     <VBox spacing="10" style="-fx-padding: 12;">
                         <!-- CONTADOR -->
@@ -144,11 +142,11 @@
                         <TableView fx:id="tablaNotasMedicas" prefHeight="200"
                                    style="-fx-border-color: #ddd; -fx-border-radius: 3;">
                             <columns>
-                                <TableColumn text="No. Nota" prefWidth="80"/>
+                                <TableColumn text="No. Nota"/>
                                 <TableColumn text="Médico" prefWidth="150"/>
                                 <TableColumn text="Fecha" prefWidth="100"/>
                                 <TableColumn text="Estado" prefWidth="100"/>
-                                <TableColumn text="¿Editable?" prefWidth="80"/>
+                                <TableColumn text="¿Editable?"/>
                                 <TableColumn text="Estado Paciente" prefWidth="120"/>
                             </columns>
                         </TableView>
@@ -184,7 +182,7 @@
                 </TitledPane>
 
                 <!-- NOTA INTERCONSULTA - BUSCAR Y GESTIONAR -->
-                <TitledPane text=" Nota de Interconsulta - Buscar y Gestionar" expanded="true"
+                <TitledPane text=" Nota de Interconsulta - Buscar y Gestionar"
                             style="-fx-border-color: #9b59b6; -fx-border-radius: 5;">
                     <VBox spacing="10" style="-fx-padding: 12;">
                         <!-- CONTADOR -->
@@ -206,7 +204,7 @@
                                 <TableColumn text="Especialista" prefWidth="150"/>
                                 <TableColumn text="Fecha" prefWidth="100"/>
                                 <TableColumn text="Estado" prefWidth="100"/>
-                                <TableColumn text="¿Editable?" prefWidth="80"/>
+                                <TableColumn text="¿Editable?"/>
                             </columns>
                         </TableView>
 
@@ -249,7 +247,7 @@
                        style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #002366; -fx-padding: 0 0 5 0;"/>
 
                 <!-- Información de Atención Actual -->
-                <TitledPane text="Información de Atención Actual" expanded="true"
+                <TitledPane text="Información de Atención Actual"
                             style="-fx-border-color: #e74c3c; -fx-border-radius: 5;">
                     <VBox spacing="8" style="-fx-padding: 12;">
                         <GridPane hgap="10" vgap="8">
@@ -294,8 +292,6 @@
                             <Label text="Mujer en edad fértil:" GridPane.rowIndex="6" GridPane.columnIndex="0"
                                    style="-fx-font-weight: bold; -fx-text-fill: #333;"/>
                             <HBox spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="1">
-                                <RadioButton text="Sí" toggleGroup="$mujerFertilGroup" userData="SI" />
-                                <RadioButton text="No" toggleGroup="$mujerFertilGroup" userData="NO" />
                             </HBox>
 
                         </GridPane>
@@ -303,7 +299,7 @@
                 </TitledPane>
 
                 <!-- ESTADO DEL PACIENTE -->
-                <TitledPane text=" Estado del Paciente" expanded="true"
+                <TitledPane text=" Estado del Paciente"
                             style="-fx-border-color: #f39c12; -fx-border-radius: 5;">
                     <VBox spacing="10" style="-fx-padding: 12;">
                         <Label text="Indique si el paciente está en observación o será egresado del servicio de urgencias:"

@@ -1,4 +1,4 @@
-package com.PruebaSimed2.DTO;
+package com.PruebaSimed2.DTO.Urgencias;
 
 import lombok.*;
 import lombok.extern.log4j.Log4j2;

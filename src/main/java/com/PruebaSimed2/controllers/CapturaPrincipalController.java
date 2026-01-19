@@ -2,86 +2,102 @@
 
 package com.PruebaSimed2.controllers;
 
-import com.PruebaSimed2.database.ConexionBD;
+import com.PruebaSimed2.DTO.HistorialPermisos.InsertarPermisoDTO;
+import com.PruebaSimed2.DTO.Urgencias.ActualizarCapturaPrincipalDTO;
+import com.PruebaSimed2.database.*;
+import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.models.NotaMedicaVO;
 import com.PruebaSimed2.utils.PDFGenerator;
-import com.PruebaSimed2.models.InterconsultaVO;
 import com.PruebaSimed2.utils.SesionUsuario;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
 import javafx.util.Duration;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
+import lombok.extern.log4j.Log4j2;
+
+import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.io.File;
-import java.net.URL;
 
+import static com.PruebaSimed2.utils.NameGenerator.generateName;
+import static java.util.Arrays.asList;
+
+@Log4j2
 public class CapturaPrincipalController {
 
     // ==================== CAMPOS IZQUIERDA - DATOS EXISTENTES ====================
-    @FXML private TextField txtFolio, txtFechaRegistro, txtHoraRegistro, txtTriage;
-    @FXML private TextField txtNombre, txtEdad, txtSexo, txtMunicipio, txtEntidad;
-    @FXML private TextField txtDerechohabiencia, txtReferencia, txtMedicoIngreso;
-    @FXML private TextArea txtDomicilio, txtSintomas;
-    @FXML private Button btnColorTriage;
+    @FXML
+    private TextField txtFolio, txtFechaRegistro, txtHoraRegistro, txtTriage;
+    @FXML
+    private TextField txtNombre, txtEdad, txtSexo, txtMunicipio, txtEntidad;
+    @FXML
+    private TextField txtDerechohabiencia, txtReferencia, txtMedicoIngreso;
+    @FXML
+    private TextArea txtDomicilio, txtSintomas;
+    @FXML
+    private Button btnColorTriage;
 
     // ==================== CAMPOS DERECHA - NUEVA INFORMACIÓN ====================
-    @FXML private TextField txtFechaAtencion, txtHoraAtencion, txtCedulaMedico;
-    @FXML private ComboBox<String> cmbTipoUrgencia, cmbMotivoUrgencia, cmbTipoCama, cmbMedicoActual;
+    @FXML
+    private TextField txtFechaAtencion, txtHoraAtencion, txtCedulaMedico;
+    @FXML
+    private ComboBox<String> cmbTipoUrgencia, cmbMotivoUrgencia, cmbTipoCama, cmbMedicoActual;
 
-    // ==================== ESTADO DEL PACIENTE ====================
-    @FXML private ToggleGroup tgEstadoPaciente;
-    @FXML private RadioButton rbObservacion, rbAltaMedica;
+    @FXML
+    private RadioButton rbObservacion, rbAltaMedica;
 
     // ==================== NOTAS MÉDICAS ====================
-    @FXML private Label lblContadorNotas, lblContadorInterconsultas;
-    @FXML private TableView<NotaMedicaVO> tablaNotasMedicas;
-    @FXML private TableView<InterconsultaVO> tablaInterconsultas;
-    @FXML private Button btnVisualizarNotaMedica, btnEditarNotaMedica, btnImprimirNotaMedica;
-    @FXML private Button btnVisualizarInterconsulta, btnEditarInterconsulta, btnImprimirInterconsulta;
-    @FXML private Button btnNuevaNotaMedica, btnNuevaInterconsulta;
-    @FXML private Button btnOtorgarPermiso, btnOtorgarPermisoInterconsulta;
-    @FXML private Button btnGuardarGeneral;
+    @FXML
+    private Label lblContadorNotas, lblContadorInterconsultas;
+    @FXML
+    private TableView<NotaMedicaVO> tablaNotasMedicas;
+    @FXML
+    private TableView<InterconsultaVO> tablaInterconsultas;
+    @FXML
+    private Button btnVisualizarNotaMedica, btnEditarNotaMedica, btnImprimirNotaMedica;
+    @FXML
+    private Button btnVisualizarInterconsulta, btnEditarInterconsulta, btnImprimirInterconsulta;
+    @FXML
+    private Button btnNuevaNotaMedica, btnNuevaInterconsulta;
+    @FXML
+    private Button btnOtorgarPermiso, btnOtorgarPermisoInterconsulta;
+    @FXML
+    private Button btnGuardarGeneral;
 
-    // MÉTODOS RESTANTES (visualizar, imprimir, etc.) - SE MANTIENEN SIMILARES
+    @FXML
+    private void imprimirNotaMedica() { /* implementación similar */ }
 
-    @FXML private void imprimirNotaMedica() { /* implementación similar */ }
-    @FXML private void imprimirInterconsulta() { /* implementación similar */ }
-
-
+    @FXML
+    private void imprimirInterconsulta() { /* implementación similar */ }
 
 
     private int folioPaciente;
     private String usuarioLogueado;
     private String rolUsuarioLogueado;
-    private Map<String, String> coloresTriage = new HashMap<>();
+    private final Map<String, String> coloresTriage = new HashMap<>();
     private boolean capturaGuardada = false;
 
     // Variables para datos
-    private ObservableList<NotaMedicaVO> notasData = FXCollections.observableArrayList();
-    private ObservableList<InterconsultaVO> interconsultasData = FXCollections.observableArrayList();
-    private SesionUsuario sesion = SesionUsuario.getInstance();
+    private final ObservableList<NotaMedicaVO> notasData = FXCollections.observableArrayList();
+    private final ObservableList<InterconsultaVO> interconsultasData = FXCollections.observableArrayList();
+    private final SesionUsuario sesion = SesionUsuario.getInstance();
 
     // ==================== MÉTODOS PRINCIPALES ====================
 
@@ -98,6 +114,7 @@ public class CapturaPrincipalController {
         configurarColumnasInterconsultas();
         verificarNotasTemporalesPropias();
         configurarVisibilidadSegunRol();
+        validarCamposRequeridosYActivarUI();
     }
 
     public void setUsuarioLogueado(String usuario, String rol) {
@@ -109,8 +126,8 @@ public class CapturaPrincipalController {
             sesion.inicializar(usuario, rol, usuarioId);
         }
 
-        System.out.println("Usuario en captura: " + usuario + " - Rol: " + rol);
-        System.out.println("Nombre médico en sesión: " + sesion.getNombreMedico());
+        log.debug("Usuario en captura: {} - Rol: {}", usuario, rol);
+        log.debug("Nombre médico en sesión: {}", sesion.getNombreMedico());
 
         configurarVisibilidadSegunRol(); // NUEVA LÍNEA
     }
@@ -132,14 +149,23 @@ public class CapturaPrincipalController {
     }
 
     private void configurarToggleGroup() {
-        tgEstadoPaciente = new ToggleGroup();
+        // ==================== ESTADO DEL PACIENTE ====================
+        ToggleGroup tgEstadoPaciente = new ToggleGroup();
         rbObservacion.setToggleGroup(tgEstadoPaciente);
         rbAltaMedica.setToggleGroup(tgEstadoPaciente);
     }
 
     private void configurarEventos() {
-        // Combos médicos
-        cmbMedicoActual.setOnAction(e -> actualizarCedulaMedico());
+        // Listeners para habilitar UI
+        cmbTipoUrgencia.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbMotivoUrgencia.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbTipoCama.valueProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        cmbMedicoActual.valueProperty().addListener((obs, oldVal, newVal) -> {
+            actualizarCedulaMedico();
+            validarCamposRequeridosYActivarUI();
+        });
+        rbObservacion.selectedProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
+        rbAltaMedica.selectedProperty().addListener((obs, oldVal, newVal) -> validarCamposRequeridosYActivarUI());
 
         // Botones de notas
         btnNuevaNotaMedica.setOnAction(e -> abrirNotaMedica());
@@ -164,111 +190,58 @@ public class CapturaPrincipalController {
         // Configurar tabla de notas médicas
         if (tablaNotasMedicas != null) {
             tablaNotasMedicas.getSelectionModel().selectedItemProperty().addListener(
-                    (observable, oldValue, newValue) -> onNotaSeleccionada()
+                    (observable, oldValue, newValue) -> configurarVisibilidadBotonesSegunNotaSeleccionada()
             );
         }
 
         // Configurar tabla de interconsultas
         if (tablaInterconsultas != null) {
             tablaInterconsultas.getSelectionModel().selectedItemProperty().addListener(
-                    (observable, oldValue, newValue) -> onInterconsultaSeleccionada()
+                    (observable, oldValue, newValue) -> configurarVisibilidadBotonesInterconsulta()
             );
         }
     }
 
     private void cargarDatosPaciente(int folio) {
-        String sql = "SELECT u.*, " +
-                "m.DESCRIP as NombreMunicipio, e.DESCRIP as NombreEntidad, " +
-                "dh.Derechohabiencia as NombreDerechohabiencia " +
-                "FROM tb_urgencias u " +
-                "LEFT JOIN tblt_mpo m ON u.Municipio_resid = m.MPO AND u.Entidad_resid = m.EDO " +
-                "LEFT JOIN tblt_entidad e ON u.Entidad_resid = e.EDO " +
-                "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
-                "WHERE u.Folio = ?";
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            var dto = ud.cardarDatosPaciente(folio, conn);
 
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            txtFolio.setText(String.valueOf(dto.getFolio()));
+            txtFechaRegistro.setText(dto.getFecha().toString());
+            txtHoraRegistro.setText(dto.getHoraRegistro().toString());
 
-            pstmt.setInt(1, folio);
-            ResultSet rs = pstmt.executeQuery();
+            String triage = dto.getTriage();
+            txtTriage.setText(triage != null ? triage : "No especificado");
+            aplicarColorTriage(triage);
 
-            if (rs.next()) {
-                // ========== INFORMACIÓN BÁSICA ==========
-                txtFolio.setText(String.valueOf(rs.getInt("Folio")));
-                txtFechaRegistro.setText(rs.getString("Fecha"));
-                txtHoraRegistro.setText(rs.getString("Hora_registro"));
-
-                // TRIAGE con color
-                String triage = rs.getString("TRIAGE");
-                txtTriage.setText(triage != null ? triage : "No especificado");
-                aplicarColorTriage(triage);
-
-                // Nombre completo
-                String nombreCompleto = construirNombreCompleto(
-                        rs.getString("A_paterno"),
-                        rs.getString("A_materno"),
-                        rs.getString("Nombre")
-                );
-                txtNombre.setText(nombreCompleto);
-
-                // Edad
-                txtEdad.setText(String.valueOf(rs.getInt("Edad")));
-
-                // Sexo
-                txtSexo.setText(obtenerDescripcionSexo(rs.getString("Sexo")));
-
-                // Domicilio
-                txtDomicilio.setText(rs.getString("Domicilio"));
-
-                // ========== MUNICIPIO Y ENTIDAD ==========
-                String municipioCode = rs.getString("Municipio_resid");
-                String entidadCode = rs.getString("Entidad_resid");
-
-                System.out.println(" Datos municipio/entidad:");
-                System.out.println("   Municipio_resid: '" + municipioCode + "'");
-                System.out.println("   Entidad_resid: '" + entidadCode + "'");
-
-                // 1. PRIMERO usar el resultado del JOIN si encontró algo
-                String municipio = rs.getString("NombreMunicipio");
-                String entidad = rs.getString("NombreEntidad");
-
-                System.out.println("   Resultado JOIN Municipio: '" + municipio + "'");
-                System.out.println("   Resultado JOIN Entidad: '" + entidad + "'");
-
-                // 2. SI el JOIN no funcionó, procesar nosotros
-                if (municipio == null && municipioCode != null) {
-                    municipio = obtenerNombreMunicipio(municipioCode, entidadCode);
-                }
-
-                if (entidad == null && entidadCode != null) {
-                    entidad = obtenerNombreEntidad(entidadCode);
-                }
-
-                // Mostrar en UI
-                txtMunicipio.setText(municipio != null ? municipio : "No especificado");
-                txtEntidad.setText(entidad != null ? entidad : "No especificado");
-
-                System.out.println(" Mostrando en UI:");
-                System.out.println("   Municipio: " + txtMunicipio.getText());
-                System.out.println("   Entidad: " + txtEntidad.getText());
-                // ========== FIN MUNICIPIO/ENTIDAD ==========
-
-                // Derechohabiencia
-                String derechohabiencia = rs.getString("NombreDerechohabiencia");
-                txtDerechohabiencia.setText(derechohabiencia != null ? derechohabiencia : "No especificado");
-
-                // Información médica
-                txtReferencia.setText(rs.getString("Referencia"));
-                txtSintomas.setText(rs.getString("Sintomas"));
-                txtMedicoIngreso.setText(rs.getString("Nom_med"));
-
-                System.out.println(" Datos paciente cargados - Folio: " + folio);
-
-            } else {
-                System.out.println(" No se encontró paciente con folio: " + folio);
+            String nombreCompleto = generateName(dto.getApellidoPaterno(), dto.getApellidoMaterno(), dto.getNombre());
+            txtNombre.setText(nombreCompleto);
+            txtEdad.setText(String.valueOf(dto.getEdad()));
+            txtSexo.setText(obtenerDescripcionSexo(String.valueOf(dto.getSexo())));
+            txtDomicilio.setText(dto.getDomicilio());
+            String municipioCode = dto.getMunicipioResid();
+            String entidadCode = dto.getEntidadResid();
+            String municipio = dto.getNombreMunicipio();
+            String entidad = dto.getNombreEntidad();
+            if (municipio == null && municipioCode != null) {
+                municipio = obtenerNombreMunicipio(municipioCode, entidadCode);
             }
+
+            if (entidad == null && entidadCode != null) {
+                entidad = obtenerNombreEntidad(entidadCode);
+            }
+
+            txtMunicipio.setText(municipio != null ? municipio : "No especificado");
+            txtEntidad.setText(entidad != null ? entidad : "No especificado");
+            String derechohabiencia = dto.getNombreDerechoHabiencia();
+            txtDerechohabiencia.setText(derechohabiencia != null ? derechohabiencia : "No especificado");
+            txtReferencia.setText(dto.getReferencia());
+            txtSintomas.setText(dto.getSintomas());
+            txtMedicoIngreso.setText(dto.getNombreMedico());
+            log.info(" Datos paciente cargados - Folio: {}", folio);
         } catch (SQLException e) {
-            System.err.println(" Error cargando paciente: " + e.getMessage());
+            log.error(" Error cargando paciente: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudieron cargar los datos del paciente", Alert.AlertType.ERROR);
         }
     }
@@ -283,52 +256,40 @@ public class CapturaPrincipalController {
         municipioCode = municipioCode.trim();
         entidadCode = entidadCode != null ? entidadCode.trim() : "";
 
-        System.out.println(" Procesando municipio: '" + municipioCode + "'");
+        log.debug(" Procesando municipio: '{}'", municipioCode);
 
-        // CASO A: Si ya es texto (ej: "poza rica"), usarlo directamente
+        // CASO A: Si ya es texto (ej.: "poza rica"), usarlo directamente
         if (!municipioCode.matches("\\d+")) {
-            System.out.println("   Es texto, usando directamente: " + municipioCode);
+            log.debug("Es texto, usando directamente: {}", municipioCode);
             return municipioCode;
         }
 
         // CASO B: Si es número, buscar en tblt_mpo
-        System.out.println("   Es número, buscando en tblt_mpo...");
+        log.debug("Es número, buscando en tblt_mpo...");
 
-        String sql = "SELECT DESCRIP FROM tblt_mpo WHERE MPO = ? AND EDO = ?";
+        try (Connection conn = ConexionBD.conectar()) {
+            var md = new MunicipioData();
+            String nombre = md.obtenerDescripcionMunicipio(conn, municipioCode, entidadCode);
 
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, municipioCode);
-            pstmt.setString(2, entidadCode);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String nombre = rs.getString("DESCRIP");
-                    System.out.println(" Municipio encontrado: " + nombre);
-                    return nombre;
-                } else {
-                    System.out.println(" Municipio no encontrado en tblt_mpo");
-
-                    // Intentar sin ceros a la izquierda
-                    if (municipioCode.matches("0+\\d+")) {
-                        String sinCeros = municipioCode.replaceFirst("^0+", "");
-                        System.out.println("   Intentando sin ceros: '" + sinCeros + "'");
-
-                        pstmt.setString(1, sinCeros);
-                        ResultSet rs2 = pstmt.executeQuery();
-                        if (rs2.next()) {
-                            String nombre = rs2.getString("DESCRIP");
-                            System.out.println(" Municipio encontrado (sin ceros): " + nombre);
-                            return nombre;
-                        }
+            if (nombre != null) {
+                log.debug(" Municipio encontrado: {}", nombre);
+                return nombre;
+            } else {
+                log.debug("Municipio no encontrado en tblt_mpo, intentando sin ceros a la izquierda...");
+                if (municipioCode.matches("0+\\d+")) {
+                    String sinCeros = municipioCode.replaceFirst("^0+", "");
+                    log.debug("Intentando sin ceros: '{}'", sinCeros);
+                    nombre = md.obtenerDescripcionMunicipio(conn, sinCeros, entidadCode);
+                    if (nombre != null) {
+                        log.debug("Municipio encontrado (sin ceros): {}", nombre);
+                        return nombre;
                     }
-
-                    return null;
                 }
+                log.warn("Municipio no encontrado en tblt_mpo ni sin ceros a la izquierda");
+                return null;
             }
         } catch (SQLException e) {
-            System.err.println("Error obteniendo municipio: " + e.getMessage());
+            log.error("Error obteniendo municipio: {}", e.getMessage());
             return null;
         }
     }
@@ -339,42 +300,26 @@ public class CapturaPrincipalController {
         }
 
         entidadCode = entidadCode.trim();
-        System.out.println("🔍 Procesando entidad: '" + entidadCode + "'");
+        log.debug("Procesando entidad: '{}'", entidadCode);
 
         // CASO A: Si ya es texto, usarlo directamente
         if (!entidadCode.matches("\\d+")) {
-            System.out.println("   Es texto, usando directamente: " + entidadCode);
+            log.debug("   Es texto, usando directamente: {}", entidadCode);
             return entidadCode;
         }
 
         // CASO B: Si es número, buscar en tblt_entidad
-        System.out.println("   Es número, buscando en tblt_entidad...");
+        log.debug("   Es número, buscando en tblt_entidad...");
 
-        String sql = "SELECT DESCRIP FROM tblt_entidad WHERE EDO = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, entidadCode);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String nombre = rs.getString("DESCRIP");
-                    System.out.println(" Entidad encontrada: " + nombre);
-                    return nombre;
-                } else {
-                    System.out.println(" Entidad no encontrada en tblt_entidad");
-                    return null;
-                }
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ed = new EntidadData();
+            return ed.obtenerEntidades(conn, entidadCode);
         } catch (SQLException e) {
-            System.err.println("Error obteniendo entidad: " + e.getMessage());
+            log.error("Error obteniendo entidad: {}", e.getMessage());
             return null;
         }
     }
 
-
-    // Método actualizarUIDatosPaciente corregido
     private void actualizarUIDatosPaciente(Map<String, Object> datos) {
         try {
             // Información básica
@@ -388,11 +333,7 @@ public class CapturaPrincipalController {
             aplicarColorTriage(triage);
 
             // Nombre completo
-            String nombreCompleto = construirNombreCompleto(
-                    (String) datos.get("a_paterno"),
-                    (String) datos.get("a_materno"),
-                    (String) datos.get("nombre")
-            );
+            String nombreCompleto = generateName((String) datos.get("a_paterno"), (String) datos.get("a_materno"), (String) datos.get("nombre"));
             txtNombre.setText(nombreCompleto);
 
             // Demás datos
@@ -404,9 +345,9 @@ public class CapturaPrincipalController {
             String municipio = (String) datos.get("municipio");
             String entidad = (String) datos.get("entidad");
 
-            System.out.println(" Mostrando en UI:");
-            System.out.println("   Municipio: " + municipio);
-            System.out.println("   Entidad: " + entidad);
+            log.debug(" Mostrando en UI:");
+            log.debug("   Municipio: {}", municipio);
+            log.debug("   Entidad: {}", entidad);
 
             txtMunicipio.setText(municipio != null ? municipio : "No especificado");
             txtEntidad.setText(entidad != null ? entidad : "No especificado");
@@ -416,31 +357,14 @@ public class CapturaPrincipalController {
             txtSintomas.setText((String) datos.get("sintomas"));
             txtMedicoIngreso.setText((String) datos.get("nom_med"));
 
-            System.out.println(" Datos paciente cargados en UI - Folio: " + datos.get("folio"));
+            log.info(" Datos paciente cargados en UI - Folio: {}", datos.get("folio"));
 
         } catch (Exception e) {
-            System.err.println(" Error actualizando UI de paciente: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error actualizando UI de paciente: {}", e.getMessage());
             mostrarAlerta("Error de datos",
                     "Error al mostrar datos del paciente: " + e.getMessage(),
                     Alert.AlertType.ERROR);
         }
-    }
-
-    private String construirNombreCompleto(String aPaterno, String aMaterno, String nombre) {
-        StringBuilder nombreCompleto = new StringBuilder();
-
-        if (aPaterno != null && !aPaterno.trim().isEmpty()) {
-            nombreCompleto.append(aPaterno).append(" ");
-        }
-        if (aMaterno != null && !aMaterno.trim().isEmpty()) {
-            nombreCompleto.append(aMaterno).append(" ");
-        }
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            nombreCompleto.append(nombre);
-        }
-
-        return nombreCompleto.length() > 0 ? nombreCompleto.toString().trim() : "No especificado";
     }
 
     private String obtenerDescripcionSexo(String codigoSexo) {
@@ -451,11 +375,12 @@ public class CapturaPrincipalController {
 
     private void aplicarColorTriage(String triage) {
         if (triage != null) {
-            String color = "";
+            String color;
             String texto = triage.toLowerCase();
 
             if (texto.contains("rojo")) color = "#e74c3c";
             else if (texto.contains("amarillo")) color = "#f1c40f";
+            else if (texto.contains("naranja")) color = "#ff8000";
             else if (texto.contains("verde")) color = "#2ecc71";
             else color = "#95a5a6";
 
@@ -463,151 +388,31 @@ public class CapturaPrincipalController {
         }
     }
 
-    // ==================== MÉTODOS AUXILIARES MEJORADOS ====================
-
-    /**
-     *  OBTENER ID DE USUARIO DESDE BD - CORREGIDO
-     */
     private int obtenerIdUsuarioDesdeBD(String username) {
-        String sql = "SELECT id_usuario FROM tb_usuarios WHERE username = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("id_usuario");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UsuarioData();
+            return ud.obtenerIdUsuarioPorUsername(conn, username);
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo ID de usuario: " + e.getMessage());
+            log.error(" Error obteniendo ID de usuario: {}", e.getMessage());
         }
-        return 0; // Valor por defecto si no se encuentra
+        return 0;
     }
 
-    /**
-     *  OBTENER NOMBRE COMPLETO DEL MÉDICO DESDE USUARIO - CORREGIDO
-     */
     private String obtenerNombreMedicoDesdeUsuario(String username) {
-        System.out.println(" BUSCANDO NOMBRE MÉDICO COMPLETO para usuario: " + username);
-
-        // PRIMERO: Buscar por empleado_id en tb_usuarios
-        String sql = "SELECT m.Med_nombre " +
-                "FROM tb_medicos m " +
-                "INNER JOIN tb_usuarios u ON m.Ced_prof = u.empleado_id " +
-                "WHERE u.username = ? " +
-                "UNION " +
-                "SELECT nombre_completo FROM tb_usuarios WHERE username = ? " +
-                "UNION " +
-                "SELECT Med_nombre FROM tb_medicos WHERE Med_nombre LIKE CONCAT('%', ?, '%') " +
-                "LIMIT 1";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            pstmt.setString(2, username);
-            pstmt.setString(3, username);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                String nombreMedico = rs.getString("Med_nombre");
-                System.out.println(" NOMBRE MÉDICO ENCONTRADO: " + nombreMedico + " para usuario: " + username);
-                return nombreMedico;
-            } else {
-                System.out.println(" NO se encontró médico completo para: " + username);
-                // Fallback: buscar en tb_usuarios el nombre_completo
-                return obtenerNombreCompletoDesdeUsuarios(username);
-            }
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UsuarioData();
+            return ud.obtenerNombreMedicoPorUsername(conn, username);
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo nombre médico: " + e.getMessage());
-            return obtenerNombreCompletoDesdeUsuarios(username);
+            log.error(" Error obteniendo nombre médico: {}", e.getMessage());
+            return null;
         }
-    }
-
-    /**
-     *  FALLBACK: Obtener nombre_completo desde tb_usuarios
-     */
-    private String obtenerNombreCompletoDesdeUsuarios(String username) {
-        String sql = "SELECT nombre_completo FROM tb_usuarios WHERE username = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                String nombreCompleto = rs.getString("nombre_completo");
-                if (nombreCompleto != null && !nombreCompleto.trim().isEmpty()) {
-                    System.out.println(" Nombre completo desde usuarios: " + nombreCompleto);
-                    return nombreCompleto;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error obteniendo nombre completo: " + e.getMessage());
-        }
-
-        System.out.println("Usando username como fallback: " + username);
-        return username;
-    }
-
-    // de aaquiiii nooommmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-
-    private void mostrarSeccionNuevaInformacion() {
-        Platform.runLater(() -> {
-            txtFechaAtencion.setVisible(true);
-            txtHoraAtencion.setVisible(true);
-            txtCedulaMedico.setVisible(true);
-            cmbTipoUrgencia.setVisible(true);
-            cmbMotivoUrgencia.setVisible(true);
-            cmbTipoCama.setVisible(true);
-            cmbMedicoActual.setVisible(true);
-            rbObservacion.setVisible(true);
-            rbAltaMedica.setVisible(true);
-            btnGuardarGeneral.setVisible(true);
-
-            Label labelFecha = (Label) txtFechaAtencion.getParent().getParent().getParent().lookup("Label[text='Fecha Atención:']");
-            Label labelHora = (Label) txtHoraAtencion.getParent().getParent().getParent().lookup("Label[text='Hora Atención:']");
-            Label labelTipoUrgencia = (Label) txtFechaAtencion.getParent().getParent().getParent().lookup("Label[text='Tipo de Urgencia:']");
-            Label labelMotivo = (Label) txtFechaAtencion.getParent().getParent().getParent().lookup("Label[text='Motivo Urgencia:']");
-            Label labelCama = (Label) txtFechaAtencion.getParent().getParent().getParent().lookup("Label[text='Tipo de Cama:']");
-            Label labelMedico = (Label) txtFechaAtencion.getParent().getParent().getParent().lookup("Label[text='Médico Actual:']");
-            Label labelEstado = (Label) txtFechaAtencion.getParent().getParent().getParent().getParent().getParent().lookup("Label[text='Indique si el paciente...']");
-
-            if (labelFecha != null) labelFecha.setVisible(true);
-            if (labelHora != null) labelHora.setVisible(true);
-            if (labelTipoUrgencia != null) labelTipoUrgencia.setVisible(true);
-            if (labelMotivo != null) labelMotivo.setVisible(true);
-            if (labelCama != null) labelCama.setVisible(true);
-            if (labelMedico != null) labelMedico.setVisible(true);
-            if (labelEstado != null) labelEstado.setVisible(true);
-        });
-    }
-
-
-
-    private void habilitarSeccionNuevaInformacion() {
-        cmbTipoUrgencia.setDisable(false);
-        cmbMotivoUrgencia.setDisable(false);
-        cmbTipoCama.setDisable(false);
-        cmbMedicoActual.setDisable(false);
-        rbObservacion.setDisable(false);
-        rbAltaMedica.setDisable(false);
-
-        cmbTipoUrgencia.setStyle("");
-        cmbMotivoUrgencia.setStyle("");
-        cmbTipoCama.setStyle("");
-        cmbMedicoActual.setStyle("");
     }
 
     @FXML
     private void abrirNotaMedica() {
         if (pacienteEgresado()) {
             mostrarAlerta("Error", "No se pueden crear notas para pacientes egresados", Alert.AlertType.WARNING);
+            log.warn("Error: No se pueden crear notas para pacientes egresados");
             return;
         }
 
@@ -621,11 +426,12 @@ public class CapturaPrincipalController {
                 Optional<ButtonType> resultado = alerta.showAndWait();
                 if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
                     cargarYEditarNotaExistente(idNotaExistente);
-                    return;
+                    log.debug("Nota temporal existente editada: {}", idNotaExistente);
                 } else {
                     mostrarAlerta("Nota Temporal Existente", "Ya tiene una nota temporal en este paciente.\n\nPara crear una nueva nota, debe primero:\n1. Editar su nota temporal existente\n2. Guardarla como DEFINITIVA\n3. Luego podrá crear una nueva nota", Alert.AlertType.INFORMATION);
-                    return;
+                    log.debug("Nota temporal existente cancelada: {}", idNotaExistente);
                 }
+                return;
             }
             return;
         }
@@ -644,15 +450,13 @@ public class CapturaPrincipalController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 1000, 700));
             stage.setTitle("Nueva Nota Médica - Folio: " + folioPaciente);
-            stage.setOnHidden(e -> {
-                Platform.runLater(() -> {
-                    cargarNotasDelPaciente();
-                    cargarContadores();
-                });
-            });
+            stage.setOnHidden(e -> Platform.runLater(() -> {
+                cargarNotasDelPaciente();
+                cargarContadores();
+            }));
             stage.show();
         } catch (Exception e) {
-            System.err.println("Error abriendo nota médica: " + e.getMessage());
+            log.error("Error abriendo nota médica: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir la ventana de nota médica", Alert.AlertType.ERROR);
         }
     }
@@ -661,11 +465,13 @@ public class CapturaPrincipalController {
     private void abrirInterconsulta() {
         if (pacienteEgresado()) {
             mostrarAlerta("Error", "No se pueden crear interconsultas para pacientes egresados", Alert.AlertType.WARNING);
+            log.warn("Error: No se pueden crear interconsultas para pacientes egresados");
             return;
         }
 
         if (!sesion.puedeCrearNuevaInterconsulta(folioPaciente)) {
             mostrarAlerta("Interconsulta Temporal Existente", "Ya tiene una interconsulta temporal en este paciente.\n\nDebe editar o finalizar la interconsulta existente antes de crear una nueva.", Alert.AlertType.WARNING);
+            log.warn("Interconsulta Temporal Existente: No se puede crear interconsulta para paciente: {}", folioPaciente);
             return;
         }
 
@@ -683,25 +489,18 @@ public class CapturaPrincipalController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 1000, 700));
             stage.setTitle("Interconsulta - Folio: " + folioPaciente);
-            stage.setOnHidden(e -> {
-                Platform.runLater(() -> {
-                    cargarInterconsultasDelPaciente();
-                    cargarContadores();
-                });
-            });
+            stage.setOnHidden(e -> Platform.runLater(() -> {
+                cargarInterconsultasDelPaciente();
+                cargarContadores();
+            }));
             stage.show();
         } catch (Exception e) {
-            System.err.println("Error abriendo interconsulta: " + e.getMessage());
+            log.error("Error abriendo interconsulta: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir la ventana de interconsulta", Alert.AlertType.ERROR);
         }
     }
 
-
-
-//  de aqui pa rriba
-
     // ==================== CARGA DE COMBOS Y CONFIGURACIÓN ====================
-
     private void cargarCombos() {
         try (Connection conn = ConexionBD.conectar()) {
             // TIPOS DE URGENCIA
@@ -712,10 +511,9 @@ public class CapturaPrincipalController {
             cargarComboDesdeTabla(conn, "tblt_cvecama", "Descripcion", cmbTipoCama);
             // MÉDICOS
             cargarComboDesdeTabla(conn, "tb_medicos", "Med_nombre", cmbMedicoActual);
-
-            System.out.println(" Combos cargados correctamente");
+            log.debug("Combos cargados correctamente");
         } catch (SQLException e) {
-            System.err.println(" Error cargando combos: " + e.getMessage());
+            log.error("Error cargando combos: {}", e.getMessage());
         }
     }
 
@@ -737,29 +535,12 @@ public class CapturaPrincipalController {
     private void cargarContadores() {
         new Thread(() -> {
             try (Connection conn = ConexionBD.conectar()) {
-                // CONTAR NOTAS (INCLUYENDO TEMPORALES)
-                String sqlNotas = "SELECT COUNT(*) as total FROM tb_notas WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
-                try (PreparedStatement pstmt = conn.prepareStatement(sqlNotas)) {
-                    pstmt.setInt(1, folioPaciente);
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        int total = rs.getInt("total");
-                        Platform.runLater(() -> lblContadorNotas.setText(String.valueOf(total)));
-                    }
-                }
-
-                // CONTAR INTERCONSULTAS (INCLUYENDO TEMPORALES)
-                String sqlInter = "SELECT COUNT(*) as total FROM tb_inter WHERE Folio = ? AND (Estado = 'DEFINITIVA' OR Estado = 'TEMPORAL')";
-                try (PreparedStatement pstmt = conn.prepareStatement(sqlInter)) {
-                    pstmt.setInt(1, folioPaciente);
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        int total = rs.getInt("total");
-                        Platform.runLater(() -> lblContadorInterconsultas.setText(String.valueOf(total)));
-                    }
-                }
+                var nd = new NotasData();
+                var id = new InterData();
+                Platform.runLater(() -> lblContadorNotas.setText(String.valueOf(nd.obtenerConteoNotas(conn, folioPaciente))));
+                Platform.runLater(() -> lblContadorInterconsultas.setText(String.valueOf(id.obtenerConteoInterconsultas(conn, folioPaciente))));
             } catch (SQLException e) {
-                System.err.println(" Error cargando contadores: " + e.getMessage());
+                log.error(" Error cargando contadores: {}", e.getMessage());
             }
         }).start();
     }
@@ -783,23 +564,18 @@ public class CapturaPrincipalController {
     private void actualizarCedulaMedico() {
         String medicoSeleccionado = cmbMedicoActual.getValue();
         if (medicoSeleccionado != null) {
-            try (Connection conn = ConexionBD.conectar();
-                 PreparedStatement pstmt = conn.prepareStatement("SELECT Ced_prof FROM tb_medicos WHERE Med_nombre = ?")) {
-
-                pstmt.setString(1, medicoSeleccionado);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next()) {
-                    txtCedulaMedico.setText(rs.getString("Ced_prof"));
-                }
+            try (Connection conn = ConexionBD.conectar()) {
+                var md = new MedicoData();
+                txtCedulaMedico.setText(md.obtenerCedulaPorNombre(conn, medicoSeleccionado));
             } catch (SQLException e) {
-                System.err.println(" Error obteniendo cédula: " + e.getMessage());
+                log.error(" Error obteniendo cédula: {}", e.getMessage());
             }
+        } else {
+            log.warn("Medico no seleccionado");
         }
     }
 
     // ==================== CONFIGURACIÓN DE TABLAS MEJORADA ====================
-
     private void configurarColumnasTablas() {
         if (tablaNotasMedicas != null) {
             tablaNotasMedicas.getColumns().clear();
@@ -811,7 +587,7 @@ public class CapturaPrincipalController {
 
             // COLUMNA SÍNTOMAS
             TableColumn<NotaMedicaVO, String> colSintomas = new TableColumn<>("Síntomas");
-            colSintomas.setCellFactory(tc -> crearCeldaConTooltip());
+            colSintomas.setCellFactory(tc -> crearCeldaGenericaConTooltip());
             colSintomas.setCellValueFactory(cellData -> {
                 String sintomas = obtenerSintomasNota(cellData.getValue().getIdNota());
                 return new SimpleStringProperty(sintomas);
@@ -824,16 +600,7 @@ public class CapturaPrincipalController {
             colMedico.setPrefWidth(150);
 
             // COLUMNA FECHA/HORA
-            TableColumn<NotaMedicaVO, String> colFecha = new TableColumn<>("Fecha/Hora");
-            colFecha.setCellValueFactory(cellData -> {
-                NotaMedicaVO nota = cellData.getValue();
-                if (nota != null && nota.getFechaCreacion() != null) {
-                    String fechaHora = nota.getFechaCreacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                    return new SimpleStringProperty(fechaHora);
-                }
-                return new SimpleStringProperty("N/A");
-            });
-            colFecha.setPrefWidth(120);
+            TableColumn<NotaMedicaVO, String> colFecha = getNotaMedicaVOStringTableColumn();
 
             // COLUMNA ESTADO
             TableColumn<NotaMedicaVO, String> colEstado = new TableColumn<>("Estado");
@@ -846,12 +613,26 @@ public class CapturaPrincipalController {
                     new SimpleStringProperty(cellData.getValue().isEditablePorMedico() ? "SÍ" : "NO"));
             colEditable.setPrefWidth(70);
 
-            tablaNotasMedicas.getColumns().addAll(colNumeroNota, colSintomas, colMedico, colFecha, colEstado, colEditable);
+            tablaNotasMedicas.getColumns().addAll(asList(colNumeroNota, colSintomas, colMedico, colFecha, colEstado, colEditable));
         }
     }
 
-    private TableCell<NotaMedicaVO, String> crearCeldaConTooltip() {
-        return new TableCell<NotaMedicaVO, String>() {
+    private static TableColumn<NotaMedicaVO, String> getNotaMedicaVOStringTableColumn() {
+        TableColumn<NotaMedicaVO, String> colFecha = new TableColumn<>("Fecha/Hora");
+        colFecha.setCellValueFactory(cellData -> {
+            NotaMedicaVO nota = cellData.getValue();
+            if (nota != null && nota.getFechaCreacion() != null) {
+                String fechaHora = nota.getFechaCreacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                return new SimpleStringProperty(fechaHora);
+            }
+            return new SimpleStringProperty("N/A");
+        });
+        colFecha.setPrefWidth(120);
+        return colFecha;
+    }
+
+    private <T> TableCell<T, String> crearCeldaGenericaConTooltip() {
+        return new TableCell<>() {
             private final Tooltip tooltip = new Tooltip();
             private final Label label = new Label();
 
@@ -895,14 +676,7 @@ public class CapturaPrincipalController {
             colNumeroInter.setPrefWidth(110);
 
             // COLUMNA SÍNTOMAS
-            TableColumn<InterconsultaVO, String> colSintomasInter = new TableColumn<>("Síntomas");
-            colSintomasInter.setCellFactory(tc -> crearCeldaConTooltipInterconsulta());
-            //colSintomasInter.setCellFactory(tc -> crearCeldaConTooltip());
-            colSintomasInter.setCellValueFactory(cellData -> {
-                String sintomas = obtenerSintomasInterconsulta(cellData.getValue().getIdInterconsulta());
-                return new SimpleStringProperty(sintomas);
-            });
-            colSintomasInter.setPrefWidth(220);
+            TableColumn<InterconsultaVO, String> colSintomasInter = getInterconsultaVOStringTableColumn();
 
             // COLUMNA ESPECIALISTA
             TableColumn<InterconsultaVO, String> colEspecialista = new TableColumn<>("Especialista");
@@ -910,91 +684,60 @@ public class CapturaPrincipalController {
             colEspecialista.setPrefWidth(150);
 
             // COLUMNA FECHA/HORA
-            TableColumn<InterconsultaVO, String> colFechaInter = new TableColumn<>("Fecha/Hora");
-            colFechaInter.setCellValueFactory(cellData -> {
-                InterconsultaVO interconsulta = cellData.getValue();
-                if (interconsulta != null && interconsulta.getFechaCreacion() != null) {
-                    String fechaHora = interconsulta.getFechaCreacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                    return new SimpleStringProperty(fechaHora);
-                }
-                return new SimpleStringProperty("N/A");
-            });
-            colFechaInter.setPrefWidth(120);
+            TableColumn<InterconsultaVO, String> colFechaInter = getVoStringTableColumn();
 
             // COLUMNA ESTADO
             TableColumn<InterconsultaVO, String> colEstadoInter = new TableColumn<>("Estado");
             colEstadoInter.setCellValueFactory(new PropertyValueFactory<>("estado"));
             colEstadoInter.setPrefWidth(90);
 
-            tablaInterconsultas.getColumns().addAll(colNumeroInter, colSintomasInter, colEspecialista, colFechaInter, colEstadoInter);
+            tablaInterconsultas.getColumns().addAll(asList(colNumeroInter, colSintomasInter, colEspecialista, colFechaInter, colEstadoInter));
         }
     }
 
-    private TableCell<InterconsultaVO, String> crearCeldaConTooltipInterconsulta() {
-        return new TableCell<InterconsultaVO, String>() {
-            private final Tooltip tooltip = new Tooltip();
-            private final Label label = new Label();
-
-            {
-                label.setWrapText(true);
-                label.setMaxWidth(200);
-                label.setPrefWidth(200);
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-
-                setOnMouseClicked(event -> {
-                    if (event.getClickCount() == 2 && !isEmpty()) {
-                        mostrarSintomasCompletos(getItem());
-                    }
-                });
+    private static TableColumn<InterconsultaVO, String> getVoStringTableColumn() {
+        TableColumn<InterconsultaVO, String> colFechaInter = new TableColumn<>("Fecha/Hora");
+        colFechaInter.setCellValueFactory(cellData -> {
+            InterconsultaVO interconsulta = cellData.getValue();
+            if (interconsulta != null && interconsulta.getFechaCreacion() != null) {
+                String fechaHora = interconsulta.getFechaCreacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                return new SimpleStringProperty(fechaHora);
             }
+            return new SimpleStringProperty("N/A");
+        });
+        colFechaInter.setPrefWidth(120);
+        return colFechaInter;
+    }
 
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                    setTooltip(null);
-                } else {
-                    String preview = item.length() > 60 ? item.substring(0, 60) + "..." : item;
-                    label.setText(preview);
-                    setGraphic(label);
-                    tooltip.setText(item);
-                    setTooltip(tooltip);
-                }
-            }
-        };
+    private TableColumn<InterconsultaVO, String> getInterconsultaVOStringTableColumn() {
+        TableColumn<InterconsultaVO, String> colSintomasInter = new TableColumn<>("Síntomas");
+        colSintomasInter.setCellFactory(tc -> crearCeldaGenericaConTooltip());
+        colSintomasInter.setCellValueFactory(cellData -> {
+            String sintomas = obtenerSintomasInterconsulta(cellData.getValue().getIdInterconsulta());
+            return new SimpleStringProperty(sintomas);
+        });
+        colSintomasInter.setPrefWidth(220);
+        return colSintomasInter;
     }
 
     // ==================== MÉTODOS AUXILIARES PARA TABLAS ====================
 
     private String obtenerSintomasNota(int idNota) {
-        String sql = "SELECT sintomas FROM tb_notas WHERE id_nota = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, idNota);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String sintomas = rs.getString("sintomas");
-                return sintomas != null ? sintomas : "Sin síntomas registrados";
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
+            return nd.obtenerSintomasPorNota(conn, idNota);
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo síntomas: " + e.getMessage());
+            log.error(" Error obteniendo síntomas: {}", e.getMessage());
         }
         return "Error al cargar";
     }
 
     private String obtenerSintomasInterconsulta(int idInterconsulta) {
-        String sql = "SELECT sintomas FROM tb_inter WHERE id_inter = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, idInterconsulta);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String sintomas = rs.getString("sintomas");
-                return sintomas != null ? sintomas : "Sin síntomas registrados";
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
+            return id.obtenerSintomasPorInterconsulta(conn, idInterconsulta);
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo síntomas de interconsulta: " + e.getMessage());
+            log.error(" Error obteniendo síntomas de interconsulta: {}", e.getMessage());
         }
         return "Error al cargar";
     }
@@ -1019,19 +762,7 @@ public class CapturaPrincipalController {
         stage.show();
     }
 
-// CONTINÚA EN LA TERCERA PARTE...
-
-
     // ==================== SISTEMA DE PERMISOS Y EDICIÓN CORREGIDO ====================
-
-    private void onNotaSeleccionada() {
-        configurarVisibilidadBotonesSegunNotaSeleccionada();
-    }
-
-    private void onInterconsultaSeleccionada() {
-        configurarVisibilidadBotonesInterconsulta();
-    }
-
     private void configurarVisibilidadBotonesSegunNotaSeleccionada() {
         if (tablaNotasMedicas == null || tablaNotasMedicas.getSelectionModel().getSelectedItem() == null) {
             btnEditarNotaMedica.setVisible(false);
@@ -1060,15 +791,15 @@ public class CapturaPrincipalController {
         }
 
         // PARA MÉDICOS NORMALES
-        boolean puedeEditar = sesion.puedeEditarNota(notaSeleccionada.getMedicoAutor());
-        boolean esDueñoNota = notaSeleccionada.getMedicoAutor().equals(sesion.getNombreMedico());
+        sesion.puedeEditarNota(notaSeleccionada.getMedicoAutor());
+        boolean esDuenoNota = notaSeleccionada.getMedicoAutor().equals(sesion.getNombreMedico());
         boolean notaEsTemporal = "TEMPORAL".equals(notaSeleccionada.getEstado());
         boolean tienePermiso = notaSeleccionada.isEditablePorMedico();
 
         // Mostrar botón de editar solo si:
         // 1. Es dueño de la nota Y es temporal
         // 2. O tiene permiso de edición otorgado
-        boolean mostrarEditar = (esDueñoNota && notaEsTemporal) || tienePermiso;
+        boolean mostrarEditar = (esDuenoNota && notaEsTemporal) || tienePermiso;
 
         btnEditarNotaMedica.setVisible(mostrarEditar);
         btnEditarNotaMedica.setDisable(!mostrarEditar);
@@ -1106,49 +837,36 @@ public class CapturaPrincipalController {
         }
 
         // PARA ESPECIALISTAS NORMALES
-        boolean esDueñoInterconsulta = interconsultaSeleccionada.getEspecialista().equals(sesion.getNombreMedico());
-        boolean interconsultaEsTemporal = "TEMPORAL".equals(interconsultaSeleccionada.getEstado());
-        boolean tienePermiso = interconsultaSeleccionada.isEditablePorMedico();
-
-        // Mostrar botón de editar solo si:
-        // 1. Es dueño de la interconsulta Y es temporal
-        // 2. O tiene permiso de edición otorgado
-        boolean mostrarEditar = (esDueñoInterconsulta && interconsultaEsTemporal) || tienePermiso;
+        boolean mostrarEditar = isMostrarEditar(interconsultaSeleccionada);
 
         btnEditarInterconsulta.setVisible(mostrarEditar);
         btnEditarInterconsulta.setDisable(!mostrarEditar);
         btnOtorgarPermisoInterconsulta.setVisible(false);
     }
 
+    private boolean isMostrarEditar(InterconsultaVO interconsultaSeleccionada) {
+        boolean esDuenoInterconsulta = interconsultaSeleccionada.getEspecialista().equals(sesion.getNombreMedico());
+        boolean interconsultaEsTemporal = "TEMPORAL".equals(interconsultaSeleccionada.getEstado());
+        boolean tienePermiso = interconsultaSeleccionada.isEditablePorMedico();
+
+        // Mostrar botón de editar solo si:
+        // 1. Es dueño de la interconsulta Y es temporal
+        // 2. O tiene permiso de edición otorgado
+        return (esDuenoInterconsulta && interconsultaEsTemporal) || tienePermiso;
+    }
+
     private boolean otorgarPermisoInterconsultaEnBD(int idInterconsulta) {
-        String sql = "UPDATE tb_inter SET " +
-                "editable_por_medico = TRUE, " +
-                "permiso_edicion_otorgado_por = ?, " +
-                "fecha_permiso_edicion = NOW(), " +
-                "fecha_edicion_realizada = NULL " +
-                "WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, usuarioLogueado);
-            pstmt.setInt(2, idInterconsulta);
-
-            int filas = pstmt.executeUpdate();
-
-            if (filas > 0) {
-                System.out.println(" Permiso otorgado para interconsulta - ID: " + idInterconsulta);
-
-                //  REGISTRAR EN HISTORIAL
-                registrarEnHistorialPermisosInterconsulta(idInterconsulta, "INTERCONSULTA", "OTORGAR");
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
+            if (id.tienePermisoInterconsulta(conn, usuarioLogueado, idInterconsulta)) {
+                registrarEnHistorialPermisosInterconsulta(idInterconsulta);
                 return true;
             } else {
-                System.out.println(" No se pudo otorgar permiso para interconsulta");
+                log.warn(" No se pudo otorgar permiso para interconsulta");
                 return false;
             }
-
         } catch (SQLException e) {
-            System.err.println(" Error otorgando permiso para interconsulta: " + e.getMessage());
+            log.error(" Error otorgando permiso para interconsulta: {}", e.getMessage());
             return false;
         }
     }
@@ -1157,6 +875,7 @@ public class CapturaPrincipalController {
     private void editarNotaMedica() {
         if (tablaNotasMedicas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una nota primero", Alert.AlertType.WARNING);
+            log.warn("No se a seleccionado ninguna nota para editar");
             return;
         }
 
@@ -1177,6 +896,7 @@ public class CapturaPrincipalController {
             mostrarAlerta("Sin permisos",
                     "No tiene permisos para editar esta nota.",
                     Alert.AlertType.WARNING);
+            log.warn("No tiene permisos para editar nota - ID: {}", notaSeleccionada.getIdNota());
             return;
         }
 
@@ -1196,14 +916,14 @@ public class CapturaPrincipalController {
             stage.setScene(new Scene(root, 700, 600));
 
             stage.setOnHidden(e -> {
-                System.out.println("Actualizando lista después de edición...");
+                log.debug("Actualizando lista después de edición...");
                 forzarActualizacionCompleta();
             });
 
             stage.show();
 
         } catch (Exception e) {
-            System.err.println("Error abriendo editor de nota: " + e.getMessage());
+            log.error("Error abriendo editor de nota: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el editor", Alert.AlertType.ERROR);
         }
     }
@@ -1212,6 +932,7 @@ public class CapturaPrincipalController {
     private void editarInterconsulta() {
         if (tablaInterconsultas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una interconsulta primero", Alert.AlertType.WARNING);
+            log.warn("No se a seleccionado ninguna interconsulta para editar");
             return;
         }
 
@@ -1232,6 +953,7 @@ public class CapturaPrincipalController {
             mostrarAlerta("Sin permisos",
                     "No tiene permisos para editar esta interconsulta.",
                     Alert.AlertType.WARNING);
+            log.warn("No tiene permisos para editar interconsulta - ID: {}", interconsultaSeleccionada.getIdInterconsulta());
             return;
         }
 
@@ -1254,7 +976,7 @@ public class CapturaPrincipalController {
             stage.show();
 
         } catch (Exception e) {
-            System.err.println("Error abriendo editor de interconsulta: " + e.getMessage());
+            log.error("Error abriendo editor de interconsulta: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudo abrir el editor de interconsulta", Alert.AlertType.ERROR);
         }
     }
@@ -1267,7 +989,8 @@ public class CapturaPrincipalController {
             String estado = obtenerEstadoSeleccionado();
 
             if ("OBSERVACION".equals(estado)) {
-                actualizarEstadoPaciente(2);
+                actualizarEstadoPaciente();
+                log.debug("Actualizando estado de paciente a OBSERVADO");
                 mostrarAlerta("Éxito",
                         "Paciente movido a OBSERVACIÓN",
                         Alert.AlertType.INFORMATION);
@@ -1275,7 +998,9 @@ public class CapturaPrincipalController {
                 configurarBotonesSegunEstadoPaciente();
             } else if ("EGRESADO".equals(estado)) {
                 abrirVentanaEgreso();
-            }}}
+            }
+        }
+    }
 
     private boolean guardarCapturaCompleta() {
         Connection conn = null;
@@ -1283,42 +1008,30 @@ public class CapturaPrincipalController {
             conn = ConexionBD.conectar();
             conn.setAutoCommit(false);
 
-            String tipoUrgencia = cmbTipoUrgencia.getValue();
-            String motivoUrgencia = cmbMotivoUrgencia.getValue();
-            String tipoCama = cmbTipoCama.getValue();
-            String medico = cmbMedicoActual.getValue();
+            var ud = new UrgenciasData();
+            var dto = new ActualizarCapturaPrincipalDTO(
+                    obtenerClaveDesdeDescripcion("tblt_cveurg", cmbTipoUrgencia.getValue()),
+                    obtenerClaveDesdeDescripcion("tblt_cvemotatn", cmbMotivoUrgencia.getValue()),
+                    obtenerClaveDesdeDescripcion("tblt_cvecama", cmbTipoCama.getValue()),
+                    obtenerClaveMedico(cmbMedicoActual.getValue()),
+                    cmbMedicoActual.getValue(),
+                    folioPaciente
+            );
 
-            String sql = "UPDATE tb_urgencias SET Tipo_urg = ?, Motivo_urg = ?, Tipo_cama = ?, Cve_med = ?, Nom_med = ?, Fecha_atencion = NOW(), Hora_atencion = CURTIME() WHERE Folio = ?";
-
-            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setInt(1, obtenerClaveDesdeDescripcion("tblt_cveurg", "Descripcion", tipoUrgencia));
-                pstmt.setInt(2, obtenerClaveDesdeDescripcion("tblt_cvemotatn", "Descripcion", motivoUrgencia));
-                pstmt.setInt(3, obtenerClaveDesdeDescripcion("tblt_cvecama", "Descripcion", tipoCama));
-                pstmt.setInt(4, obtenerClaveMedico(medico));
-                pstmt.setString(5, medico);
-                pstmt.setInt(6, folioPaciente);
-
-                int filas = pstmt.executeUpdate();
-
-                if (filas > 0) {
-                    conn.commit();
-                    deshabilitarCamposNuevaInformacion();
-                    capturaGuardada = true;
-
-                    // NUEVA LÍNEA: Actualizar botones según estado
-                    configurarBotonesSegunEstadoPaciente();
-
-                    System.out.println("Captura completa guardada - Folio: " + folioPaciente);
-                    return true;
-                }
+            if (ud.actualizarCapturaPrincipal(conn, dto)) {
+                conn.commit();
+                deshabilitarCamposNuevaInformacion();
+                capturaGuardada = true;
+                configurarBotonesSegunEstadoPaciente();
+                log.debug("Captura completa guardada - Folio: {}", folioPaciente);
+                return true;
             }
-
         } catch (SQLException e) {
-            System.err.println("Error guardando captura: " + e.getMessage());
+            log.error("Error guardando captura: {}", e.getMessage());
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException ex) {
-                System.err.println("Error en rollback: " + ex.getMessage());
+                log.error("Error en rollback: {}", ex.getMessage());
             }
         } finally {
             try {
@@ -1327,7 +1040,7 @@ public class CapturaPrincipalController {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.err.println("Error cerrando conexión: " + e.getMessage());
+                log.error("Error cerrando conexión: {}", e.getMessage());
             }
         }
         return false;
@@ -1336,171 +1049,62 @@ public class CapturaPrincipalController {
     private void verificarNotasTemporalesPropias() {
         try (Connection conn = ConexionBD.conectar()) {
             String nombreMedicoActual = sesion.getNombreMedico();
+            var nd = new NotasData();
+            var id = new InterData();
+            if (nd.obtenerConteoNotasPorMedico(conn, folioPaciente, nombreMedicoActual) > 0) {
+                cargarDatosNuevaInfoDesdeBD();
+                deshabilitarCamposNuevaInformacion();
+                habilitarBotonesNotas();
+                capturaGuardada = true;
+                log.debug("Notas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
+            }
 
-            // VERIFICAR NOTAS TEMPORALES PROPIAS
-            String sqlNotas = "SELECT COUNT(*) as temp FROM tb_notas WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlNotas)) {
-                pstmt.setInt(1, folioPaciente);
-                pstmt.setString(2, nombreMedicoActual);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next() && rs.getInt("temp") > 0) {
+            // VERIFICAR INTERCONSULTAS TEMPORALES PROPIAS
+            if (id.obtenerConteoInterconsultasPorMedico(conn, folioPaciente, nombreMedicoActual) > 0) {
+                if (!capturaGuardada) {
                     cargarDatosNuevaInfoDesdeBD();
                     deshabilitarCamposNuevaInformacion();
                     habilitarBotonesNotas();
                     capturaGuardada = true;
-                    System.out.println("Notas temporales PROPIAS detectadas - Usuario: " + nombreMedicoActual);
                 }
+                log.debug(" Interconsultas temporales PROPIAS detectadas - Usuario: {}", nombreMedicoActual);
             }
-
-            // VERIFICAR INTERCONSULTAS TEMPORALES PROPIAS
-            String sqlInter = "SELECT COUNT(*) as temp FROM tb_inter WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(sqlInter)) {
-                pstmt.setInt(1, folioPaciente);
-                pstmt.setString(2, nombreMedicoActual);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next() && rs.getInt("temp") > 0) {
-                    if (!capturaGuardada) {
-                        cargarDatosNuevaInfoDesdeBD();
-                        deshabilitarCamposNuevaInformacion();
-                        habilitarBotonesNotas();
-                        capturaGuardada = true;
-                    }
-                    System.out.println(" Interconsultas temporales PROPIAS detectadas - Usuario: " + nombreMedicoActual);
-                }
-            }
-
         } catch (SQLException e) {
-            System.err.println(" Error verificando notas temporales propias: " + e.getMessage());
+            log.error(" Error verificando notas temporales propias: {}", e.getMessage());
         }
     }
 
     // ==================== MÉTODOS DE CARGA DESDE BD ====================
-
     private void cargarNotasDelPaciente() {
-        String sql = "SELECT id_nota, Folio, Num_nota, Nota, Indicaciones, sintomas, signos_vitales, diagnostico, " +
-                "Medico, Cedula, Fecha, Hora, Estado, estado_paciente, " +
-                "editable_por_medico, permiso_edicion_otorgado_por, " +
-                "fecha_permiso_edicion, rol_usuario_otorga, fecha_edicion_realizada " +
-                "FROM tb_notas WHERE Folio = ? ORDER BY Num_nota DESC";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
             notasData.clear();
-
-            while (rs.next()) {
-                // CONVERTIR FECHA Y HORA CORRECTAMENTE
-                LocalDateTime fechaHora = obtenerFechaHoraDesdeBD(rs.getString("Fecha"), rs.getString("Hora"));
-
-                NotaMedicaVO nota = new NotaMedicaVO(
-                        rs.getInt("id_nota"),
-                        rs.getInt("Folio"),
-                        rs.getInt("Num_nota"),
-                        rs.getString("Nota"),
-                        rs.getString("Medico"),
-                        rs.getString("Cedula"),
-                        fechaHora,
-                        rs.getString("Estado"),
-                        rs.getString("estado_paciente"),
-                        rs.getBoolean("editable_por_medico"),
-                        rs.getString("permiso_edicion_otorgado_por"),
-                        rs.getTimestamp("fecha_permiso_edicion") != null ?
-                                rs.getTimestamp("fecha_permiso_edicion").toLocalDateTime() : null
-                );
-
-                nota.setIndicaciones(rs.getString("Indicaciones"));
-                notasData.add(nota);
-            }
-
+            notasData.addAll(nd.obtenerNotasPaciente(conn, folioPaciente));
             Platform.runLater(() -> {
                 tablaNotasMedicas.setItems(notasData);
                 tablaNotasMedicas.refresh();
-                System.out.println("si " + notasData.size() + " notas cargadas para folio: " + folioPaciente);
+                log.debug("si {} notas cargadas para folio: {}", notasData.size(), folioPaciente);
             });
-
         } catch (SQLException e) {
-            System.err.println(" Error cargando notas: " + e.getMessage());
+            log.error(" Error cargando notas: {}", e.getMessage());
         }
     }
 
     private void cargarInterconsultasDelPaciente() {
-        String sql = "SELECT id_inter, Folio, Num_inter, Nota, sintomas, signos_vitales, diagnostico, especialidad, " +
-                "Medico, Cedula, Fecha, Hora, Estado, estado_paciente, " +
-                "editable_por_medico, permiso_edicion_otorgado_por, " +
-                "fecha_permiso_edicion, fecha_edicion_realizada " +
-                "FROM tb_inter WHERE Folio = ? ORDER BY Num_inter DESC";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
+        try (Connection conn = ConexionBD.conectar()) {
+            var id = new InterData();
             interconsultasData.clear();
-
-            while (rs.next()) {
-                LocalDateTime fechaHora = obtenerFechaHoraDesdeBD(rs.getString("Fecha"), rs.getString("Hora"));
-
-                InterconsultaVO interconsulta = new InterconsultaVO(
-                        rs.getInt("id_inter"),
-                        rs.getInt("Folio"),
-                        rs.getInt("Num_inter"),
-                        rs.getString("Nota"),
-                        rs.getString("Medico"),
-                        rs.getString("Cedula"),
-                        fechaHora,
-                        rs.getString("Estado"),
-                        rs.getString("estado_paciente"),
-                        rs.getBoolean("editable_por_medico"),
-                        rs.getString("permiso_edicion_otorgado_por"),
-                        rs.getTimestamp("fecha_permiso_edicion") != null ?
-                                rs.getTimestamp("fecha_permiso_edicion").toLocalDateTime() : null
-                );
-
-                interconsultasData.add(interconsulta);
-            }
-
+            interconsultasData.addAll(id.obtenerInterconsultasPorPaciente(conn, folioPaciente));
             Platform.runLater(() -> {
                 if (tablaInterconsultas != null) {
                     tablaInterconsultas.setItems(interconsultasData);
                     tablaInterconsultas.refresh();
                 }
-                System.out.println("si " + interconsultasData.size() + " interconsultas cargadas para folio: " + folioPaciente);
+                log.debug("si {} interconsultas cargadas para folio: {}", interconsultasData.size(), folioPaciente);
             });
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando interconsultas: " + e.getMessage());
-        }
-    }
-
-    private LocalDateTime obtenerFechaHoraDesdeBD(String fechaBD, String horaBD) {
-        if (fechaBD == null) return null;
-
-        try {
-            // Formato: "2024-01-15 14:30:00"
-            if (fechaBD.contains(" ")) {
-                // Ya tiene fecha y hora juntas
-                String fechaHora = fechaBD.replace(" ", "T");
-                return LocalDateTime.parse(fechaHora);
-            }
-
-            // Si viene separado, combinar
-            if (horaBD != null) {
-                String fechaHora = fechaBD + "T" + horaBD;
-                return LocalDateTime.parse(fechaHora);
-            }
-
-            // Solo fecha
-            return LocalDate.parse(fechaBD).atStartOfDay();
-
-        } catch (Exception e) {
-            System.err.println("Error parseando fecha/hora: " + fechaBD + " " + horaBD);
-            return null;
+            log.error(" Error cargando interconsultas: {}", e.getMessage());
         }
     }
 
@@ -1513,70 +1117,52 @@ public class CapturaPrincipalController {
                     break;
                 }
             }
-
             if (notaExistente != null) {
                 tablaNotasMedicas.getSelectionModel().select(notaExistente);
                 editarNotaMedica();
             }
         } catch (Exception e) {
-            System.err.println(" Error cargando nota existente: " + e.getMessage());
+            log.error(" Error cargando nota existente: {}", e.getMessage());
         }
     }
 
     private void cargarDatosNuevaInfoDesdeBD() {
-        String sql = "SELECT Tipo_urg, Motivo_urg, Tipo_cama, Cve_med, Nom_med, Estado_pac FROM tb_urgencias WHERE Folio = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                int estadoActual = rs.getInt("Estado_pac");
-
-                // Si ya tiene datos guardados, cargarlos
-                int tipoUrgenciaKey = rs.getInt("Tipo_urg");
-                if (tipoUrgenciaKey > 0) {
-                    String tipoUrgencia = obtenerDescripcionDesdeClave("tblt_cveurg", "Cve_urg", "Descripcion", tipoUrgenciaKey);
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            var dto = ud.cargarNuevaInformacion(folioPaciente, conn);
+            if (dto != null) {
+                if (dto.getTipoUrg() > 0) {
+                    String tipoUrgencia = obtenerDescripcionDesdeClave("tblt_cveurg", "Cve_urg", dto.getTipoUrg());
                     cmbTipoUrgencia.setValue(tipoUrgencia);
                 }
-
-                int motivoUrgenciaKey = rs.getInt("Motivo_urg");
-                if (motivoUrgenciaKey > 0) {
-                    String motivoUrgencia = obtenerDescripcionDesdeClave("tblt_cvemotatn", "Cve_motatn", "Descripcion", motivoUrgenciaKey);
+                if (dto.getMotivoUrg() > 0) {
+                    String motivoUrgencia = obtenerDescripcionDesdeClave("tblt_cvemotatn", "Cve_motatn", dto.getMotivoUrg());
                     cmbMotivoUrgencia.setValue(motivoUrgencia);
                 }
-
-                int tipoCamaKey = rs.getInt("Tipo_cama");
-                if (tipoCamaKey > 0) {
-                    String tipoCama = obtenerDescripcionDesdeClave("tblt_cvecama", "Cve_cama", "Descripcion", tipoCamaKey);
+                if (dto.getTipoCama() > 0) {
+                    String tipoCama = obtenerDescripcionDesdeClave("tblt_cvecama", "Cve_cama", dto.getTipoCama());
                     cmbTipoCama.setValue(tipoCama);
                 }
-
-                String medico = rs.getString("Nom_med");
-                if (medico != null) {
-                    cmbMedicoActual.setValue(medico);
+                if (dto.getNombreMedico() != null) {
+                    cmbMedicoActual.setValue(dto.getNombreMedico());
                     actualizarCedulaMedico();
                 }
-
-                // Configurar RadioButtons según estado actual
-                if (estadoActual == 2) { // Observación
+                if (dto.getEstadoPaciente() == 2) { // Observación
                     rbObservacion.setSelected(true);
-                } else if (estadoActual == 3) { // Egresado
+                } else if (dto.getEstadoPaciente() == 3) { // Egresado
                     rbAltaMedica.setSelected(true);
                 }
+                validarCamposRequeridosYActivarUI();
             }
-
         } catch (SQLException e) {
-            System.err.println("Error cargando datos de Nueva Info: " + e.getMessage());
+            log.error("Error cargando datos de Nueva Info: {}", e.getMessage());
         }
     }
 
-    private String obtenerDescripcionDesdeClave(String tabla, String columnaClave, String columnaDesc, int clave) {
+    private String obtenerDescripcionDesdeClave(String tabla, String columnaClave, int clave) {
         if (clave <= 0) return null;
 
-        String sql = "SELECT " + columnaDesc + " FROM " + tabla + " WHERE " + columnaClave + " = ?";
+        String sql = "SELECT " + "Descripcion" + " FROM " + tabla + " WHERE " + columnaClave + " = ?";
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -1585,27 +1171,32 @@ public class CapturaPrincipalController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return rs.getString(columnaDesc);
+                return rs.getString("Descripcion");
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo descripción para clave " + clave + ": " + e.getMessage());
+            log.error(" Error obteniendo descripción para clave {}: {}", clave, e.getMessage());
         }
         return null;
     }
 
     private void deshabilitarCamposNuevaInformacion() {
-        cmbTipoUrgencia.setDisable(true);
-        cmbMotivoUrgencia.setDisable(true);
-        cmbTipoCama.setDisable(true);
-        cmbMedicoActual.setDisable(true);
-        rbObservacion.setDisable(true);
-        rbAltaMedica.setDisable(true);
+        if (cmbTipoUrgencia.getValue() != null &&
+            cmbMotivoUrgencia.getValue() != null &&
+            cmbTipoCama.getValue() != null &&
+            cmbMedicoActual.getValue() != null) {
+            
+            cmbTipoUrgencia.setDisable(true);
+            cmbMotivoUrgencia.setDisable(true);
+            cmbTipoCama.setDisable(true);
+            cmbMedicoActual.setDisable(true);
+            rbObservacion.setDisable(true);
 
-        String estiloGris = "-fx-opacity: 0.7; -fx-background-color: #f5f5f5; -fx-text-fill: #666666;";
-        cmbTipoUrgencia.setStyle(estiloGris);
-        cmbMotivoUrgencia.setStyle(estiloGris);
-        cmbTipoCama.setStyle(estiloGris);
-        cmbMedicoActual.setStyle(estiloGris);
+            String estiloGris = "-fx-opacity: 0.7; -fx-background-color: #f5f5f5; -fx-text-fill: #666666;";
+            cmbTipoUrgencia.setStyle(estiloGris);
+            cmbMotivoUrgencia.setStyle(estiloGris);
+            cmbTipoCama.setStyle(estiloGris);
+            cmbMedicoActual.setStyle(estiloGris);
+        }
     }
 
     private void habilitarBotonesNotas() {
@@ -1655,10 +1246,10 @@ public class CapturaPrincipalController {
         return true;
     }
 
-    private int obtenerClaveDesdeDescripcion(String tabla, String columnaDesc, String descripcion) {
+    private int obtenerClaveDesdeDescripcion(String tabla, String descripcion) {
         if (descripcion == null) return -1;
 
-        String sql = "SELECT * FROM " + tabla + " WHERE " + columnaDesc + " = ?";
+        String sql = "SELECT * FROM " + tabla + " WHERE " + "Descripcion" + " = ?";
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -1667,35 +1258,26 @@ public class CapturaPrincipalController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                switch(tabla) {
-                    case "tblt_cveurg": return rs.getInt("Cve_urg");
-                    case "tblt_cvemotatn": return rs.getInt("Cve_motatn");
-                    case "tblt_cvecama": return rs.getInt("Cve_cama");
-                    default: return rs.getInt(1);
-                }
+                return switch (tabla) {
+                    case "tblt_cveurg" -> rs.getInt("Cve_urg");
+                    case "tblt_cvemotatn" -> rs.getInt("Cve_motatn");
+                    case "tblt_cvecama" -> rs.getInt("Cve_cama");
+                    default -> rs.getInt(1);
+                };
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo clave para " + descripcion + ": " + e.getMessage());
+            log.error(" Error obteniendo clave para {}: {}", descripcion, e.getMessage());
         }
         return -1;
     }
 
     private int obtenerClaveMedico(String nombreMedico) {
         if (nombreMedico == null) return -1;
-
-        String sql = "SELECT Cve_med FROM tb_medicos WHERE Med_nombre = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, nombreMedico);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("Cve_med");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var md = new MedicoData();
+            return md.obtenerClavePorNombre(conn, nombreMedico);
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo clave médico: " + e.getMessage());
+            log.error(" Error obteniendo clave médico: {}", e.getMessage());
         }
         return -1;
     }
@@ -1708,30 +1290,19 @@ public class CapturaPrincipalController {
         alert.showAndWait();
     }
 
-
     // nuevo flujo 17,12,25
-
     private boolean esMedicoInterconsulta() {
         return "MEDICO_ESPECIALISTA".equals(rolUsuarioLogueado);
     }
 
     private int obtenerEstadoPacienteActual() {
-        String sql = "SELECT Estado_pac FROM tb_urgencias WHERE Folio = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("Estado_pac");
-            }
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            return ud.obtenerEstadoPaciente(conn, folioPaciente);
         } catch (SQLException e) {
-            System.err.println("Error obteniendo estado del paciente: " + e.getMessage());
+            log.error("Error obteniendo estado del paciente: {}", e.getMessage());
         }
         return 1;
-    }
-
-    private boolean pacienteEnEspera() {
-        return obtenerEstadoPacienteActual() == 1;
     }
 
     private boolean pacienteEnObservacion() {
@@ -1742,30 +1313,26 @@ public class CapturaPrincipalController {
         return obtenerEstadoPacienteActual() == 3;
     }
 
-    private boolean actualizarEstadoPaciente(int nuevoEstado) {
-        String sql = "UPDATE tb_urgencias SET Estado_pac = ? WHERE Folio = ?";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, nuevoEstado);
-            pstmt.setInt(2, folioPaciente);
-            int filas = pstmt.executeUpdate();
-            return filas > 0;
+    private void actualizarEstadoPaciente() {
+        try (Connection conn = ConexionBD.conectar()) {
+            var ud = new UrgenciasData();
+            ud.actualizarEstadoPaciente(conn, folioPaciente, 2);
         } catch (SQLException e) {
-            System.err.println("Error actualizando estado del paciente: " + e.getMessage());
-            return false;
+            log.error("Error actualizando estado del paciente: {}", e.getMessage());
         }
     }
-
 
     private void configurarVisibilidadSegunRol() {
         if (esMedicoInterconsulta()) {
             ocultarSeccionNuevaInformacion();
         } else if (pacienteEgresado()) {
-            // PACIENTE EGRESADO: ocultar TODO excepto RadioButton para EGREESADO
             ocultarSeccionParaEgresado();
         } else if (pacienteEnObservacion()) {
-            // PACIENTE EN OBSERVACIÓN: mostrar pero solo RadioButton
-            mostrarSoloRadioButtonsParaEgreso();
+            rbAltaMedica.setVisible(true);
+            rbAltaMedica.setDisable(false);
+            rbObservacion.setVisible(true);
+            rbObservacion.setDisable(true);
+            rbObservacion.setSelected(true);
         }
 
         configurarBotonesSegunEstadoPaciente();
@@ -1773,22 +1340,25 @@ public class CapturaPrincipalController {
         if (pacienteEnObservacion() && !esMedicoInterconsulta()) {
             cargarDatosNuevaInfoDesdeBD();
             deshabilitarCamposNuevaInformacion();
-            // Pero habilitar RadioButton para egreso
             rbAltaMedica.setDisable(false);
             rbAltaMedica.setVisible(true);
         }
     }
 
+    private void ocultarSeccionesComunes() {
+        txtFechaAtencion.setVisible(false);
+        txtHoraAtencion.setVisible(false);
+        txtCedulaMedico.setVisible(false);
+        cmbTipoUrgencia.setVisible(false);
+        cmbMotivoUrgencia.setVisible(false);
+        cmbTipoCama.setVisible(false);
+        cmbMedicoActual.setVisible(false);
+        rbObservacion.setVisible(false);
+    }
+
     private void ocultarSeccionNuevaInformacion() {
         Platform.runLater(() -> {
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             rbAltaMedica.setVisible(false);
             btnGuardarGeneral.setVisible(false);
         });
@@ -1812,19 +1382,16 @@ public class CapturaPrincipalController {
         });
     }
 
-
-
-
-
     @FXML
     private void visualizarNotaMedica() {
         if (tablaNotasMedicas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una nota primero", Alert.AlertType.WARNING);
+            log.warn("No hay nota seleccionada para visualizar");
             return;
         }
 
         NotaMedicaVO nota = tablaNotasMedicas.getSelectionModel().getSelectedItem();
-        System.out.println(" Visualizando nota #" + nota.getNumeroNota());
+        log.debug(" Visualizando nota #{}", nota.getNumeroNota());
 
         try {
             // Llamar al PDFGenerator NUEVO (solo necesita folio y número de nota)
@@ -1834,13 +1401,14 @@ public class CapturaPrincipalController {
             );
 
             if (exito) {
-                System.out.println(" PDF generado correctamente");
+                log.info(" PDF generado correctamente");
             } else {
                 mostrarAlerta("Error", "No se pudo generar el PDF", Alert.AlertType.ERROR);
+                log.error("No se pudo generar el PDF");
             }
 
         } catch (Exception e) {
-            System.err.println(" Error visualizando nota: " + e.getMessage());
+            log.error(" Error visualizando nota: {}", e.getMessage());
             mostrarAlerta("Error", "Error al generar PDF: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -1849,11 +1417,12 @@ public class CapturaPrincipalController {
     private void visualizarInterconsulta() {
         if (tablaInterconsultas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una interconsulta primero", Alert.AlertType.WARNING);
+            log.warn("No hay interconsulta seleccionada para visualizar");
             return;
         }
 
         InterconsultaVO interconsulta = tablaInterconsultas.getSelectionModel().getSelectedItem();
-        System.out.println("📄 Visualizando interconsulta #" + interconsulta.getNumeroInterconsulta());
+        log.debug("Visualizando interconsulta #{}", interconsulta.getNumeroInterconsulta());
 
         try {
             // Llamar al PDFGenerator NUEVO (solo necesita folio y número de interconsulta)
@@ -1863,295 +1432,23 @@ public class CapturaPrincipalController {
             );
 
             if (exito) {
-                System.out.println(" PDF de interconsulta generado correctamente");
+                log.info(" PDF de interconsulta generado correctamente");
             } else {
                 mostrarAlerta("Error", "No se pudo generar el PDF de interconsulta", Alert.AlertType.ERROR);
+                log.error("No se pudo generar el PDF de interconsulta");
             }
 
         } catch (Exception e) {
-            System.err.println(" Error visualizando interconsulta: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error visualizando interconsulta: {}", e.getMessage());
             mostrarAlerta("Error", "Error al generar PDF: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
-    /**
-     * OBTENER DATOS DEL ESPECIALISTA PARA EL PDF - VERSIÓN SIMPLIFICADA Y CORRECTA
-     */
-    private Map<String, String> obtenerDatosEspecialistaParaPDF(String nombreEspecialista) {
-        Map<String, String> datos = new HashMap<>();
-
-        // Valores por defecto
-        datos.put("especialidad", "ESPECIALISTA");
-        datos.put("universidad", "No especificada");
-        datos.put("cedula", "");
-
-        if (nombreEspecialista == null || nombreEspecialista.trim().isEmpty()) {
-            return datos;
-        }
-
-        System.out.println("Buscando especialista en tb_medesp: " + nombreEspecialista);
-
-        // Buscar EXACTAMENTE en tb_medesp
-        String sql = "SELECT especialidad, universidad, Cedula FROM tb_medesp WHERE Nombre = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, nombreEspecialista.trim());
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                // OBTENER ESPECIALIDAD (DEBE ESTAR EN LA BD)
-                String especialidad = rs.getString("especialidad");
-                if (especialidad != null && !especialidad.trim().isEmpty()) {
-                    datos.put("especialidad", especialidad);
-                    System.out.println(" Especialidad encontrada en BD: " + especialidad);
-                } else {
-                    System.out.println(" Especialidad VACÍA en BD para: " + nombreEspecialista);
-                }
-
-                // OBTENER UNIVERSIDAD
-                String universidad = rs.getString("universidad");
-                if (universidad != null && !universidad.trim().isEmpty()) {
-                    datos.put("universidad", universidad);
-                    System.out.println(" Universidad encontrada: " + universidad);
-                }
-
-                // OBTENER CÉDULA
-                String cedula = rs.getString("Cedula");
-                if (cedula != null && !cedula.trim().isEmpty()) {
-                    datos.put("cedula", cedula);
-                    System.out.println(" Cédula encontrada: " + cedula);
-                }
-
-            } else {
-                System.out.println(" Especialista NO ENCONTRADO en tb_medesp: " + nombreEspecialista);
-
-                // Mostrar qué especialistas SÍ hay en la base de datos para depurar
-                mostrarEspecialistasEnBD(conn);
-            }
-
-        } catch (SQLException e) {
-            System.err.println(" Error SQL obteniendo datos de especialista: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return datos;
-    }
-
-    private Map<String, String> obtenerDatosMedicoFallback(String nombreMedico) {
-        Map<String, String> datos = new HashMap<>();
-        datos.put("especialidad", "URGENCIAS"); // Valor por defecto
-        datos.put("universidad", "No especificada");
-
-        if (nombreMedico == null) return datos;
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(
-                     "SELECT Med_nombre FROM tb_medicos WHERE Med_nombre LIKE ? LIMIT 1")) {
-
-            pstmt.setString(1, "%" + nombreMedico + "%");
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                System.out.println(" Médico encontrado en tb_medicos (fallback): " + rs.getString("Med_nombre"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error en fallback médico: " + e.getMessage());
-        }
-
-        return datos;
-    }
-
-    private Map<String, String> obtenerDatosNotaCompleta(int idNota) {
-        Map<String, String> datos = new HashMap<>();
-        String sql = "SELECT sintomas, signos_vitales, diagnostico, Nota, Indicaciones, Cedula, Fecha, Hora FROM tb_notas WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idNota);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                datos.put("sintomas", rs.getString("sintomas"));
-                datos.put("signosVitales", rs.getString("signos_vitales"));
-                datos.put("diagnostico", rs.getString("diagnostico"));
-                datos.put("nota", rs.getString("Nota"));
-                datos.put("indicaciones", rs.getString("Indicaciones"));
-                datos.put("cedula", rs.getString("Cedula"));
-                datos.put("fecha", rs.getString("Fecha"));
-                datos.put("hora", rs.getString("Hora"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println(" Error obteniendo datos de nota: " + e.getMessage());
-        }
-
-        // Valores por defecto
-        datos.putIfAbsent("sintomas", "");
-        datos.putIfAbsent("signosVitales", "");
-        datos.putIfAbsent("diagnostico", "");
-        datos.putIfAbsent("nota", "");
-        datos.putIfAbsent("indicaciones", "");
-        datos.putIfAbsent("cedula", "");
-        datos.putIfAbsent("fecha", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-        datos.putIfAbsent("hora", new SimpleDateFormat("HH:mm").format(new Date()));
-
-        return datos;
-    }
-
-
-    private Map<String, String> obtenerDatosInterconsultaCompleta(int idInterconsulta) {
-        Map<String, String> datos = new HashMap<>();
-        String sql = "SELECT sintomas, signos_vitales, diagnostico, Nota, especialidad, Cedula, Fecha, Hora FROM tb_inter WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idInterconsulta);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                datos.put("sintomas", rs.getString("sintomas"));
-                datos.put("signosVitales", rs.getString("signos_vitales"));
-                datos.put("diagnostico", rs.getString("diagnostico"));
-                datos.put("nota", rs.getString("Nota"));
-                datos.put("especialidad", rs.getString("especialidad"));
-                datos.put("cedula", rs.getString("Cedula"));
-                datos.put("fecha", rs.getString("Fecha"));
-                datos.put("hora", rs.getString("Hora"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println(" Error obteniendo datos de interconsulta: " + e.getMessage());
-        }
-
-        // Valores por defecto
-        datos.putIfAbsent("sintomas", "");
-        datos.putIfAbsent("signosVitales", "");
-        datos.putIfAbsent("diagnostico", "");
-        datos.putIfAbsent("nota", "");
-        datos.putIfAbsent("especialidad", "");
-        datos.putIfAbsent("cedula", "");
-        datos.putIfAbsent("fecha", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-        datos.putIfAbsent("hora", new SimpleDateFormat("HH:mm").format(new Date()));
-
-        return datos;
-    }
-
-
-    private void abrirPDFReciente() {
-        try {
-            File directorio = new File("pdfs");
-            if (directorio.exists()) {
-                File[] archivos = directorio.listFiles((dir, name) ->
-                        name.startsWith("Nota_Medica_Folio_" + folioPaciente + "_"));
-
-                if (archivos != null && archivos.length > 0) {
-                    Arrays.sort(archivos, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
-                    java.awt.Desktop.getDesktop().open(archivos[0]);
-                    System.out.println(" Abriendo PDF: " + archivos[0].getName());
-                } else {
-                    mostrarAlerta("Info", "No se encontró el PDF generado", Alert.AlertType.INFORMATION);
-                }
-            } else {
-                mostrarAlerta("Info", "No se encontró la carpeta de PDFs", Alert.AlertType.INFORMATION);
-            }
-        } catch (Exception e) {
-            System.err.println(" Error abriendo PDF: " + e.getMessage());
-            mostrarAlerta("Error", "No se pudo abrir el PDF: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-
-    private void abrirPDFInterconsultaReciente() {
-        try {
-            File directorio = new File("pdfs");
-            if (directorio.exists()) {
-                File[] archivos = directorio.listFiles((dir, name) ->
-                        name.startsWith("Interconsulta_Folio_" + folioPaciente + "_"));
-
-                if (archivos != null && archivos.length > 0) {
-                    Arrays.sort(archivos, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
-                    java.awt.Desktop.getDesktop().open(archivos[0]);
-                    System.out.println(" Abriendo PDF de interconsulta: " + archivos[0].getName());
-                } else {
-                    mostrarAlerta("Info", "No se encontró el PDF de interconsulta", Alert.AlertType.INFORMATION);
-                }
-            } else {
-                mostrarAlerta("Info", "No se encontró la carpeta de PDFs", Alert.AlertType.INFORMATION);
-            }
-        } catch (Exception e) {
-            System.err.println(" Error abriendo PDF de interconsulta: " + e.getMessage());
-            mostrarAlerta("Error", "No se pudo abrir el PDF: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-
-    private Map<String, String> obtenerDatosPacienteCompletos() {
-        Map<String, String> datos = new HashMap<>();
-        String sql = "SELECT u.*, " +
-                "m.DESCRIP as NombreMunicipio, e.DESCRIP as NombreEntidad, " +
-                "dh.Derechohabiencia as NombreDerechohabiencia, " +
-                "s.Descripcion as SexoDesc " +
-                "FROM tb_urgencias u " +
-                "LEFT JOIN tblt_mpo m ON u.Municipio_resid = m.MPO AND u.Entidad_resid = m.EDO " +
-                "LEFT JOIN tblt_entidad e ON u.Entidad_resid = e.EDO " +
-                "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
-                "LEFT JOIN tblt_cvesexo s ON u.Sexo = s.Cve_sexo " +
-                "WHERE u.Folio = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                // Construir nombre completo
-                String nombreCompleto = construirNombreCompleto(
-                        rs.getString("A_paterno"),
-                        rs.getString("A_materno"),
-                        rs.getString("Nombre")
-                );
-
-                datos.put("nombre", nombreCompleto);
-                datos.put("edad", String.valueOf(rs.getInt("Edad")));
-                datos.put("sexo", rs.getString("SexoDesc"));
-                datos.put("fechaNacimiento", rs.getString("F_nac"));
-                datos.put("estadoCivil", rs.getString("Edo_civil"));
-                datos.put("ocupacion", rs.getString("Ocupacion"));
-                datos.put("domicilio", rs.getString("Domicilio"));
-                datos.put("derechohabiencia", rs.getString("NombreDerechohabiencia"));
-                datos.put("referencia", rs.getString("Referencia"));
-                datos.put("expedienteClinico", rs.getString("Exp_clinico"));
-            }
-        } catch (SQLException e) {
-            System.err.println(" Error obteniendo datos paciente: " + e.getMessage());
-        }
-
-
-        datos.putIfAbsent("nombre", "No especificado");
-        datos.putIfAbsent("edad", "No especificado");
-        datos.putIfAbsent("sexo", "No especificado");
-        datos.putIfAbsent("fechaNacimiento", "No especificado");
-        datos.putIfAbsent("estadoCivil", "No especificado");
-        datos.putIfAbsent("ocupacion", "No especificado");
-        datos.putIfAbsent("domicilio", "No especificado");
-        datos.putIfAbsent("derechohabiencia", "No especificado");
-        datos.putIfAbsent("referencia", "No especificado");
-        datos.putIfAbsent("expedienteClinico", "No especificado");
-
-        return datos;
-    }
-
 
     @FXML
     private void otorgarPermisoInterconsulta() {
         if (tablaInterconsultas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una interconsulta primero", Alert.AlertType.WARNING);
+            log.warn("No hay interconsulta seleccionada para otorgar permiso");
             return;
         }
 
@@ -2165,9 +1462,26 @@ public class CapturaPrincipalController {
                             "\nInterconsulta #: " + interconsultaSeleccionada.getNumeroInterconsulta() +
                             "\n\nEl especialista solo puede usar el permiso UNA vez.",
                     Alert.AlertType.WARNING);
+            log.warn("La interconsulta ya tiene permiso de edición.");
             return;
         }
 
+        Optional<ButtonType> resultado = getButtonType(interconsultaSeleccionada);
+        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+            if (otorgarPermisoInterconsultaEnBD(interconsultaSeleccionada.getIdInterconsulta())) {
+                mostrarAlerta("Éxito", "Permiso de edición otorgado al especialista\n\n" +
+                        "El especialista " + interconsultaSeleccionada.getEspecialista() +
+                        " ahora puede editar esta interconsulta UNA sola vez", Alert.AlertType.INFORMATION);
+                forzarActualizacionCompleta();
+                log.info("Permiso otorgado correctamente");
+            } else {
+                mostrarAlerta("Error", "No se pudo otorgar el permiso", Alert.AlertType.ERROR);
+                log.error("No se pudo otorgar el permiso");
+            }
+        }
+    }
+
+    private static Optional<ButtonType> getButtonType(InterconsultaVO interconsultaSeleccionada) {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Otorgar Permiso de Edición");
         confirmacion.setHeaderText("¿Otorgar permiso de edición al especialista?");
@@ -2176,99 +1490,39 @@ public class CapturaPrincipalController {
                 "\nFolio: " + interconsultaSeleccionada.getFolioPaciente() +
                 "\n\n¿El especialista podrá editar esta interconsulta? (Solo una vez)");
 
-        Optional<ButtonType> resultado = confirmacion.showAndWait();
-        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
-            if (otorgarPermisoInterconsultaEnBD(interconsultaSeleccionada.getIdInterconsulta())) {
-                mostrarAlerta("Éxito", "Permiso de edición otorgado al especialista\n\n" +
-                        "El especialista " + interconsultaSeleccionada.getEspecialista() +
-                        " ahora puede editar esta interconsulta UNA sola vez", Alert.AlertType.INFORMATION);
-                forzarActualizacionCompleta();
-            } else {
-                mostrarAlerta("Error", "No se pudo otorgar el permiso", Alert.AlertType.ERROR);
-            }
-        }
+        return confirmacion.showAndWait();
     }
 
-
-    private void registrarEnHistorialPermisosInterconsulta(int idInterconsulta, String tipoNota, String accion) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_inter WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idInterconsulta);
-            pstmt.setString(2, tipoNota);
-            pstmt.setString(3, accion);
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idInterconsulta);
-
-            pstmt.executeUpdate();
-            System.out.println(" Historial interconsulta registrado - " + accion + " - ID: " + idInterconsulta);
-
+    private void registrarEnHistorialPermisosInterconsulta(int idInterconsulta) {
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoInter(conn, new InsertarPermisoDTO(idInterconsulta, "INTERCONSULTA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
-            System.err.println(" Error registrando en historial de interconsulta: " + e.getMessage());
+            log.error(" Error registrando en historial de interconsulta: {}", e.getMessage());
         }
     }
 
     private boolean otorgarPermisoEnBD(int idNota) {
-        String sql = "UPDATE tb_notas SET " +
-                "editable_por_medico = TRUE, " +
-                "permiso_edicion_otorgado_por = ?, " +
-                "fecha_permiso_edicion = NOW(), " +
-                "fecha_edicion_realizada = NULL " +
-                "WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, usuarioLogueado);
-            pstmt.setInt(2, idNota);
-
-            int filas = pstmt.executeUpdate();
-
-            if (filas > 0) {
-                System.out.println(" Permiso otorgado - ID Nota: " + idNota);
-
-                //  REGISTRAR EN HISTORIAL
-                registrarEnHistorialPermisos(idNota, "MEDICA", "OTORGAR");
+        try (Connection conn = ConexionBD.conectar()) {
+            var nd = new NotasData();
+            if (nd.otorgarPermisoEdicion(conn, usuarioLogueado, idNota)) {
+                registrarEnHistorialPermisos(idNota);
                 return true;
             } else {
-                System.out.println(" No se pudo otorgar permiso");
                 return false;
             }
-
         } catch (SQLException e) {
-            System.err.println(" Error otorgando permiso: " + e.getMessage());
+            log.error(" Error otorgando permiso: {}", e.getMessage());
             return false;
         }
     }
 
-
-    private void registrarEnHistorialPermisos(int idNota, String tipoNota, String accion) {
-        String sql = "INSERT INTO tb_historial_permisos (id_nota, tipo_nota, folio_paciente, medico_autor, " +
-                "accion, usuario_que_actua, rol_usuario, motivo, estado_paciente) " +
-                "SELECT ?, ?, Folio, Medico, ?, ?, ?, 'Permiso de un solo uso', estado_paciente " +
-                "FROM tb_notas WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idNota);
-            pstmt.setString(2, tipoNota);
-            pstmt.setString(3, accion);
-            pstmt.setString(4, usuarioLogueado);
-            pstmt.setString(5, rolUsuarioLogueado);
-            pstmt.setInt(6, idNota);
-
-            pstmt.executeUpdate();
-            System.out.println(" Historial registrado - " + accion + " - ID Nota: " + idNota);
-
+    private void registrarEnHistorialPermisos(int idNota) {
+        try (Connection conn = ConexionBD.conectar()) {
+            var hd = new HistorialPermisosData();
+            hd.otorgarPermisoNotas(conn, new InsertarPermisoDTO(idNota, "MEDICA", "OTORGAR", usuarioLogueado, rolUsuarioLogueado));
         } catch (SQLException e) {
-            System.err.println(" Error registrando en historial: " + e.getMessage());
+            log.error(" Error registrando en historial: {}", e.getMessage());
         }
     }
 
@@ -2276,15 +1530,16 @@ public class CapturaPrincipalController {
     private void otorgarPermisoEdicion() {
         if (tablaNotasMedicas.getSelectionModel().getSelectedItem() == null) {
             mostrarAlerta("Error", "Seleccione una nota primero", Alert.AlertType.WARNING);
+            log.warn("No hay nota seleccionada para otorgar permiso");
             return;
         }
 
         NotaMedicaVO notaSeleccionada = tablaNotasMedicas.getSelectionModel().getSelectedItem();
 
-        System.out.println(" VERIFICANDO NOTA PARA PERMISO:");
-        System.out.println("   ID: " + notaSeleccionada.getIdNota());
-        System.out.println("   Médico: " + notaSeleccionada.getMedicoAutor());
-        System.out.println("   ¿Ya editable? " + notaSeleccionada.isEditablePorMedico());
+        log.debug(" VERIFICANDO NOTA PARA PERMISO:");
+        log.debug("   ID: {}", notaSeleccionada.getIdNota());
+        log.debug("   Médico: {}", notaSeleccionada.getMedicoAutor());
+        log.debug("   ¿Ya editable? {}", notaSeleccionada.isEditablePorMedico());
 
         //  VERIFICAR SI YA TIENE PERMISO
         if (notaSeleccionada.isEditablePorMedico()) {
@@ -2294,24 +1549,18 @@ public class CapturaPrincipalController {
                             "\nNota #: " + notaSeleccionada.getNumeroNota() +
                             "\n\nEl médico solo puede usar el permiso UNA vez.",
                     Alert.AlertType.WARNING);
+            log.warn("La nota ya tiene permiso de edición");
             return;
         }
 
         //  VERIFICAR QUE NO SE OTORGUE PERMISO A SÍ MISMO
         if (notaSeleccionada.getMedicoAutor().equals(sesion.getNombreMedico())) {
             mostrarAlerta("Error", "No puede otorgarse permiso a sí mismo", Alert.AlertType.WARNING);
+            log.warn("Intento de otorgarse permiso a sí mismo");
             return;
         }
 
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Otorgar Permiso de Edición");
-        confirmacion.setHeaderText("¿Otorgar permiso de edición al médico?");
-        confirmacion.setContentText("Médico: " + notaSeleccionada.getMedicoAutor() +
-                "\nNota #: " + notaSeleccionada.getNumeroNota() +
-                "\nFolio: " + notaSeleccionada.getFolioPaciente() +
-                "\n\n¿El médico podrá editar esta nota? (Solo una vez)");
-
-        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        Optional<ButtonType> resultado = getButtonType(notaSeleccionada);
         if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
             if (otorgarPermisoEnBD(notaSeleccionada.getIdNota())) {
                 mostrarAlerta("Éxito", " Permiso de edición otorgado al médico\n\n" +
@@ -2320,19 +1569,34 @@ public class CapturaPrincipalController {
                                 "\n\nEl médico ahora puede editar esta nota UNA sola vez",
                         Alert.AlertType.INFORMATION);
                 forzarActualizacionCompleta();
+                log.info("Permiso otorgado correctamente de edición");
             } else {
                 mostrarAlerta("Error", "No se pudo otorgar el permiso", Alert.AlertType.ERROR);
+                log.error("No se pudo otorgar el permiso de edición");
             }
         }
     }
 
+    private static Optional<ButtonType> getButtonType(NotaMedicaVO notaSeleccionada) {
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Otorgar Permiso de Edición");
+        confirmacion.setHeaderText("¿Otorgar permiso de edición al médico?");
+        confirmacion.setContentText("Médico: " + notaSeleccionada.getMedicoAutor() +
+                "\nNota #: " + notaSeleccionada.getNumeroNota() +
+                "\nFolio: " + notaSeleccionada.getFolioPaciente() +
+                "\n\n¿El médico podrá editar esta nota? (Solo una vez)");
+
+        return confirmacion.showAndWait();
+    }
+
     private void abrirVentanaEgreso() {
         try {
-            System.out.println(" Abriendo ventana de egreso...");
+            log.debug(" Abriendo ventana de egreso...");
 
             URL fxmlUrl = getClass().getResource("/views/egreso_paciente.fxml");
             if (fxmlUrl == null) {
                 mostrarAlerta("Error", "No se encontró ventana de egreso", Alert.AlertType.ERROR);
+                log.error("No se encontró ventana de egreso");
                 return;
             }
 
@@ -2354,249 +1618,19 @@ public class CapturaPrincipalController {
             // Mostrar ventana de egreso
             egresoStage.show();
 
-            System.out.println(" Ventana de egreso abierta. El egreso se hará DENTRO de esa ventana.");
+            log.info("Ventana de egreso abierta. El egreso se hará DENTRO de esa ventana.");
 
         } catch (Exception e) {
-            System.err.println(" Error abriendo ventana de egreso: " + e.getMessage());
+            log.error(" Error abriendo ventana de egreso: {}", e.getMessage());
             mostrarAlerta("Error", "Error: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    // Agregar en la clase
-    @FXML private ToggleGroup mujerFertilGroup;
-
-    // Método para obtener el valor seleccionado
-    public String getMujerEdadFertil() {
-        if (mujerFertilGroup.getSelectedToggle() != null) {
-            return mujerFertilGroup.getSelectedToggle().getUserData().toString();
-        }
-        return null;
-    }
-
-    // Método para limpiar la selección
-    public void limpiarMujerFertil() {
-        mujerFertilGroup.selectToggle(null);
-    }
-
-
-    // cosas que se supone no se por qu estan aqui
-
-
-
-
-    // MÉTODO AUXILIAR CORREGIDO: obtenerDatosPacienteParaPDF
-    private Map<String, String> obtenerDatosPacienteParaPDF() {
-        Map<String, String> datos = new HashMap<>();
-
-        String sql = "SELECT " +
-                "CONCAT(COALESCE(A_paterno, ''), ' ', COALESCE(A_materno, ''), ' ', COALESCE(Nombre, '')) as nombre_completo, " +
-                "Edad, " +
-                "s.Descripcion as sexo, " +
-                "F_nac, " +
-                "Edo_civil, " +
-                "Ocupacion, " +
-                "Domicilio, " +
-                "dh.Derechohabiencia, " +
-                "Referencia, " +
-                "Exp_clinico, " +
-                "CURP, " +
-                "Telefono, " +
-                "Municipio_resid, " +
-                "Entidad_resid " +
-                "FROM tb_urgencias u " +
-                "LEFT JOIN tblt_cvesexo s ON u.Sexo = s.Cve_sexo " +
-                "LEFT JOIN tblt_cvedhabiencia dh ON u.Derechohabiencia = dh.Cve_dh " +
-                "WHERE u.Folio = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, folioPaciente);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                // Nombre completo limpio
-                String nombre = rs.getString("nombre_completo").trim();
-                if (nombre.isEmpty()) nombre = "NO ESPECIFICADO";
-
-                datos.put("nombre", nombre);
-                datos.put("edad", rs.getString("Edad") != null ? rs.getString("Edad") : "No especificado");
-                datos.put("sexo", rs.getString("sexo") != null ? rs.getString("sexo") : "No especificado");
-                datos.put("fechaNacimiento", rs.getString("F_nac") != null ? rs.getString("F_nac") : "No especificado");
-                datos.put("estadoCivil", rs.getString("Edo_civil") != null ? rs.getString("Edo_civil") : "No especificado");
-                datos.put("ocupacion", rs.getString("Ocupacion") != null ? rs.getString("Ocupacion") : "No especificado");
-                datos.put("domicilio", rs.getString("Domicilio") != null ? rs.getString("Domicilio") : "No especificado");
-                datos.put("derechohabiencia", rs.getString("Derechohabiencia") != null ? rs.getString("Derechohabiencia") : "No especificado");
-                datos.put("referencia", rs.getString("Referencia") != null ? rs.getString("Referencia") : "No especificado");
-                datos.put("expedienteClinico", rs.getString("Exp_clinico") != null ? rs.getString("Exp_clinico") : "No especificado");
-                datos.put("curp", rs.getString("CURP") != null ? rs.getString("CURP") : "No especificado");
-                datos.put("telefono", rs.getString("Telefono") != null ? rs.getString("Telefono") : "No especificado");
-
-                System.out.println("✅ Datos paciente obtenidos correctamente:");
-                System.out.println("   Nombre: " + nombre);
-                System.out.println("   CURP: " + datos.get("curp"));
-                System.out.println("   Teléfono: " + datos.get("telefono"));
-            } else {
-                System.err.println("⚠️ No se encontró paciente con folio: " + folioPaciente);
-            }
-
-        } catch (SQLException e) {
-            System.err.println("❌ Error en obtenerDatosPacienteParaPDF: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return datos;
-    }
-
-
-
-
-    // MÉTODO AUXILIAR CORREGIDO: obtenerDatosNotaParaPDF
-    private Map<String, String> obtenerDatosNotaParaPDF(int idNota) {
-        Map<String, String> datos = new HashMap<>();
-
-        String sql = "SELECT sintomas, signos_vitales, diagnostico, Nota, Indicaciones, " +
-                "Cedula, Fecha, Hora, mujer_edad_fertil " +
-                "FROM tb_notas WHERE id_nota = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idNota);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                datos.put("sintomas", rs.getString("sintomas"));
-                datos.put("signosVitales", rs.getString("signos_vitales"));
-                datos.put("diagnostico", rs.getString("diagnostico"));
-                datos.put("nota", rs.getString("Nota"));
-                datos.put("indicaciones", rs.getString("Indicaciones"));
-                datos.put("cedula", rs.getString("Cedula"));
-                datos.put("fecha", rs.getString("Fecha"));
-                datos.put("hora", rs.getString("Hora"));
-                datos.put("mujerEdadFertil", rs.getString("mujer_edad_fertil"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("❌ Error obteniendo datos de nota: " + e.getMessage());
-        }
-
-        // Valores por defecto
-        datos.putIfAbsent("sintomas", "");
-        datos.putIfAbsent("signosVitales", "");
-        datos.putIfAbsent("diagnostico", "");
-        datos.putIfAbsent("nota", "");
-        datos.putIfAbsent("indicaciones", "");
-        datos.putIfAbsent("cedula", "");
-        datos.putIfAbsent("fecha", LocalDate.now().toString());
-        datos.putIfAbsent("hora", LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
-        datos.putIfAbsent("mujerEdadFertil", "NO");
-
-        return datos;
-    }
-    /**
-     * OBTENER DATOS COMPLETOS DE INTERCONSULTA PARA PDF
-     */
-    private Map<String, String> obtenerDatosInterconsultaParaPDF(int idInterconsulta) {
-        Map<String, String> datos = new HashMap<>();
-
-        String sql = "SELECT sintomas, signos_vitales, diagnostico, Nota, especialidad, " +
-                "Cedula, Fecha, Hora, mujer_edad_fertil " +
-                "FROM tb_inter WHERE id_inter = ?";
-
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idInterconsulta);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                // IMPORTANTE: "Nota" son las indicaciones en interconsulta
-                datos.put("sintomas", rs.getString("sintomas"));
-                datos.put("signosVitales", rs.getString("signos_vitales"));
-                datos.put("diagnostico", rs.getString("diagnostico"));
-                datos.put("indicaciones", rs.getString("Nota")); // ← CORRECTO: Nota = indicaciones
-                datos.put("especialidad", rs.getString("especialidad")); // ← Especialidad de tb_inter
-                datos.put("cedula", rs.getString("Cedula"));
-                datos.put("fecha", rs.getString("Fecha"));
-                datos.put("hora", rs.getString("Hora"));
-                datos.put("mujerEdadFertil", rs.getString("mujer_edad_fertil"));
-
-                System.out.println("📋 Datos interconsulta obtenidos desde BD:");
-                System.out.println("   Sintomas: " + (datos.get("sintomas") != null ? "Presente" : "Vacío"));
-                System.out.println("   Signos vitales: " + (datos.get("signosVitales") != null ? "Presente" : "Vacío"));
-                System.out.println("   Diagnóstico: " + (datos.get("diagnostico") != null ? "Presente" : "Vacío"));
-                System.out.println("   Indicaciones (Nota): " + (datos.get("indicaciones") != null && !datos.get("indicaciones").isEmpty() ? "Presente" : "Vacío"));
-                System.out.println("   Especialidad: " + datos.get("especialidad"));
-            } else {
-                System.err.println("❌ No se encontró interconsulta con ID: " + idInterconsulta);
-            }
-
-        } catch (SQLException e) {
-            System.err.println("❌ Error SQL obteniendo datos de interconsulta: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        // Valores por defecto
-        datos.putIfAbsent("sintomas", "");
-        datos.putIfAbsent("signosVitales", "");
-        datos.putIfAbsent("diagnostico", "");
-        datos.putIfAbsent("indicaciones", ""); // Esto es lo que aparece como INDICACIONES en el PDF
-        datos.putIfAbsent("especialidad", "");
-        datos.putIfAbsent("cedula", "");
-        datos.putIfAbsent("fecha", LocalDate.now().toString());
-        datos.putIfAbsent("hora", LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
-        datos.putIfAbsent("mujerEdadFertil", "NO");
-
-        return datos;
-    }
-
-    // borarrrrrrrrrrr
-
-    /**
-     * MÉTODO DE DEPURACIÓN: Mostrar qué especialistas hay en la BD
-     */
-    private void mostrarEspecialistasEnBD(Connection conn) {
-        try {
-            System.out.println("📋 ESPECIALISTAS DISPONIBLES EN tb_medesp:");
-
-            String sql = "SELECT Nombre, especialidad, universidad, Cedula FROM tb_medesp ORDER BY Nombre";
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery(sql)) {
-
-                int count = 0;
-                while (rs.next()) {
-                    System.out.println("   " + (++count) + ". " +
-                            "Nombre: '" + rs.getString("Nombre") + "' - " +
-                            "Especialidad: '" + rs.getString("especialidad") + "' - " +
-                            "Universidad: '" + rs.getString("universidad") + "' - " +
-                            "Cédula: '" + rs.getString("Cedula") + "'");
-                }
-                if (count == 0) {
-                    System.out.println("   (Tabla tb_medesp está vacía)");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error mostrando especialistas: " + e.getMessage());
-        }
-    }
-
-
     // cosas de prueba borrar todo lo que est despues de estp
-
-
-
     private void ocultarSeccionParaEgresado() {
         Platform.runLater(() -> {
             // Ocultar todo excepto RadioButton para Egreso
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-            rbObservacion.setVisible(false);
+            ocultarSeccionesComunes();
             btnGuardarGeneral.setVisible(false);
 
             // Solo mostrar RadioButton de Egreso (pero deshabilitado)
@@ -2608,15 +1642,7 @@ public class CapturaPrincipalController {
 
     private void mostrarSoloRadioButtonsParaEgreso() {
         Platform.runLater(() -> {
-            // Ocultar todos los combos y campos
-            txtFechaAtencion.setVisible(false);
-            txtHoraAtencion.setVisible(false);
-            txtCedulaMedico.setVisible(false);
-            cmbTipoUrgencia.setVisible(false);
-            cmbMotivoUrgencia.setVisible(false);
-            cmbTipoCama.setVisible(false);
-            cmbMedicoActual.setVisible(false);
-
+            ocultarSeccionesComunes();
             // Mostrar ambos RadioButtons
             rbObservacion.setVisible(true);
             rbObservacion.setDisable(true); // No puede cambiar de Observación
@@ -2629,9 +1655,85 @@ public class CapturaPrincipalController {
         });
     }
 
+    private void habilitarElementosUI() {
+        txtFolio.setDisable(false);
+        txtFechaRegistro.setDisable(false);
+        txtHoraRegistro.setDisable(false);
+        txtTriage.setDisable(false);
+        txtNombre.setDisable(false);
+        txtEdad.setDisable(false);
+        txtSexo.setDisable(false);
+        txtMunicipio.setDisable(false);
+        txtEntidad.setDisable(false);
+        txtDerechohabiencia.setDisable(false);
+        txtReferencia.setDisable(false);
+        txtMedicoIngreso.setDisable(false);
+        txtDomicilio.setDisable(false);
+        txtSintomas.setDisable(false);
+        btnColorTriage.setDisable(false);
+        txtFechaAtencion.setDisable(false);
+        txtHoraAtencion.setDisable(false);
+        txtCedulaMedico.setDisable(false);
+        tablaNotasMedicas.setDisable(false);
+        tablaInterconsultas.setDisable(false);
+        btnVisualizarNotaMedica.setDisable(false);
+        btnEditarNotaMedica.setDisable(false);
+        btnImprimirNotaMedica.setDisable(false);
+        btnVisualizarInterconsulta.setDisable(false);
+        btnEditarInterconsulta.setDisable(false);
+        btnImprimirInterconsulta.setDisable(false);
+        btnNuevaNotaMedica.setDisable(false);
+        btnNuevaInterconsulta.setDisable(false);
+        btnOtorgarPermiso.setDisable(false);
+        btnOtorgarPermisoInterconsulta.setDisable(false);
+        btnGuardarGeneral.setDisable(false);
+    }
 
+    private void validarCamposRequeridosYActivarUI() {
+        boolean camposCompletos = cmbTipoUrgencia.getValue() != null &&
+                cmbMotivoUrgencia.getValue() != null &&
+                cmbTipoCama.getValue() != null &&
+                cmbMedicoActual.getValue() != null &&
+                (rbObservacion.isSelected() || rbAltaMedica.isSelected());
 
+        if (camposCompletos) {
+            habilitarElementosUI();
+        } else {
+            deshabilitarElementosUI();
+        }
+    }
 
+    private void deshabilitarElementosUI() {
+        txtFolio.setDisable(true);
+        txtFechaRegistro.setDisable(true);
+        txtHoraRegistro.setDisable(true);
+        txtTriage.setDisable(true);
+        txtNombre.setDisable(true);
+        txtEdad.setDisable(true);
+        txtSexo.setDisable(true);
+        txtMunicipio.setDisable(true);
+        txtEntidad.setDisable(true);
+        txtDerechohabiencia.setDisable(true);
+        txtReferencia.setDisable(true);
+        txtMedicoIngreso.setDisable(true);
+        txtDomicilio.setDisable(true);
+        txtSintomas.setDisable(true);
+        btnColorTriage.setDisable(true);
+        txtFechaAtencion.setDisable(true);
+        txtHoraAtencion.setDisable(true);
+        txtCedulaMedico.setDisable(true);
+        tablaNotasMedicas.setDisable(true);
+        tablaInterconsultas.setDisable(true);
+        btnVisualizarNotaMedica.setDisable(true);
+        btnEditarNotaMedica.setDisable(true);
+        btnImprimirNotaMedica.setDisable(true);
+        btnVisualizarInterconsulta.setDisable(true);
+        btnEditarInterconsulta.setDisable(true);
+        btnImprimirInterconsulta.setDisable(true);
+        btnNuevaNotaMedica.setDisable(true);
+        btnNuevaInterconsulta.setDisable(true);
+        btnOtorgarPermiso.setDisable(true);
+        btnOtorgarPermisoInterconsulta.setDisable(true);
+        btnGuardarGeneral.setDisable(true);
+    }
 }
-
-
