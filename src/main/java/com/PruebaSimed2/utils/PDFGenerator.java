@@ -19,6 +19,7 @@ import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.layout.element.LineSeparator;
 import lombok.extern.log4j.Log4j2;
+import com.itextpdf.layout.element.LineSeparator;
 
 import java.io.File;
 import java.io.InputStream;
@@ -94,26 +95,26 @@ public class PDFGenerator {
 
             // Línea 1
             add.accept("MÓDULO: URGENCIAS", "");
-            add.accept("                    FECHA: ", formatearFecha(rsNota.getString("Fecha")));
-            add.accept("                             HORA: ", formatearHora(rsNota.getString("Hora")) + "\n");
+            add.accept("                       FECHA: ", formatearFecha(rsNota.getString("Fecha")));
+            add.accept("                              HORA: ", formatearHora(rsNota.getString("Hora")) + "\n");
 
             // Línea 2
             add.accept("DERECHOHABIENCIA: ", safeString(rsPaciente.getString("Derechohabiencia")));
-            add.accept("                          EXPEDIENTE URGENCIA: ", String.valueOf(folioPaciente) + "\n");
+            add.accept("                           EXPEDIENTE URGENCIA: ", String.valueOf(folioPaciente) + "\n");
 
             // Línea 3 - CON TRUNCAMIENTO
-            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 40));
-            add.accept("      EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
+            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 33));
+            add.accept("    EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
             add.accept("      SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
 
             // Línea 4 - CON TRUNCAMIENTO
             add.accept("F. NAC: ", formatearFecha(rsPaciente.getString("F_nac")));
-            add.accept("    EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
+            add.accept("                             EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
             add.accept("    ENTIDAD: ", truncarTexto(safeString(rsPaciente.getString("Entidad_completa")), 20) + "\n");
 
             // Línea 5 - CON TRUNCAMIENTO
             add.accept("OCUPACIÓN: ", truncarTexto(safeString(rsPaciente.getString("Ocupacion")), 25));
-            add.accept("    TEL: ", safeString(rsPaciente.getString("Telefono")));
+            add.accept("                      TEL: ", safeString(rsPaciente.getString("Telefono")));
             add.accept("    MUNICIPIO: ", truncarTexto(safeString(rsPaciente.getString("Municipio_completo")), 20) + "\n");
 
             // Línea 6
@@ -121,7 +122,7 @@ public class PDFGenerator {
 
             // Línea 7
             add.accept("REFERENCIA: ", safeString(rsPaciente.getString("Referencia")));
-            add.accept("                       EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
+            add.accept("                           EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
 
             // Línea 8
             add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
@@ -129,6 +130,13 @@ public class PDFGenerator {
             datosPaciente.add("\n");
 
             document.add(datosPaciente);
+
+            com.itextpdf.kernel.pdf.canvas.draw.SolidLine lineaSolida =
+                    new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f);
+            LineSeparator linea = new LineSeparator(lineaSolida);
+            linea.setMarginTop(-5); // Valor NEGATIVO para subir la línea
+            linea.setMarginBottom(5);
+            document.add(linea);
 
             // ===== CONTENIDO DE LA NOTA =====
             Paragraph contenido = new Paragraph()
@@ -139,18 +147,18 @@ public class PDFGenerator {
 
             java.util.function.BiConsumer<String, String> addSeccion = (titulo, texto) -> {
                 if (!isEmpty(texto)) {
-                    boolean negritaTotal = titulo.equals("SIGNOS VITALES:");
+                    boolean negritaTotal = titulo.equals("A:");
                     contenido.add(new com.itextpdf.layout.element.Text(titulo + " ").setFont(negritaTotal ? bold : normal));
                     contenido.add(new com.itextpdf.layout.element.Text(texto + "\n\n").setFont(negritaTotal ? bold : normal));
                 }
             };
 
             // ORDEN para que coincida con FXML:
-            addSeccion.accept("PRESENTACIÓN DEL PACIENTE:", rsNota.getString("Nota"));
-            addSeccion.accept("SÍNTOMAS:", rsNota.getString("sintomas"));
-            addSeccion.accept("SIGNOS VITALES:", rsNota.getString("signos_vitales"));
-            addSeccion.accept("ANÁLISIS/DIAGNÓSTICO:", rsNota.getString("diagnostico"));
-            addSeccion.accept("PLAN/INDICACIONES:", rsNota.getString("Indicaciones"));
+            addSeccion.accept("P:", rsNota.getString("Nota"));
+            addSeccion.accept("S:", rsNota.getString("sintomas"));
+            addSeccion.accept("O:", rsNota.getString("signos_vitales"));
+            addSeccion.accept("A:", rsNota.getString("diagnostico"));
+            addSeccion.accept("P/I:", rsNota.getString("Indicaciones"));
 
             document.add(contenido);
             document.close();
@@ -169,6 +177,7 @@ public class PDFGenerator {
             return false;
         }
     }
+
 
     // =============== INTERCONSULTA - CON DATOS REALES ===============
     public static boolean generarInterconsultaPDF(int folioPaciente, int numeroInterconsulta) {
@@ -203,7 +212,7 @@ public class PDFGenerator {
 
             // ===== 2. DATOS DE LA INTERCONSULTA =====
             String queryInter =
-                    "SELECT i.Nota, i.sintomas, i.signos_vitales, i.diagnostico, i.especialidad, " +
+                    "SELECT i.presentacion, i.Nota, i.sintomas, i.signos_vitales, i.diagnostico, i.especialidad, " +
                             " i.Fecha, i.Hora, i.Num_inter, " +
                             " m.Nombre as Especialista, m.Cedula " +
                             "FROM tb_inter i " +
@@ -255,26 +264,27 @@ public class PDFGenerator {
             };
 
             // Línea 1
-            add.accept("MÓDULO: URGENCIAS ",          "FECHA: " + formatearFecha(rsInter.getString("Fecha")));
-            add.accept("                       HORA: ", formatearHora(rsInter.getString("Hora")) + "\n");
+            add.accept("MÓDULO: URGENCIAS", "");
+            add.accept("                       FECHA: ", formatearFecha(rsInter.getString("Fecha")));
+            add.accept("                              HORA: ", formatearHora(rsInter.getString("Hora")) + "\n");
 
             // Línea 2
             add.accept("DERECHOHABIENCIA: ", safeString(rsPaciente.getString("Derechohabiencia")));
             add.accept("                          EXPEDIENTE URGENCIA: ", String.valueOf(folioPaciente) + "\n");
 
             // Línea 3 - CON TRUNCAMIENTO
-            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 40));
-            add.accept("      EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
+            add.accept("NOMBRE: ", truncarTexto(safeString(nombrePaciente), 33));
+            add.accept("    EDAD: ", safeString(rsPaciente.getString("Edad")) + " Años");
             add.accept("      SEXO: ", safeString(rsPaciente.getString("Sexo")) + "\n");
 
-// Línea 4 - CON TRUNCAMIENTO
+            // Línea 4 - CON TRUNCAMIENTO
             add.accept("F. NAC: ", formatearFecha(rsPaciente.getString("F_nac")));
-            add.accept("    EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
+            add.accept("                             EST. CIVIL: ", truncarTexto(safeString(rsPaciente.getString("Edo_civil")), 15));
             add.accept("    ENTIDAD: ", truncarTexto(safeString(rsPaciente.getString("Entidad_completa")), 20) + "\n");
 
-// Línea 5 - CON TRUNCAMIENTO
+            // Línea 5 - CON TRUNCAMIENTO
             add.accept("OCUPACIÓN: ", truncarTexto(safeString(rsPaciente.getString("Ocupacion")), 25));
-            add.accept("    TEL: ", safeString(rsPaciente.getString("Telefono")));
+            add.accept("                      TEL: ", safeString(rsPaciente.getString("Telefono")));
             add.accept("    MUNICIPIO: ", truncarTexto(safeString(rsPaciente.getString("Municipio_completo")), 20) + "\n");
 
             // Línea 6
@@ -285,14 +295,21 @@ public class PDFGenerator {
             add.accept("                       EXP. CLÍNICO No.: ", safeString(rsPaciente.getString("Exp_clinico")) + "\n");
 
             // Línea 8
-           // add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
-         //   add.accept(" INTERCONSULTA: #", String.valueOf(numeroInterconsulta) + "\n");
+            // add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
+            //   add.accept(" INTERCONSULTA: #", String.valueOf(numeroInterconsulta) + "\n");
 
             add.accept("CURP: ", safeString(rsPaciente.getString("CURP")));
-            add.accept("                         INTERCONSULTA: #", String.valueOf(numeroInterconsulta));
+            add.accept("                       INTERCONSULTA: #", String.valueOf(numeroInterconsulta));
             datosPaciente.add("\n");
 
             document.add(datosPaciente);
+
+            com.itextpdf.kernel.pdf.canvas.draw.SolidLine lineaSolida =
+                    new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(0.5f);
+            LineSeparator linea = new LineSeparator(lineaSolida);
+            linea.setMarginTop(-5); // Valor NEGATIVO para subir la línea
+            linea.setMarginBottom(5);
+            document.add(linea);
 
             // ===== CONTENIDO DE LA INTERCONSULTA =====
             Paragraph contenido = new Paragraph()
@@ -303,16 +320,18 @@ public class PDFGenerator {
 
             java.util.function.BiConsumer<String, String> addSeccion = (titulo, texto) -> {
                 if (!isEmpty(texto)) {
-                    boolean todoNegrita = titulo.equals("SIGNOS VITALES:");
+                    boolean todoNegrita = titulo.equals("A:");
                     contenido.add(new com.itextpdf.layout.element.Text(titulo + " ").setFont(todoNegrita ? bold : normal));
                     contenido.add(new com.itextpdf.layout.element.Text(texto + "\n\n").setFont(todoNegrita ? bold : normal));
                 }
             };
 
-            addSeccion.accept("SÍNTOMAS:", rsInter.getString("sintomas"));
-            addSeccion.accept("SIGNOS VITALES:", rsInter.getString("signos_vitales"));  // Todo en negrita
-            addSeccion.accept("DIAGNÓSTICO:", rsInter.getString("diagnostico"));
-            addSeccion.accept("INDICACIONES:", rsInter.getString("Nota"));  // En interconsulta la "Nota" son las indicaciones
+            addSeccion.accept("P:", rsInter.getString("presentacion"));
+            addSeccion.accept("S:", rsInter.getString("sintomas"));
+            addSeccion.accept("O:", rsInter.getString("signos_vitales"));
+            addSeccion.accept("A:", rsInter.getString("diagnostico"));
+            addSeccion.accept("P/I:", rsInter.getString("Nota")); // En interconsulta la "Nota" son las indicaciones
+
 
             document.add(contenido);
             document.close();
@@ -335,6 +354,7 @@ public class PDFGenerator {
             return false;
         }
     }
+
 
     private static void agregarEncabezadoConLogos(PdfDocument pdfDoc) {
         pdfDoc.addEventHandler(PdfDocumentEvent.END_PAGE, event -> {

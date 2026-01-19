@@ -39,6 +39,8 @@ public class InterconsultaController {
     @FXML
     private TextField txtEspecialidad; // Cambiado de ComboBox a TextField
     @FXML
+    private TextArea txtP; //  Para Presentación
+    @FXML
     private TextArea txtSintomas;
     @FXML
     private TextArea txtSignosVitales;
@@ -53,11 +55,12 @@ public class InterconsultaController {
 
     // Constantes para límites de datos
     private static final int MAX_CHARS_ESPECIALIDAD = 50;
-    private static final int MAX_CHARS_SINTOMAS = 800;
-    private static final int MAX_CHARS_SIGNOS = 500;
-    private static final int MAX_CHARS_DIAGNOSTICO = 10000; // 3 páginas
+    private static final int MAX_CHARS_SINTOMAS = 2500;
+    private static final int MAX_CHARS_PRESENTACION = 2500; // pag
+    private static final int MAX_CHARS_SIGNOS = 7000;
+    private static final int MAX_CHARS_DIAGNOSTICO = 7000; // 3 páginas
     private static final int MAX_CHARS_INDICACIONES = 7000; // 9,000 2 páginas
-    private static final int MAX_TOTAL_CHARS = 19000; // Límite total para evitar saturación
+    private static final int MAX_TOTAL_CHARS = 26500; // Límite total para evitar saturación
 
     private String universidadEspecialista;
     private int folioPaciente;
@@ -196,11 +199,21 @@ public class InterconsultaController {
         });
 
         // Límites para TextAreas
+
+        txtP.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.length() > MAX_CHARS_PRESENTACION) {
+                txtP.setText(oldValue);
+                mostrarAlerta("Límite excedido",
+                        "El campo Presentación (P) no puede exceder los " + MAX_CHARS_PRESENTACION + " caracteres",
+                        Alert.AlertType.WARNING);
+            }
+        });
+
         txtSintomas.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length() > MAX_CHARS_SINTOMAS) {
                 txtSintomas.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Síntomas no puede exceder los " + MAX_CHARS_SINTOMAS + " caracteres",
+                        "El campo S no puede exceder los " + MAX_CHARS_SINTOMAS + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -209,7 +222,7 @@ public class InterconsultaController {
             if (newValue.length() > MAX_CHARS_SIGNOS) {
                 txtSignosVitales.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Signos Vitales no puede exceder los " + MAX_CHARS_SIGNOS + " caracteres",
+                        "El campo O no puede exceder los " + MAX_CHARS_SIGNOS + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -218,7 +231,7 @@ public class InterconsultaController {
             if (newValue.length() > MAX_CHARS_DIAGNOSTICO) {
                 txtDiagnostico.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Diagnóstico no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
+                        "El campo A no puede exceder los " + MAX_CHARS_DIAGNOSTICO + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -227,7 +240,7 @@ public class InterconsultaController {
             if (newValue.length() > MAX_CHARS_INDICACIONES) {
                 txtIndicaciones.setText(oldValue);
                 mostrarAlerta("Límite excedido",
-                        "El campo Indicaciones no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
+                        "El campo P/I no puede exceder los " + MAX_CHARS_INDICACIONES + " caracteres",
                         Alert.AlertType.WARNING);
             }
         });
@@ -267,7 +280,7 @@ public class InterconsultaController {
     }
 
     private void cargarInterconsultaExistente() {
-        String sql = "SELECT id_inter, Num_inter, Nota, sintomas, signos_vitales, diagnostico, " +
+        String sql = "SELECT id_inter, Num_inter, presentacion, Nota, sintomas, signos_vitales, diagnostico, " +
                 "especialidad, Medico, Cedula, Fecha, Hora, Estado FROM tb_inter " +
                 "WHERE Folio = ? AND Estado = 'TEMPORAL' AND Medico = ? ORDER BY id_inter DESC LIMIT 1";
 
@@ -292,6 +305,7 @@ public class InterconsultaController {
                 log.debug("Hora: {}", primeraHoraCreacion);
 
                 // CARGAR CAMPOS SEPARADOS
+                txtP.setText(rs.getString("presentacion"));
                 txtSintomas.setText(rs.getString("sintomas"));
                 txtSignosVitales.setText(rs.getString("signos_vitales"));
                 txtDiagnostico.setText(rs.getString("diagnostico"));
@@ -346,6 +360,7 @@ public class InterconsultaController {
             conn.setAutoCommit(false);
 
             // OBTENER TODOS LOS CAMPOS
+            String presentacionActual = txtP.getText().trim();
             String sintomasActual = txtSintomas.getText().trim();
             String signosVitalesActual = txtSignosVitales.getText().trim();
             String diagnosticoActual = txtDiagnostico.getText().trim();
@@ -356,10 +371,11 @@ public class InterconsultaController {
 
             log.debug(" INICIANDO GUARDADO TEMPORAL INTERCONSULTA ===================");
             log.debug(" Especialidad: {}", especialidadActual);
-            log.debug(" Síntomas: {} chars", sintomasActual.length());
-            log.debug(" Signos Vitales: {} chars", signosVitalesActual.length());
-            log.debug(" Diagnóstico: {} chars", diagnosticoActual.length());
-            log.debug(" Indicaciones: {} chars", indicacionesActual.length());
+            log.debug(" Presentación (P): {} chars", presentacionActual.length());
+            log.debug(" Síntomas (S): {} chars", sintomasActual.length());
+            log.debug(" Signos Vitales (O): {} chars", signosVitalesActual.length());
+            log.debug(" Diagnóstico (A): {} chars", diagnosticoActual.length());
+            log.debug(" Plan/Indicaciones (P/I): {} chars", indicacionesActual.length());
 
             int filasAfectadas = 0;
 
@@ -368,73 +384,85 @@ public class InterconsultaController {
                 numeroInterconsultaActual = obtenerSiguienteNumInterconsulta(conn);
 
                 // Determinar si usar fecha/hora actual o mantener la existente
-                String fechaSQL, horaSQL;
-
                 if (esPrimeraGuardada && primeraFechaCreacion != null && primeraHoraCreacion != null) {
-                    // Usar la fecha/hora de la primera creación
-                    fechaSQL = "?";
-                    horaSQL = "?";
-                } else {
-                    // Usar fecha/hora actual (primera vez)
-                    fechaSQL = "CURDATE()";
-                    horaSQL = "CURTIME()";
-                }
+                    // Usar la fecha/hora de la primera creación (caso de edición)
+                    String sql = "INSERT INTO tb_inter (Folio, Num_inter, presentacion, Nota, sintomas, signos_vitales, " +
+                            "diagnostico, especialidad, Medico, Cedula, Fecha, Hora, Estado) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'TEMPORAL')";
 
-                String sql = "INSERT INTO tb_inter (Folio, Num_inter, Nota, sintomas, signos_vitales, " +
-                        "diagnostico, especialidad, Medico, Cedula, Fecha, Hora, Estado) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, " + fechaSQL + ", " + horaSQL + ", 'TEMPORAL')";
+                    try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                        pstmt.setInt(1, folioPaciente);
+                        pstmt.setInt(2, numeroInterconsultaActual);
+                        pstmt.setString(3, presentacionActual);
+                        pstmt.setString(4, indicacionesActual);
+                        pstmt.setString(5, sintomasActual);
+                        pstmt.setString(6, signosVitalesActual);
+                        pstmt.setString(7, diagnosticoActual);
+                        pstmt.setString(8, especialidadActual);
+                        pstmt.setString(9, especialistaActual);
+                        pstmt.setString(10, cedulaActual);
+                        pstmt.setDate(11, new java.sql.Date(primeraFechaCreacion.getTime()));
+                        pstmt.setString(12, primeraHoraCreacion);
 
-                try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    pstmt.setInt(1, folioPaciente);
-                    pstmt.setInt(2, numeroInterconsultaActual);
-                    pstmt.setString(3, indicacionesActual);
-                    pstmt.setString(4, sintomasActual);
-                    pstmt.setString(5, signosVitalesActual);
-                    pstmt.setString(6, diagnosticoActual);
-                    pstmt.setString(7, especialidadActual);
-                    pstmt.setString(8, especialistaActual);
-                    pstmt.setString(9, cedulaActual);
+                        filasAfectadas = pstmt.executeUpdate();
 
-                    // Si es primera guardada con fecha/hora existente, usar esas
-                    if (esPrimeraGuardada && primeraFechaCreacion != null && primeraHoraCreacion != null) {
-                        pstmt.setDate(10, new java.sql.Date(primeraFechaCreacion.getTime()));
-                        pstmt.setString(11, primeraHoraCreacion);
-                        log.debug(" Usando fecha/hora original de primera creación");
-                    }
-
-                    filasAfectadas = pstmt.executeUpdate();
-
-                    if (filasAfectadas > 0) {
-                        ResultSet rs = pstmt.getGeneratedKeys();
-                        if (rs.next()) {
-                            idInterconsultaActual = rs.getInt(1);
-                            log.debug(" NUEVA INTERCONSULTA TEMPORAL CREADA - ID: {}", idInterconsultaActual);
-
-                            // Si es primera guardada, marcar como no primera para próximas
-                            if (esPrimeraGuardada) {
+                        if (filasAfectadas > 0) {
+                            ResultSet rs = pstmt.getGeneratedKeys();
+                            if (rs.next()) {
+                                idInterconsultaActual = rs.getInt(1);
+                                log.debug(" NUEVA INTERCONSULTA TEMPORAL CREADA (con fecha original) - ID: {}", idInterconsultaActual);
                                 esPrimeraGuardada = false;
                             }
+                        }
+                    }
+                } else {
+                    // Usar fecha/hora actual (primera vez)
+                    String sql = "INSERT INTO tb_inter (Folio, Num_inter, presentacion, Nota, sintomas, signos_vitales, " +
+                            "diagnostico, especialidad, Medico, Cedula, Fecha, Hora, Estado) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), CURTIME(), 'TEMPORAL')";
 
-                            // OBTENER Y GUARDAR LA FECHA/HORA DE CREACIÓN
-                            guardarFechaHoraCreacion(conn, idInterconsultaActual);
+                    try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                        pstmt.setInt(1, folioPaciente);
+                        pstmt.setInt(2, numeroInterconsultaActual);
+                        pstmt.setString(3, presentacionActual);
+                        pstmt.setString(4, indicacionesActual);
+                        pstmt.setString(5, sintomasActual);
+                        pstmt.setString(6, signosVitalesActual);
+                        pstmt.setString(7, diagnosticoActual);
+                        pstmt.setString(8, especialidadActual);
+                        pstmt.setString(9, especialistaActual);
+                        pstmt.setString(10, cedulaActual);
+
+                        filasAfectadas = pstmt.executeUpdate();
+
+                        if (filasAfectadas > 0) {
+                            ResultSet rs = pstmt.getGeneratedKeys();
+                            if (rs.next()) {
+                                idInterconsultaActual = rs.getInt(1);
+                                log.debug(" NUEVA INTERCONSULTA TEMPORAL CREADA - ID: {}", idInterconsultaActual);
+
+                                // OBTENER Y GUARDAR LA FECHA/HORA DE CREACIÓN
+                                guardarFechaHoraCreacion(conn, idInterconsultaActual);
+                            }
                         }
                     }
                 }
             } else {
                 // ACTUALIZAR INTERCONSULTA TEMPORAL EXISTENTE - NO MODIFICAR FECHA/HORA
-                String sql = "UPDATE tb_inter SET Nota = ?, sintomas = ?, signos_vitales = ?, " +
+                String sql = "UPDATE tb_inter SET presentacion = ?, Nota = ?, sintomas = ?, signos_vitales = ?, " +
                         "diagnostico = ?, especialidad = ?, Medico = ?, Cedula = ?, Estado = 'TEMPORAL' " +
                         "WHERE id_inter = ?";
 
                 try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                    pstmt.setString(1, indicacionesActual);
-                    pstmt.setString(2, sintomasActual);
-                    pstmt.setString(3, signosVitalesActual);
-                    pstmt.setString(4, diagnosticoActual);
-                    pstmt.setString(5, especialidadActual);
-                    pstmt.setString(6, especialistaActual);
-                    pstmt.setString(7, cedulaActual);
-                    pstmt.setInt(8, idInterconsultaActual);
+                    pstmt.setString(1, presentacionActual);
+                    pstmt.setString(2, indicacionesActual);
+                    pstmt.setString(3, sintomasActual);
+                    pstmt.setString(4, signosVitalesActual);
+                    pstmt.setString(5, diagnosticoActual);
+                    pstmt.setString(6, especialidadActual);
+                    pstmt.setString(7, especialistaActual);
+                    pstmt.setString(8, cedulaActual);
+                    pstmt.setInt(9, idInterconsultaActual);
                     // IMPORTANTE: NO actualizamos Fecha ni Hora
 
                     filasAfectadas = pstmt.executeUpdate();
@@ -498,41 +526,54 @@ public class InterconsultaController {
 
     @FXML
     private void guardarDefinitivo() {
-        if (!validarCampos()) return;
-        if (!verificarLimitesDatos()) return;
+            if (!validarCampos()) return;
+            if (!verificarLimitesDatos()) return;
 
-        // Deshabilitar botones inmediatamente
-        btnGuardarDefinitivo.setDisable(true);
-        btnGuardarTemporal.setDisable(true);
+            // Deshabilitar botones inmediatamente
+            btnGuardarDefinitivo.setDisable(true);
+            btnGuardarTemporal.setDisable(true);
 
-        // GUARDAR VARIABLES LOCALES COMO FINAL
-        final int folioFinal = folioPaciente;
-        final Integer numInterFinal = numeroInterconsultaActual;
-        final String sintomasFinal = txtSintomas.getText();
-        final String signosFinal = txtSignosVitales.getText();
-        final String diagnosticoFinal = txtDiagnostico.getText();
-        final String indicacionesFinal = txtIndicaciones.getText();
-        final String especialistaFinal = cmbEspecialistas.getValue();
-        final String cedulaFinal = txtCedula.getText();
-        final String especialidadFinal = txtEspecialidad.getText();
-
-        // OBTENER FECHA/HORA ORIGINAL ANTES DEL HILO
-        final String[] fechaHoraOriginal = new String[2]; // [0]=fecha, [1]=hora
-
-        try (Connection connTemp = ConexionBD.conectar()) {
-            String sqlSelect = "SELECT Fecha, Hora FROM tb_inter WHERE id_inter = ?";
-            try (PreparedStatement pstmtSelect = connTemp.prepareStatement(sqlSelect)) {
-                pstmtSelect.setInt(1, idInterconsultaActual);
-                ResultSet rs = pstmtSelect.executeQuery();
-                if (rs.next()) {
-                    fechaHoraOriginal[0] = rs.getString("Fecha");
-                    fechaHoraOriginal[1] = rs.getString("Hora");
-                    log.debug("FECHA/HORA ORIGINAL INTERCONSULTA: {} {}", fechaHoraOriginal[0], fechaHoraOriginal[1]);
+            // PRIMERO: Verificar si ya existe interconsulta
+            if (idInterconsultaActual == null) {
+                // Guardar temporal primero
+                guardarTemporal();
+                if (idInterconsultaActual == null) {
+                    mostrarAlerta("Error", "No se pudo crear la interconsulta", Alert.AlertType.ERROR);
+                    btnGuardarDefinitivo.setDisable(false);
+                    btnGuardarTemporal.setDisable(false);
+                    return;
                 }
             }
-        } catch (SQLException e) {
-            log.error("Error obteniendo fecha/hora original: {}", e.getMessage());
-        }
+
+            // GUARDAR VARIABLES LOCALES COMO FINAL
+            final int folioFinal = folioPaciente;
+            final Integer numInterFinal = numeroInterconsultaActual;
+            final String presentacionFinal = txtP.getText();
+            final String sintomasFinal = txtSintomas.getText();
+            final String signosFinal = txtSignosVitales.getText();
+            final String diagnosticoFinal = txtDiagnostico.getText();
+            final String indicacionesFinal = txtIndicaciones.getText();
+            final String especialistaFinal = cmbEspecialistas.getValue();
+            final String cedulaFinal = txtCedula.getText();
+            final String especialidadFinal = txtEspecialidad.getText();
+
+            // OBTENER FECHA/HORA ORIGINAL ANTES DEL HILO
+            final String[] fechaHoraOriginal = new String[2]; // [0]=fecha, [1]=hora
+
+            try (Connection connTemp = ConexionBD.conectar()) {
+                String sqlSelect = "SELECT Fecha, Hora FROM tb_inter WHERE id_inter = ?";
+                try (PreparedStatement pstmtSelect = connTemp.prepareStatement(sqlSelect)) {
+                    pstmtSelect.setInt(1, idInterconsultaActual);
+                    ResultSet rs = pstmtSelect.executeQuery();
+                    if (rs.next()) {
+                        fechaHoraOriginal[0] = rs.getString("Fecha");
+                        fechaHoraOriginal[1] = rs.getString("Hora");
+                        log.debug("FECHA/HORA ORIGINAL INTERCONSULTA: {} {}", fechaHoraOriginal[0], fechaHoraOriginal[1]);
+                    }
+                }
+            } catch (SQLException e) {
+                log.error("Error obteniendo fecha/hora original: {}", e.getMessage());
+            }
 
         // Ejecutar en hilo separado
         new Thread(() -> {
@@ -560,19 +601,20 @@ public class InterconsultaController {
                 }
 
                 //  ACTUALIZAR A DEFINITIVA SIN TOCAR FECHA/HORA
-                String sqlUpdate = "UPDATE tb_inter SET Nota = ?, sintomas = ?, signos_vitales = ?, " +
+                String sqlUpdate = "UPDATE tb_inter SET presentacion = ?, Nota = ?, sintomas = ?, signos_vitales = ?, " +
                         "diagnostico = ?, especialidad = ?, Medico = ?, Cedula = ?, Estado = 'DEFINITIVA' " +
                         "WHERE id_inter = ?";
 
                 try (PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)) {
-                    pstmt.setString(1, indicacionesFinal);
-                    pstmt.setString(2, sintomasFinal);
-                    pstmt.setString(3, signosFinal);
-                    pstmt.setString(4, diagnosticoFinal);
-                    pstmt.setString(5, especialidadFinal);
-                    pstmt.setString(6, especialistaFinal);
-                    pstmt.setString(7, cedulaFinal);
-                    pstmt.setInt(8, idInterconsultaActual);
+                    pstmt.setString(1, presentacionFinal);
+                    pstmt.setString(2, indicacionesFinal);
+                    pstmt.setString(3, sintomasFinal);
+                    pstmt.setString(4, signosFinal);
+                    pstmt.setString(5, diagnosticoFinal);
+                    pstmt.setString(6, especialidadFinal);
+                    pstmt.setString(7, especialistaFinal);
+                    pstmt.setString(8, cedulaFinal);
+                    pstmt.setInt(9, idInterconsultaActual);
 
                     int filas = pstmt.executeUpdate();
 
@@ -846,23 +888,29 @@ public class InterconsultaController {
         }
         totalChars += txtEspecialidad.getText().length();
 
+        //
+        if (txtP.getText().length() > MAX_CHARS_PRESENTACION) {
+            camposExcedidos.add("(P) (" + txtP.getText().length() + "/" + MAX_CHARS_PRESENTACION + ")");
+        }
+        totalChars += txtP.getText().length();
+
         if (txtSintomas.getText().length() > MAX_CHARS_SINTOMAS) {
-            camposExcedidos.add("Síntomas (" + txtSintomas.getText().length() + "/" + MAX_CHARS_SINTOMAS + ")");
+            camposExcedidos.add("(S)(" + txtSintomas.getText().length() + "/" + MAX_CHARS_SINTOMAS + ")");
         }
         totalChars += txtSintomas.getText().length();
 
         if (txtSignosVitales.getText().length() > MAX_CHARS_SIGNOS) {
-            camposExcedidos.add("Signos Vitales (" + txtSignosVitales.getText().length() + "/" + MAX_CHARS_SIGNOS + ")");
+            camposExcedidos.add("(O) (" + txtSignosVitales.getText().length() + "/" + MAX_CHARS_SIGNOS + ")");
         }
         totalChars += txtSignosVitales.getText().length();
 
         if (txtDiagnostico.getText().length() > MAX_CHARS_DIAGNOSTICO) {
-            camposExcedidos.add("Diagnóstico (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
+            camposExcedidos.add("(A) (" + txtDiagnostico.getText().length() + "/" + MAX_CHARS_DIAGNOSTICO + ")");
         }
         totalChars += txtDiagnostico.getText().length();
 
         if (txtIndicaciones.getText().length() > MAX_CHARS_INDICACIONES) {
-            camposExcedidos.add("Indicaciones (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
+            camposExcedidos.add("(P/I) (" + txtIndicaciones.getText().length() + "/" + MAX_CHARS_INDICACIONES + ")");
         }
         totalChars += txtIndicaciones.getText().length();
 
@@ -916,26 +964,32 @@ public class InterconsultaController {
         }
 
         // Validar campos obligatorios
+        if (txtP.getText().trim().isEmpty()) {
+            mostrarAlerta("Error", "El campo (P) es obligatorio", Alert.AlertType.ERROR);
+            txtP.requestFocus();
+            return false;
+        }
+
         if (txtSintomas.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo SÍNTOMAS es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo (S) es obligatorio", Alert.AlertType.ERROR);
             txtSintomas.requestFocus();
             return false;
         }
 
         if (txtSignosVitales.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo SIGNOS VITALES es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo O es obligatorio", Alert.AlertType.ERROR);
             txtSignosVitales.requestFocus();
             return false;
         }
 
         if (txtDiagnostico.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo DIAGNÓSTICO es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo A es obligatorio", Alert.AlertType.ERROR);
             txtDiagnostico.requestFocus();
             return false;
         }
 
         if (txtIndicaciones.getText().trim().isEmpty()) {
-            mostrarAlerta("Error", "El campo INDICACIONES es obligatorio", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El campo P/I es obligatorio", Alert.AlertType.ERROR);
             txtIndicaciones.requestFocus();
             return false;
         }
@@ -1044,7 +1098,7 @@ public class InterconsultaController {
 
     // MÉTODO PARA CARGAR CAMPOS SEPARADOS DESDE BD
     private void cargarCamposSeparadosDesdeBD(int idInterconsulta) {
-        String sql = "SELECT sintomas, signos_vitales, diagnostico, especialidad, Nota FROM tb_inter WHERE id_inter = ?";
+        String sql = "SELECT presentacion, sintomas, signos_vitales, diagnostico, especialidad, Nota FROM tb_inter WHERE id_inter = ?";
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -1054,6 +1108,7 @@ public class InterconsultaController {
 
             if (rs.next()) {
                 // CARGAR EN CAMPOS INDIVIDUALES
+                txtP.setText(rs.getString("presentacion"));
                 txtSintomas.setText(rs.getString("sintomas"));
                 txtSignosVitales.setText(rs.getString("signos_vitales"));
                 txtDiagnostico.setText(rs.getString("diagnostico"));
@@ -1073,43 +1128,72 @@ public class InterconsultaController {
         }
     }
 
-    // FALLBACK: Si no hay campos separados, cargar desde campo combinado
     private void cargarDesdeCampoCombinado(String contenidoCombinado) {
         if (contenidoCombinado != null) {
             // Lógica simple para parsear texto combinado
             try {
-                if (contenidoCombinado.contains("ESPECIALIDAD:")) {
-                    String[] partes = contenidoCombinado.split("SÍNTOMAS:");
-                    if (partes.length > 0) {
-                        String especialidad = partes[0].replace("ESPECIALIDAD:", "").trim();
-                        txtEspecialidad.setText(especialidad);
-                    }
+                // Primero: Intentar encontrar (P) - Presentación
+                if (contenidoCombinado.contains("(P):") || contenidoCombinado.contains("PRESENTACIÓN:")) {
+                    String[] partesP = contenidoCombinado.split("\\(P\\):|PRESENTACIÓN:");
 
-                    if (partes.length > 1) {
-                        String[] resto = partes[1].split("SIGNOS VITALES:");
-                        if (resto.length > 0) {
-                            txtSintomas.setText(resto[0].trim());
+                    if (partesP.length > 1) {
+                        // Buscar dónde termina la presentación (antes de S: o ESPECIALIDAD:)
+                        String contenidoP = partesP[1];
+                        String[] finP = contenidoP.split("S:|SÍNTOMAS:|ESPECIALIDAD:");
+
+                        if (finP.length > 0) {
+                            txtP.setText(finP[0].trim());
+                            log.debug("Campo P extraído del texto combinado");
+                        }
+                    }
+                }
+
+                // Segundo: Buscar S - Síntomas
+                if (contenidoCombinado.contains("S:") || contenidoCombinado.contains("SÍNTOMAS:")) {
+                    String[] partesS = contenidoCombinado.split("S:|SÍNTOMAS:");
+
+                    if (partesS.length > 1) {
+                        String contenidoS = partesS[1];
+                        // Buscar dónde terminan los síntomas (antes de O: o SIGNOS VITALES:)
+                        String[] finS = contenidoS.split("O:|SIGNOS VITALES:|SIGNOS:");
+
+                        if (finS.length > 0) {
+                            txtSintomas.setText(finS[0].trim());
+                            log.debug("Campo S extraído del texto combinado");
                         }
 
-                        if (resto.length > 1) {
-                            String[] finalPartes = resto[1].split("DIAGNÓSTICO:");
-                            if (finalPartes.length > 0) {
-                                txtSignosVitales.setText(finalPartes[0].trim());
+                        // Continuar buscando O si existe
+                        if (finS.length > 1) {
+                            String contenidoO = finS[1];
+                            // Buscar dónde terminan los signos vitales (antes de A: o DIAGNÓSTICO:)
+                            String[] finO = contenidoO.split("A:|DIAGNÓSTICO:");
+
+                            if (finO.length > 0) {
+                                txtSignosVitales.setText(finO[0].trim());
+                                log.debug("Campo O extraído del texto combinado");
                             }
 
-                            if (finalPartes.length > 1) {
-                                String[] indicacionesPartes = finalPartes[1].split("INDICACIONES:");
-                                if (indicacionesPartes.length > 0) {
-                                    txtDiagnostico.setText(indicacionesPartes[0].trim());
+                            // Continuar buscando A si existe
+                            if (finO.length > 1) {
+                                String contenidoA = finO[1];
+                                // Buscar dónde termina el diagnóstico (antes de P/I: o INDICACIONES:)
+                                String[] finA = contenidoA.split("P/I:|INDICACIONES:");
+
+                                if (finA.length > 0) {
+                                    txtDiagnostico.setText(finA[0].trim());
+                                    log.debug("Campo A extraído del texto combinado");
                                 }
 
-                                if (indicacionesPartes.length > 1) {
-                                    txtIndicaciones.setText(indicacionesPartes[1].trim());
+                                // Obtener P/I si existe
+                                if (finA.length > 1) {
+                                    txtIndicaciones.setText(finA[1].trim());
+                                    log.debug("Campo P/I extraído del texto combinado");
                                 }
                             }
                         }
                     }
                 }
+
                 log.debug(" Campos cargados desde texto combinado");
             } catch (Exception e) {
                 log.error(" Error parseando campo combinado: {}", e.getMessage());
@@ -1210,6 +1294,7 @@ public class InterconsultaController {
 
     public void limpiarRecursos() {
         // Limpiar referencias a objetos grandes
+        txtP.clear();
         txtSintomas.clear();
         txtSignosVitales.clear();
         txtDiagnostico.clear();
@@ -1225,4 +1310,11 @@ public class InterconsultaController {
 
         log.debug(" Recursos del controlador de interconsulta limpiados");
     }
+
+   // borrar de aqui hacia abajo
+
+
+
+
+
 }
