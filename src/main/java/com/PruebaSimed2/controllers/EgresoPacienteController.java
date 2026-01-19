@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -19,39 +20,57 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@Log4j2
 public class EgresoPacienteController {
 
     // Campos para afecciones y códigos CIE10
-    @FXML private TextArea tfAfecc1, tfAfecc2, tfAfecc3;
-    @FXML private ComboBox<String> cbCodAfecc1, cbCodAfecc2, cbCodAfecc3;
+    @FXML
+    private TextArea tfAfecc1, tfAfecc2, tfAfecc3;
+    @FXML
+    private ComboBox<String> cbCodAfecc1, cbCodAfecc2, cbCodAfecc3;
 
     // Campos para medicamentos
-    @FXML private TextField tfMedic1, tfMedic2, tfMedic3, tfMedic4, tfMedic5, tfMedic6;
+    @FXML
+    private TextField tfMedic1, tfMedic2, tfMedic3, tfMedic4, tfMedic5, tfMedic6;
 
     // Campos nuevos
-    @FXML private TextArea taCausaExterna;
-    @FXML private ComboBox<String> cbIndigena, cbAfromexicano, cbMigrante;
-    @FXML private ComboBox<String> cbMujerFertil, cbSituacionEmbarazo;
-    @FXML private TextField tfSemanasGestacion;
+    @FXML
+    private TextArea taCausaExterna;
+    @FXML
+    private ComboBox<String> cbIndigena, cbAfromexicano, cbMigrante;
+    @FXML
+    private ComboBox<String> cbMujerFertil, cbSituacionEmbarazo;
+    @FXML
+    private TextField tfSemanasGestacion;
 
     // Campos existentes
-    @FXML private TextArea taAviso;
-    @FXML private ComboBox<String> cbAltaPor;
-    @FXML private TextField tfFolioDef;
-    @FXML private TextField tfProc1, tfProc2, tfProc3;
-    @FXML private ComboBox<String> cbIra, cbEda;
-    @FXML private Spinner<Integer> spSobres;
-    @FXML private ComboBox<String> cbAreaHosp;
-    @FXML private ComboBox<String> cbMedicoAlta;
-    @FXML private Label lblFechaAlta, lblHoraAlta;
-    @FXML private CheckBox cbSoloJefatura;
-    @FXML private TextField tfFolio;
+    @FXML
+    private TextArea taAviso;
+    @FXML
+    private ComboBox<String> cbAltaPor;
+    @FXML
+    private TextField tfFolioDef;
+    @FXML
+    private TextField tfProc1, tfProc2, tfProc3;
+    @FXML
+    private ComboBox<String> cbIra, cbEda;
+    @FXML
+    private Spinner<Integer> spSobres;
+    @FXML
+    private ComboBox<String> cbAreaHosp;
+    @FXML
+    private ComboBox<String> cbMedicoAlta;
+    @FXML
+    private Label lblFechaAlta, lblHoraAlta;
+    @FXML
+    private CheckBox cbSoloJefatura;
+    @FXML
+    private TextField tfFolio;
 
     private final DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
     private Timer timer;
     private int folioPaciente;
-
 
 
     public void setFolioPaciente(int folio) {
@@ -60,7 +79,7 @@ public class EgresoPacienteController {
             tfFolio.setText(String.valueOf(folio));
             tfFolio.setEditable(false);
         }
-        System.out.println(" Folio recibido en egreso: " + folio);
+        log.debug("Folio recibido en egreso: {}", folio);
         cargarDatosPaciente(folio);
     }
 
@@ -77,30 +96,29 @@ public class EgresoPacienteController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                System.out.println(" Cargando datos del paciente folio: " + folio);
+                log.debug(" Cargando datos del paciente folio: {}", folio);
                 String nombreCompleto = rs.getString("NombreCompleto");
                 int edad = rs.getInt("Edad");
                 int sexo = rs.getInt("Sexo");
 
-                System.out.println(" Paciente: " + nombreCompleto + ", Edad: " + edad + ", Sexo: " + sexo);
+                log.debug("Paciente: {}, Edad: {}, Sexo: {}", nombreCompleto, edad, sexo);
 
             } else {
-                System.out.println(" No se encontró el paciente con folio: " + folio);
+                log.warn("No se encontró el paciente con folio: {}", folio);
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando datos del paciente: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error cargando datos del paciente: {}", e.getMessage());
         }
     }
 
     public void setUsuarioLogueado(String usuario, String rol) {
-        System.out.println(" Usuario logueado: " + usuario + ", Rol: " + rol);
+        log.debug("Usuario logueado: {}, Rol: {}", usuario, rol);
     }
 
     @FXML
     public void initialize() {
-        System.out.println(" Inicializando ventana de egreso...");
+        log.debug(" Inicializando ventana de egreso...");
 
         // Configurar límites de texto
         configurarLimitesTexto();
@@ -125,11 +143,11 @@ public class EgresoPacienteController {
         // Configurar listeners para mujer en edad fértil
         configurarListeners();
 
-        System.out.println(" Ventana de egreso inicializada correctamente");
+        log.debug(" Ventana de egreso inicializada correctamente");
     }
 
     private void configurarComboBoxesCIE10() {
-        System.out.println(" Configurando ComboBoxes CIE10...");
+        log.debug(" Configurando ComboBoxes CIE10...");
 
         // Configurar cómo se muestran los ítems en la lista
         cbCodAfecc1.setCellFactory(lv -> new ListCell<String>() {
@@ -241,11 +259,11 @@ public class EgresoPacienteController {
         // Cargar datos de CIE10
         cargarDatosCIE10();
 
-        System.out.println(" ComboBoxes CIE10 configurados correctamente");
+        log.debug("ComboBoxes CIE10 configurados correctamente");
     }
 
     private void cargarDatosCIE10() {
-        System.out.println(" Cargando códigos CIE10 desde tblt_cie10...");
+        log.debug("Cargando códigos CIE10 desde tblt_cie10...");
 
         // Mantener la misma consulta
         String sql = "SELECT codigo, descripcion FROM tblt_cie10 WHERE activo = TRUE ORDER BY codigo";
@@ -275,21 +293,21 @@ public class EgresoPacienteController {
                 count++;
             }
 
-            System.out.println(" Códigos CIE10 cargados: " + count + " registros");
+            log.debug("Códigos CIE10 cargados: {} registros", count);
 
             if (count == 0) {
-                System.out.println(" ¡ADVERTENCIA: La tabla tblt_cie10 está VACÍA!");
+                log.warn("¡ADVERTENCIA: La tabla tblt_cie10 está VACÍA!");
                 cargarValoresEjemploCIE10();
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando códigos CIE10: " + e.getMessage());
+            log.error("Error cargando códigos CIE10: {}", e.getMessage());
             cargarValoresEjemploCIE10();
         }
     }
 
     private void cargarValoresEjemploCIE10() {
-        System.out.println(" Cargando valores de EJEMPLO (tblt_cie10 vacía)...");
+        log.debug(" Cargando valores de EJEMPLO (tblt_cie10 vacía)...");
 
         // Insertar en la tabla REAL para futuras veces
         String sqlInsert = "INSERT IGNORE INTO tblt_cie10 (codigo, descripcion, frecuente_urgencias) VALUES (?, ?, TRUE)";
@@ -328,13 +346,13 @@ public class EgresoPacienteController {
             }
 
             int[] resultados = pstmt.executeBatch();
-            System.out.println(" Datos de ejemplo insertados en tblt_cie10: " + resultados.length + " registros");
+            log.info("Datos de ejemplo insertados en tblt_cie10: {} registros", resultados.length);
 
         } catch (SQLException e) {
-            System.err.println(" Error insertando ejemplos en tblt_cie10: " + e.getMessage());
+            log.error("Error insertando ejemplos en tblt_cie10: {}", e.getMessage());
         }
 
-        System.out.println(" Valores de ejemplo cargados: " + ejemplos.length + " registros");
+        log.debug("Valores de ejemplo cargados: {} registros", ejemplos.length);
     }
 
     private void configurarLimitesTexto() {
@@ -393,7 +411,7 @@ public class EgresoPacienteController {
 
     private void cargarCombos() {
         try (Connection conn = ConexionBD.conectar()) {
-            System.out.println(" Cargando combos desde BD...");
+            log.debug("Cargando combos desde BD...");
 
             // CARGAR TIPOS DE ALTA
             cbAltaPor.getItems().clear();
@@ -406,6 +424,7 @@ public class EgresoPacienteController {
             }
 
             // CARGAR ÁREAS HOSPITALARIAS
+            // TODO: Verificar query de SQL.
             cbAreaHosp.getItems().clear();
             try {
                 String sqlAreas = "SELECT Descripcion FROM tblt_areashospitalarias WHERE activo = TRUE ORDER BY Descripcion";
@@ -443,12 +462,12 @@ public class EgresoPacienteController {
 
             // CARGAR OPCIONES PARA IRA Y EDA
             cbIra.getItems().addAll("No", "Con antibiótico", "Sintomático");
-            cbEda.getItems().addAll("No","Plan A", "Plan B", "Plan C");
+            cbEda.getItems().addAll("No", "Plan A", "Plan B", "Plan C");
 
-            System.out.println(" Todos los combos cargados correctamente");
+            log.debug("Todos los combos cargados correctamente");
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando combos: " + e.getMessage());
+            log.error("Error cargando combos: {}", e.getMessage());
             cargarValoresPorDefecto();
         }
     }
@@ -460,7 +479,7 @@ public class EgresoPacienteController {
         cbAreaHosp.getItems().addAll("Medicina Interna", "Cirugía General", "Pediatría", "Urgencias");
         cbMedicoAlta.getItems().addAll("Dr. Ejemplo 1", "Dr. Ejemplo 2");
         cbIra.getItems().addAll("No", "Con antibiótico", "Sintomático");
-        cbEda.getItems().addAll("No","Plan A", "Plan B", "Plan C");
+        cbEda.getItems().addAll("No", "Plan A", "Plan B", "Plan C");
 
         cbIndigena.getItems().addAll("SI", "NO");
         cbAfromexicano.getItems().addAll("SI", "NO");
@@ -479,7 +498,7 @@ public class EgresoPacienteController {
             var rs = ps.executeQuery();
 
             if (rs.next()) {
-                System.out.println(" Cargando datos existentes de egreso...");
+                log.debug("Cargando datos existentes de egreso...");
 
                 // AHORA SÍ cargamos lo que el médico escribió
                 tfAfecc1.setText(rs.getString("Afecc_principal"));
@@ -537,23 +556,23 @@ public class EgresoPacienteController {
                 cbAreaHosp.setValue(rs.getString("Egreso_hosp"));
                 cbMedicoAlta.setValue(rs.getString("Medico_egresa"));
 
-                System.out.println(" Datos existentes cargados correctamente");
+                log.debug("Datos existentes cargados correctamente");
             } else {
-                System.out.println(" No hay datos previos de egreso para este folio");
+                log.warn("No hay datos previos de egreso para este folio");
             }
         } catch (Exception e) {
-            System.err.println(" Error cargando datos existentes: " + e.getMessage());
+            log.error("Error cargando datos existentes: {}", e.getMessage());
         }
     }
 
 
     private void seleccionarCodigoEnComboBox(ComboBox<String> comboBox, String codigoBuscado) {
         if (codigoBuscado == null || codigoBuscado.trim().isEmpty()) {
-            System.out.println(" Código a buscar es nulo o vacío");
+            log.warn("Código a buscar es nulo o vacío");
             return;
         }
 
-        System.out.println(" Buscando código: " + codigoBuscado + " en ComboBox");
+        log.debug("Buscando código: {} en ComboBox", codigoBuscado);
 
         for (String item : comboBox.getItems()) {
             // item tiene formato "CODIGO|DESCRIPCION"
@@ -562,7 +581,7 @@ public class EgresoPacienteController {
             String[] partes = item.split("\\|", 2);
             if (partes.length > 0 && partes[0].equals(codigoBuscado)) {
                 comboBox.setValue(item);
-                System.out.println(" Encontrado y seleccionado: " + item);
+                log.debug("Encontrado y seleccionado: {}", item);
                 return;
             }
         }
@@ -571,14 +590,13 @@ public class EgresoPacienteController {
         for (String item : comboBox.getItems()) {
             if (item != null && item.startsWith(codigoBuscado + "|")) {
                 comboBox.setValue(item);
-                System.out.println(" Encontrado por inicio: " + item);
+                log.debug("Encontrado por inicio: {}", item);
                 return;
             }
         }
 
-        System.out.println(" Código no encontrado: " + codigoBuscado);
+        log.warn("Código no encontrado: " + codigoBuscado);
     }
-
 
 
     private void startDateTimeUpdater() {
@@ -597,7 +615,7 @@ public class EgresoPacienteController {
 
     @FXML
     private void onGuardarCerrar() {
-        System.out.println(" Intentando guardar egreso para folio: " + folioPaciente);
+        log.debug("Intentando guardar egreso para folio: {}", folioPaciente);
 
         if (!validarCampos()) return;
 
@@ -610,7 +628,7 @@ public class EgresoPacienteController {
             stage.close();
 
         } catch (Exception e) {
-            System.err.println(" Error al guardar egreso: " + e.getMessage());
+            log.error(" Error al guardar egreso: {}", e.getMessage());
             mostrarAlerta("Error", " Error al guardar egreso: " + e.getMessage(), Alert.AlertType.ERROR);
         } finally {
             if (timer != null) timer.cancel();
@@ -784,11 +802,11 @@ public class EgresoPacienteController {
             }
 
             int filas = ps.executeUpdate();
-            System.out.println(" Egreso guardado para folio: " + folioPaciente + " - Filas afectadas: " + filas);
+            log.debug("Egreso guardado para folio: {} - Filas afectadas: {}", folioPaciente, filas);
 
         } catch (SQLException e) {
-            System.err.println(" Error SQL al guardar egreso: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error SQL al guardar egreso: {}", e.getMessage());
+            log.error(e);
             throw e;
         }
     }
@@ -808,7 +826,7 @@ public class EgresoPacienteController {
                 return rs.getInt("Cve_alta");
             }
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo Cve_alta: " + e.getMessage());
+            log.error("Error obteniendo Cve_alta: {}", e.getMessage());
         }
         return null;
     }
@@ -821,7 +839,7 @@ public class EgresoPacienteController {
 
             ps.setInt(1, folioPaciente);
             int filas = ps.executeUpdate();
-            System.out.println(" Estado actualizado a 'Egresado' para folio: " + folioPaciente + " - Filas afectadas: " + filas);
+            log.debug("Estado actualizado a 'Egresado' para folio: {} - Filas afectadas: {}", folioPaciente, filas);
         }
     }
 
@@ -836,6 +854,4 @@ public class EgresoPacienteController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
-    // valio
-
 }

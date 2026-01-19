@@ -8,6 +8,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -20,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Log4j2
 public class JefaturaController {
 
     @FXML private TextField txtFolioNota;
@@ -308,7 +311,7 @@ public class JefaturaController {
     // ========== MÉTODO DE EXPORTACIÓN ==========
     @FXML
     private void handleExportarExcel() {
-        System.out.println("Exportando base de datos a Excel...");
+        log.debug("Exportando base de datos a Excel...");
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Exportar Base de Datos");
@@ -348,7 +351,7 @@ public class JefaturaController {
                         mostrarAlerta("Error",
                                 "Error al exportar: " + e.getMessage(),
                                 Alert.AlertType.ERROR);
-                        e.printStackTrace();
+                        log.error("Error al exportar base de datos a Excel", e);
                     });
                 }
             }).start();
@@ -360,21 +363,22 @@ public class JefaturaController {
         try (Workbook workbook = new XSSFWorkbook();
              FileOutputStream outputStream = new FileOutputStream(file)) {
 
-            System.out.println("Exportando " + TABLA_QUERIES.size() + " tablas...");
+            log.debug("Exportando {} tablas...", TABLA_QUERIES.size());
 
             // Exportar cada tabla
             for (Map.Entry<String, String> entry : TABLA_QUERIES.entrySet()) {
                 String sheetName = entry.getKey();
                 String query = entry.getValue();
 
-                System.out.println("Exportando: " + sheetName);
+                log.debug("Exportando: {}", sheetName);
                 exportarTabla(workbook, sheetName, query);
             }
 
             workbook.write(outputStream);
-            System.out.println("Exportación completada: " + file.getAbsolutePath());
+            log.debug("Exportación completada: {}", file.getAbsolutePath());
 
         } catch (Exception e) {
+            log.error("Error al crear Excel", e);
             throw new Exception("Error al crear Excel: " + e.getMessage(), e);
         }
     }
@@ -423,15 +427,16 @@ public class JefaturaController {
                     sheet.autoSizeColumn(i);
                 }
 
-                System.out.println("  " + sheetName + ": " + (rowNum - 1) + " filas");
+                log.debug("  {}: {} filas", sheetName, rowNum - 1);
 
             }
 
         } catch (Exception e) {
-            System.err.println("Error en tabla " + sheetName + ": " + e.getMessage());
+            log.error("Error en tabla {}: {}", sheetName, e.getMessage());
 
         } finally {
             ConexionBD.safeClose(conn);
+            log.debug("Conexión cerrada");
         }
     }
 
@@ -440,6 +445,7 @@ public class JefaturaController {
     // ========== TUS MÉTODOS ORIGINALES ==========
 
     // Clase para representar pacientes egresados
+    @Getter
     public static class PacienteEgresado {
         private final int folio;
         private final String nombreCompleto;
@@ -465,21 +471,11 @@ public class JefaturaController {
             this.medicoAlta = medicoAlta;
         }
 
-        // Getters
-        public int getFolio() { return folio; }
-        public String getNombreCompleto() { return nombreCompleto; }
-        public String getFechaIngreso() { return fechaIngreso; }
-        public int getTotalNotasMedicas() { return totalNotasMedicas; }
-        public int getTotalInterconsultas() { return totalInterconsultas; }
-        public String getDiagnostico() { return diagnostico; }
-        public String getAltaPor() { return altaPor; }
-        public String getFolioDefuncion() { return folioDefuncion; }
-        public String getMedicoAlta() { return medicoAlta; }
     }
 
     @FXML
     public void initialize() {
-        System.out.println("Módulo de Jefatura inicializado");
+        log.debug("Módulo de Jefatura inicializado");
         configurarColumnas();
         cargarPacientesEgresados();
     }
@@ -566,10 +562,11 @@ public class JefaturaController {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error buscando nota médica: " + e.getMessage());
+            log.error("Error buscando nota médica: {}", e.getMessage());
             mostrarAlerta("Error", "Error al buscar la nota médica: " + e.getMessage(), Alert.AlertType.ERROR);
         } finally {
             ConexionBD.safeClose(conn);
+            log.debug("Conexión cerrada");
         }
     }
 
@@ -605,10 +602,11 @@ public class JefaturaController {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error buscando interconsulta: " + e.getMessage());
+            log.error("Error buscando interconsulta: {}", e.getMessage());
             mostrarAlerta("Error", "Error al buscar la interconsulta: " + e.getMessage(), Alert.AlertType.ERROR);
         } finally {
             ConexionBD.safeClose(conn);
+            log.debug("Conexión cerrada");
         }
     }
 
@@ -624,8 +622,8 @@ public class JefaturaController {
                 mostrarAlerta("Error", "No se pudo generar el PDF de la nota médica", Alert.AlertType.ERROR);
             }
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF de nota médica: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF de nota médica: {}", e.getMessage());
+            log.error("StackTrace: ", e);
             mostrarAlerta("Error", "Error al generar el PDF: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -642,8 +640,8 @@ public class JefaturaController {
                 mostrarAlerta("Error", "No se pudo generar el PDF de la interconsulta", Alert.AlertType.ERROR);
             }
         } catch (Exception e) {
-            System.err.println(" Error al generar PDF de interconsulta: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error al generar PDF de interconsulta: {}", e.getMessage());
+            log.error("StackTrace: ", e);
             mostrarAlerta("Error", "Error al generar el PDF: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
@@ -666,14 +664,14 @@ public class JefaturaController {
             if (rs.next()) {
                 universidad = rs.getString("universidad");
                 if (universidad != null) {
-                    System.out.println(" Universidad encontrada para " + nombreEspecialista + ": " + universidad);
+                    log.debug(" Universidad encontrada para {}: {}", nombreEspecialista, universidad);
                 }
             } else {
-                System.out.println(" Especialista no encontrado en tb_medesp: " + nombreEspecialista);
+                log.warn(" Especialista no encontrado en tb_medesp: {}", nombreEspecialista);
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error obteniendo universidad: " + e.getMessage());
+            log.error(" Error obteniendo universidad: {}", e.getMessage());
         }
 
         return universidad != null ? universidad : "";
@@ -755,20 +753,21 @@ public class JefaturaController {
                 tablaEgresados.setItems(pacientesEgresados);
                 lblTotalEgresados.setText("Total de pacientes egresados: " + pacientesEgresados.size());
 
-                System.out.println("Pacientes egresados cargados: " + pacientesEgresados.size());
+                log.debug("Pacientes egresados cargados: {}", pacientesEgresados.size());
 
                 // DEBUG: Mostrar primeros 5 nombres para verificar
-                System.out.println("DEBUG - Primeros 5 nombres:");
+                log.debug("Primeros 5 nombres:");
                 for (int i = 0; i < Math.min(5, pacientesEgresados.size()); i++) {
-                    System.out.println((i+1) + ". " + pacientesEgresados.get(i).getNombreCompleto());
+                    log.debug("{}. {}", i + 1, pacientesEgresados.get(i).getNombreCompleto());
                 }
 
             }
         } catch (SQLException e) {
-            System.err.println("Error cargando pacientes egresados: " + e.getMessage());
+            log.error("Error cargando pacientes egresados: {}", e.getMessage());
             mostrarAlerta("Error", "No se pudieron cargar los pacientes egresados", Alert.AlertType.ERROR);
         } finally {
             ConexionBD.safeClose(conn);
+            log.debug("Conexión cerrada");
         }
     }
 

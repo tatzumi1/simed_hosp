@@ -68,7 +68,7 @@
         </HBox>
 
         <!-- Descripción TRIAGE -->
-        <Label fx:id="lblTriageDescripcion" text=""
+        <Label fx:id="lblTriageDescripcion"
                GridPane.rowIndex="2" GridPane.columnIndex="5"
                style="-fx-font-size:12px;"/>
     </GridPane>
@@ -121,23 +121,27 @@
         <TextField fx:id="txtNombre" GridPane.rowIndex="0" GridPane.columnIndex="5"
                    GridPane.hgrow="ALWAYS"/>
 
-        <!-- Edad / Fecha de Nac / Sexo -->
+        <!-- Edad / Fecha de Nac -->
         <Label text="Edad:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtEdad" GridPane.rowIndex="1" GridPane.columnIndex="1"
+        <TextField fx:id="txtEdadAnos" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                   GridPane.hgrow="ALWAYS"/>
+        <TextField fx:id="txtEdadMeses" GridPane.rowIndex="1" GridPane.columnIndex="2"
+                   GridPane.hgrow="ALWAYS"/>
+        <TextField fx:id="txtEdadDias" GridPane.rowIndex="1" GridPane.columnIndex="3"
                    GridPane.hgrow="ALWAYS"/>
 
-        <Label text="Fecha de nacimiento:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-        <DatePicker fx:id="dpFechaNac" GridPane.rowIndex="1" GridPane.columnIndex="3"
+        <Label text="Fecha de nacimiento:" GridPane.rowIndex="1" GridPane.columnIndex="4"/>
+        <DatePicker fx:id="dpFechaNac" GridPane.rowIndex="1" GridPane.columnIndex="5"
                     GridPane.hgrow="ALWAYS"/>
 
-        <Label text="Sexo:" GridPane.rowIndex="1" GridPane.columnIndex="4"/>
-        <ComboBox fx:id="comboSexo" GridPane.rowIndex="1" GridPane.columnIndex="5"
-                  GridPane.hgrow="ALWAYS"/>
-
-        <!-- Domicilio -->
+        <!-- Domicilio / Sexo -->
         <Label text="Domicilio:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="txtDomicilio" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="5"
+        <TextField fx:id="txtDomicilio" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="3"
                    GridPane.hgrow="ALWAYS"/>
+
+        <Label text="Sexo:" GridPane.rowIndex="2" GridPane.columnIndex="4"/>
+        <ComboBox fx:id="comboSexo" GridPane.rowIndex="2" GridPane.columnIndex="5"
+                  GridPane.hgrow="ALWAYS"/>
 
         <!-- Municipio / Entidad -->
         <Label text="Municipio:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
@@ -230,6 +234,11 @@
         <Button text="🔄" onAction="#generarCURPAutomatica"
                 GridPane.rowIndex="20" GridPane.columnIndex="2"
                 style="-fx-background-color:#27ae60; -fx-text-fill:white;"/>
+
+        <Label text="Talla:" GridPane.rowIndex="21" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtTalla" GridPane.rowIndex="21" GridPane.columnIndex="1"/>
+        <Label text="Peso:" GridPane.rowIndex="21" GridPane.columnIndex="2"/>
+        <TextField fx:id="txtPeso" GridPane.rowIndex="21" GridPane.columnIndex="3"/>
 
     </GridPane>
 

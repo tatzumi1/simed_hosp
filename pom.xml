@@ -160,17 +160,12 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.23.1</version>
+            <version>2.25.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.25.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.36</version>
         </dependency>
 
         <!-- Activación para JavaMail -->
@@ -250,7 +245,7 @@
                                 </filter>
                             </filters>
 
-                            <!-- Esto es lo NUEVO y IMPORTANTE: -->
+                            <!-- Esto es lo NUEVO e IMPORTANTE: -->
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.PruebaSimed2.MainLauncher</mainClass>

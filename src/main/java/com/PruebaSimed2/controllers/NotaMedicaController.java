@@ -10,30 +10,36 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import java.sql.*;
 import java.io.File;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class NotaMedicaController {
 
-    @FXML private Label lblFolio;
-    @FXML private ComboBox<String> cmbMedicos;
-    @FXML private TextField txtCedula;
-    @FXML private TextArea txtNota, txtIndicaciones;
-    @FXML private TextArea txtSintomas, txtSignosVitales, txtDiagnostico;
-    @FXML private Button btnGuardarDefinitivo;
-    @FXML private Button btnGuardarTemporal;
+    @FXML
+    private Label lblFolio;
+    @FXML
+    private ComboBox<String> cmbMedicos;
+    @FXML
+    private TextField txtCedula;
+    @FXML
+    private TextArea txtNota, txtIndicaciones;
+    @FXML
+    private TextArea txtSintomas, txtSignosVitales, txtDiagnostico;
+    @FXML
+    private Button btnGuardarDefinitivo;
+    @FXML
+    private Button btnGuardarTemporal;
 
     // Constantes para límites de datos
     private static final int MAX_CHARS_SINTOMAS = 2500;
@@ -57,6 +63,7 @@ public class NotaMedicaController {
     private String primeraHoraCreacion = null;
     private boolean esPrimeraGuardada = true;
 
+    @Getter
     public static class DatosCaptura {
         private String tipoUrgencia;
         private String motivoUrgencia;
@@ -69,23 +76,17 @@ public class NotaMedicaController {
             this.tipoCama = tipoCama;
             this.medico = medico;
         }
-
-        // Getters
-        public String getTipoUrgencia() { return tipoUrgencia; }
-        public String getMotivoUrgencia() { return motivoUrgencia; }
-        public String getTipoCama() { return tipoCama; }
-        public String getMedico() { return medico; }
     }
 
     private DatosCaptura datosCaptura;
 
     public void setDatosCaptura(String tipoUrgencia, String motivoUrgencia, String tipoCama, String medico) {
         this.datosCaptura = new DatosCaptura(tipoUrgencia, motivoUrgencia, tipoCama, medico);
-        System.out.println(" Datos de captura recibidos en NotaMedicaController:");
-        System.out.println("   - Tipo Urgencia: " + tipoUrgencia);
-        System.out.println("   - Motivo Urgencia: " + motivoUrgencia);
-        System.out.println("   - Tipo Cama: " + tipoCama);
-        System.out.println("   - Médico: " + medico);
+        log.debug(" Datos de captura recibidos en NotaMedicaController:");
+        log.debug("   - Tipo Urgencia: {}", tipoUrgencia);
+        log.debug("   - Motivo Urgencia: {}", motivoUrgencia);
+        log.debug("   - Tipo Cama: {}", tipoCama);
+        log.debug("   - Médico: {}", medico);
     }
 
     public void setFolioPaciente(int folio) {
@@ -98,7 +99,7 @@ public class NotaMedicaController {
     public void setUsuarioLogueado(String usuario, String rol) {
         this.usuarioLogueado = usuario;
         this.rolUsuarioLogueado = rol;
-        System.out.println(" Usuario en nota médica: " + usuario + " - Rol: " + rol);
+        log.debug(" Usuario en nota médica: {} - Rol: {}", usuario, rol);
     }
 
     @FXML
@@ -112,6 +113,7 @@ public class NotaMedicaController {
 
     private void configurarLimitesTextAreas() {
         // Configurar listeners para limitar caracteres
+
         txtSintomas.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length() > MAX_CHARS_SINTOMAS) {
                 txtSintomas.setText(oldValue);
@@ -169,7 +171,7 @@ public class NotaMedicaController {
                 cmbMedicos.getItems().add(rs.getString("Med_nombre"));
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando médicos: " + e.getMessage());
+            log.error(" Error cargando médicos: {}", e.getMessage());
         }
     }
 
@@ -194,9 +196,9 @@ public class NotaMedicaController {
                 primeraHoraCreacion = rs.getString("Hora");
                 esPrimeraGuardada = false; // Ya existe una nota, no es la primera
 
-                System.out.println(" FECHA/HORA DE CREACIÓN ORIGINAL:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug(" FECHA/HORA DE CREACIÓN ORIGINAL:");
+                log.debug("   Fecha: {}", primeraFechaCreacion);
+                log.debug("   Hora: {}", primeraHoraCreacion);
 
                 // CARGAR CAMPOS SEPARADOS
                 txtSintomas.setText(rs.getString("sintomas"));
@@ -208,10 +210,10 @@ public class NotaMedicaController {
                 cmbMedicos.setValue(rs.getString("Medico"));
                 actualizarCedula();
 
-                System.out.println(" Nota temporal existente cargada - ID: " + idNotaActual);
+                log.debug(" Nota temporal existente cargada - ID: {}", idNotaActual);
             }
         } catch (SQLException e) {
-            System.err.println(" Error cargando nota existente: " + e.getMessage());
+            log.error(" Error cargando nota existente: {}", e.getMessage());
         }
     }
 
@@ -228,7 +230,7 @@ public class NotaMedicaController {
                     txtCedula.setText(rs.getString("Ced_prof"));
                 }
             } catch (SQLException e) {
-                System.err.println(" Error obteniendo cédula: " + e.getMessage());
+                log.error(" Error obteniendo cédula: {}", e.getMessage());
             }
         }
     }
@@ -259,12 +261,12 @@ public class NotaMedicaController {
             String medicoActual = cmbMedicos.getValue();
             String cedulaActual = txtCedula.getText();
 
-            System.out.println(" INICIANDO GUARDADO TEMPORAL ===================");
-            System.out.println(" Nota: " + notaActual.length() + " chars");
-            System.out.println(" Indicaciones: " + indicacionesActual.length() + " chars");
-            System.out.println(" Síntomas: " + sintomasActual.length() + " chars");
-            System.out.println(" Signos Vitales: " + signosVitalesActual.length() + " chars");
-            System.out.println(" Diagnóstico: " + diagnosticoActual.length() + " chars");
+            log.debug(" INICIANDO GUARDADO TEMPORAL ===================");
+            log.debug(" Nota: {} chars", notaActual.length());
+            log.debug(" Indicaciones: {} chars", indicacionesActual.length());
+            log.debug(" Síntomas: {} chars", sintomasActual.length());
+            log.debug(" Signos Vitales: {} chars", signosVitalesActual.length());
+            log.debug(" Diagnóstico: {} chars", diagnosticoActual.length());
 
             int filasAfectadas = 0;
 
@@ -304,7 +306,7 @@ public class NotaMedicaController {
                     if (esPrimeraGuardada && primeraFechaCreacion != null && primeraHoraCreacion != null) {
                         pstmt.setDate(10, new java.sql.Date(primeraFechaCreacion.getTime()));
                         pstmt.setString(11, primeraHoraCreacion);
-                        System.out.println("Usando fecha/hora original de primera creación");
+                        log.debug("Usando fecha/hora original de primera creación");
                     }
 
                     filasAfectadas = pstmt.executeUpdate();
@@ -313,7 +315,7 @@ public class NotaMedicaController {
                         ResultSet rs = pstmt.getGeneratedKeys();
                         if (rs.next()) {
                             idNotaActual = rs.getInt(1);
-                            System.out.println(" NUEVA NOTA TEMPORAL CREADA - ID: " + idNotaActual);
+                            log.debug(" NUEVA NOTA TEMPORAL CREADA - ID: {}", idNotaActual);
 
                             // Si es primera guardada, marcar como no primera para próximas
                             if (esPrimeraGuardada) {
@@ -343,8 +345,8 @@ public class NotaMedicaController {
                     // IMPORTANTE: NO actualizamos Fecha ni Hora
 
                     filasAfectadas = pstmt.executeUpdate();
-                    System.out.println(" NOTA TEMPORAL ACTUALIZADA - ID: " + idNotaActual);
-                    System.out.println(" Fecha y hora ORIGINALES preservadas (no se modifican)");
+                    log.debug(" NOTA TEMPORAL ACTUALIZADA - ID: {}", idNotaActual);
+                    log.debug(" Fecha y hora ORIGINALES preservadas (no se modifican)");
                 }
             }
 
@@ -361,12 +363,11 @@ public class NotaMedicaController {
             }
 
         } catch (SQLException e) {
-            System.err.println(" ERROR EN TRANSACCIÓN: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" ERROR EN TRANSACCIÓN: {}", e.getMessage());
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException rollbackEx) {
-                System.err.println(" ERROR AL REVERTIR: " + rollbackEx.getMessage());
+                log.error(" ERROR AL REVERTIR: {}", rollbackEx.getMessage());
             }
             mostrarAlerta("Error de Base de Datos", "Error al guardar: " + e.getMessage(), Alert.AlertType.ERROR);
         } finally {
@@ -376,7 +377,7 @@ public class NotaMedicaController {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.err.println(" Error cerrando conexión: " + e.getMessage());
+                log.error(" Error cerrando conexión: {}", e.getMessage());
             }
         }
     }
@@ -389,12 +390,12 @@ public class NotaMedicaController {
             if (rs.next()) {
                 primeraFechaCreacion = rs.getDate("Fecha");
                 primeraHoraCreacion = rs.getString("Hora");
-                System.out.println(" FECHA/HORA DE CREACIÓN GUARDADA:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug(" FECHA/HORA DE CREACIÓN GUARDADA:");
+                log.debug("   Fecha: {}", primeraFechaCreacion);
+                log.debug("   Hora: {}", primeraHoraCreacion);
             }
         } catch (SQLException e) {
-            System.err.println(" Error guardando fecha/hora creación: " + e.getMessage());
+            log.error(" Error guardando fecha/hora creación: {}", e.getMessage());
         }
     }
 
@@ -477,11 +478,11 @@ public class NotaMedicaController {
                 }
 
             } catch (SQLException e) {
-                System.err.println("Error: " + e.getMessage());
+                log.error("Error: {}", e.getMessage());
                 try {
                     if (conn != null) conn.rollback();
                 } catch (SQLException ex) {
-                    System.err.println("Rollback error: " + ex.getMessage());
+                    log.error("Rollback error: {}", ex.getMessage());
                 }
             } finally {
                 try {
@@ -490,7 +491,7 @@ public class NotaMedicaController {
                         conn.close();
                     }
                 } catch (SQLException e) {
-                    System.err.println(" Error cerrando: " + e.getMessage());
+                    log.error(" Error cerrando: {}", e.getMessage());
                 }
             }
         }).start();
@@ -522,15 +523,15 @@ public class NotaMedicaController {
             int filasActualizadas = pstmt.executeUpdate();
 
             if (filasActualizadas > 0) {
-                System.out.println(" PACIENTE ACTUALIZADO A OBSERVACIÓN - Folio: " + folioPaciente + " (ID Estado: " + idObservacion + ")");
+                log.debug(" PACIENTE ACTUALIZADO A OBSERVACIÓN - Folio: {} (ID Estado: {})", folioPaciente, idObservacion);
             } else {
-                System.out.println(" Paciente ya estaba en OBSERVACIÓN - Folio: " + folioPaciente);
+                log.debug(" Paciente ya estaba en OBSERVACIÓN - Folio: {}", folioPaciente);
             }
 
             pstmt.close();
 
         } catch (SQLException e) {
-            System.err.println(" Error actualizando estado a observación: " + e.getMessage());
+            log.error(" Error actualizando estado a observación: {}", e.getMessage());
         }
     }
 
@@ -538,10 +539,10 @@ public class NotaMedicaController {
                                       String nota, String indicaciones, String medico,
                                       String fecha, String hora) {
         try {
-            System.out.println(" GENERANDO PDF AUTOMÁTICO:");
-            System.out.println("   Fecha BD: " + fecha);
-            System.out.println("   Hora BD: " + hora);
-            System.out.println("   Folio: " + folioPaciente);
+            log.debug(" GENERANDO PDF AUTOMÁTICO:");
+            log.debug("   Fecha BD: {}", fecha);
+            log.debug("   Hora BD: {}", hora);
+            log.debug("   Folio: {}", folioPaciente);
 
             //  LLAMAR AL PDFGenerator NUEVO (solo necesita folio y número de nota)
             boolean exito = PDFGenerator.generarNotaMedicaPDF(
@@ -550,7 +551,7 @@ public class NotaMedicaController {
             );
 
             if (exito) {
-                System.out.println(" PDF generado automáticamente con datos completos");
+                log.debug(" PDF generado automáticamente con datos completos");
                 abrirPDFReciente();
 
                 // Cerrar ventana después de 3 segundos
@@ -564,16 +565,16 @@ public class NotaMedicaController {
                             }
                         });
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error("Stacktrace: ", e);
                     }
                 }).start();
             } else {
-                System.err.println(" Error generando PDF automático");
+                log.error(" Error generando PDF automático");
             }
 
         } catch (Exception e) {
-            System.err.println(" Error generando PDF automático: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error generando PDF automático: {}", e.getMessage());
+            log.error(" Stacktrace: ", e);
         }
     }
 
@@ -588,11 +589,11 @@ public class NotaMedicaController {
                 if (archivos != null && archivos.length > 0) {
                     Arrays.sort(archivos, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
                     java.awt.Desktop.getDesktop().open(archivos[0]);
-                    System.out.println(" Abriendo PDF: " + archivos[0].getName());
+                    log.debug(" Abriendo PDF: {}", archivos[0].getName());
                 }
             }
         } catch (Exception e) {
-            System.err.println(" Error abriendo PDF: " + e.getMessage());
+            log.error(" Error abriendo PDF: {}", e.getMessage());
         }
     }
 
@@ -650,10 +651,10 @@ public class NotaMedicaController {
                 datos.put("telefono", rs.getString("Telefono"));  // Teléfono
 
                 // Depuración
-                System.out.println(" DATOS PACIENTE OBTENIDOS:");
-                System.out.println("   Nombre: " + nombreCompleto);
-                System.out.println("   CURP: " + datos.get("curp"));
-                System.out.println("   Teléfono: " + datos.get("telefono"));
+                log.debug(" DATOS PACIENTE OBTENIDOS:");
+                log.debug("   Nombre: {}", nombreCompleto);
+                log.debug("   CURP: {}", datos.get("curp"));
+                log.debug("   Teléfono: {}", datos.get("telefono"));
             }
         } catch (SQLException e) {
             System.err.println(" Error obteniendo datos paciente: " + e.getMessage());
@@ -810,14 +811,14 @@ public class NotaMedicaController {
             // OBTENER FECHA/HORA ORIGINAL DE LA NOTA
             obtenerFechaHoraOriginalNota(nota.getIdNota());
 
-            System.out.println(" CARGANDO NOTA PARA EDICIÓN:");
-            System.out.println("   ID: " + nota.getIdNota());
-            System.out.println("   Fecha Original: " + primeraFechaCreacion);
-            System.out.println("   Hora Original: " + primeraHoraCreacion);
-            System.out.println("   Médico Autor BD: " + nota.getMedicoAutor());
-            System.out.println("   Nombre Sesión: " + sesion.getNombreMedico());
-            System.out.println("   Estado: " + nota.getEstado());
-            System.out.println("   ¿Editable? " + nota.isEditablePorMedico());
+            log.debug(" CARGANDO NOTA PARA EDICIÓN:");
+            log.debug("   ID: {}", nota.getIdNota());
+            log.debug("   Fecha Original: {}", primeraFechaCreacion);
+            log.debug("   Hora Original: {}", primeraHoraCreacion);
+            log.debug("   Médico Autor BD: {}", nota.getMedicoAutor());
+            log.debug("   Nombre Sesión: {}", sesion.getNombreMedico());
+            log.debug("   Estado: {}", nota.getEstado());
+            log.debug("   ¿Editable? {}", nota.isEditablePorMedico());
 
             // CARGAR MÉDICO
             cmbMedicos.setValue(nota.getMedicoAutor());
@@ -837,7 +838,7 @@ public class NotaMedicaController {
 
             // 1. ADMIN y JEFATURA siempre pueden editar CUALQUIER nota
             if (esAdmin || esJefatura) {
-                System.out.println(" ✅ ADMIN/JEFATURA - PERMISOS TOTALES");
+                log.debug(" ✅ ADMIN/JEFATURA - PERMISOS TOTALES");
                 btnGuardarDefinitivo.setDisable(false);
                 btnGuardarTemporal.setDisable(false);
                 return; // Salir, no necesita más verificaciones
@@ -852,11 +853,11 @@ public class NotaMedicaController {
             boolean puedeEditar = (esMedicoAutor && esNotaTemporal) ||
                     (esMedicoAutor && tienePermiso);
 
-            System.out.println("  VERIFICACIÓN (MÉDICO NORMAL):");
-            System.out.println("  ¿Es Médico Autor? " + esMedicoAutor);
-            System.out.println("  ¿Es Nota Temporal? " + esNotaTemporal);
-            System.out.println("  ¿Tiene Permiso? " + tienePermiso);
-            System.out.println("  ¿PUEDE EDITAR? " + puedeEditar);
+            log.debug("  VERIFICACIÓN (MÉDICO NORMAL):");
+            log.debug("  ¿Es Médico Autor? {}", esMedicoAutor);
+            log.debug("  ¿Es Nota Temporal? {}", esNotaTemporal);
+            log.debug("  ¿Tiene Permiso? {}", tienePermiso);
+            log.debug("  ¿PUEDE EDITAR? {}", puedeEditar);
 
             if (puedeEditar) {
                 btnGuardarDefinitivo.setDisable(false);
@@ -866,16 +867,16 @@ public class NotaMedicaController {
                     btnGuardarTemporal.setDisable(true);
                     btnGuardarTemporal.setStyle("-fx-background-color: #cccccc; -fx-text-fill: #666666;");
                     btnGuardarTemporal.setTooltip(new Tooltip("No puede guardar como temporal con permiso de edición"));
-                    System.out.println(" Permiso de edición activado - Solo puede guardar como DEFINITIVA");
+                    log.debug(" Permiso de edición activado - Solo puede guardar como DEFINITIVA");
                 } else {
                     btnGuardarTemporal.setDisable(false);
                 }
 
-                System.out.println("  BOTONES HABILITADOS");
+                log.debug("  BOTONES HABILITADOS");
             } else {
                 btnGuardarDefinitivo.setDisable(true);
                 btnGuardarTemporal.setDisable(true);
-                System.out.println("  BOTONES DESHABILITADOS - SIN PERMISOS");
+                log.debug("  BOTONES DESHABILITADOS - SIN PERMISOS");
 
                 mostrarAlerta("Sin permisos",
                         "No tiene permisos para editar esta nota.\n\n" +
@@ -885,8 +886,7 @@ public class NotaMedicaController {
             }
 
         } catch (Exception e) {
-            System.err.println(" Error cargando nota para edición: " + e.getMessage());
-            e.printStackTrace();
+            log.error(" Error cargando nota para edición: {}", e.getMessage(), e);
         }
     }
 
@@ -902,12 +902,12 @@ public class NotaMedicaController {
             if (rs.next()) {
                 primeraFechaCreacion = rs.getDate("Fecha");
                 primeraHoraCreacion = rs.getString("Hora");
-                System.out.println(" FECHA/HORA ORIGINAL DE NOTA:");
-                System.out.println("   Fecha: " + primeraFechaCreacion);
-                System.out.println("   Hora: " + primeraHoraCreacion);
+                log.debug(" FECHA/HORA ORIGINAL DE NOTA:");
+                log.debug("   Fecha: {}", primeraFechaCreacion);
+                log.debug("   Hora: {}", primeraHoraCreacion);
             }
         } catch (SQLException e) {
-            System.err.println("  Error obteniendo fecha/hora original: " + e.getMessage());
+            log.error("  Error obteniendo fecha/hora original: {}", e.getMessage());
         }
     }
 
@@ -929,14 +929,14 @@ public class NotaMedicaController {
                 txtNota.setText(rs.getString("Nota"));
                 txtIndicaciones.setText(rs.getString("Indicaciones"));
 
-                System.out.println(" Campos separados cargados correctamente");
+                log.debug(" Campos separados cargados correctamente");
             } else {
-                System.out.println("No se encontraron campos separados, usando campo combinado");
+                log.debug("No se encontraron campos separados, usando campo combinado");
                 cargarDesdeCampoCombinado(notaEnEdicion.getContenido());
             }
 
         } catch (SQLException e) {
-            System.err.println(" Error cargando campos separados: " + e.getMessage());
+            log.error(" Error cargando campos separados: {}", e.getMessage());
             // Fallback: intentar cargar desde campo combinado
             cargarDesdeCampoCombinado(notaEnEdicion.getContenido());
         }
@@ -979,9 +979,9 @@ public class NotaMedicaController {
                         }
                     }
                 }
-                System.out.println(" Campos cargados desde texto combinado");
+                log.debug(" Campos cargados desde texto combinado");
             } catch (Exception e) {
-                System.err.println(" Error parseando campo combinado: " + e.getMessage());
+                log.error(" Error parseando campo combinado: {}", e.getMessage());
                 // Si falla, cargar todo en el campo de nota
                 txtNota.setText(contenidoCombinado);
             }
@@ -1012,16 +1012,16 @@ public class NotaMedicaController {
                             int filas = pstmt.executeUpdate();
 
                             if (filas > 0) {
-                                System.out.println("✅ Permiso revocado después del uso - ID Nota: " + notaEnEdicion.getIdNota());
+                                log.debug("✅ Permiso revocado después del uso - ID Nota: {}", notaEnEdicion.getIdNota());
                             }
                         }
                     } catch (SQLException e) {
-                        System.err.println("⚠️ Error revocando permiso (seguirá funcionando): " + e.getMessage());
+                        log.error("⚠\uFE0F Error revocando permiso (seguirá funcionando): {}", e.getMessage());
                         // No mostrar error al usuario, solo log
                     }
                 }).start();
             } else {
-                System.out.println(" Admin/Jefatura - Permiso NO se revoca");
+                log.debug(" Admin/Jefatura - Permiso NO se revoca");
             }
         }
     }
@@ -1043,10 +1043,10 @@ public class NotaMedicaController {
             pstmt.setInt(6, idNota);
 
             pstmt.executeUpdate();
-            System.out.println(" Historial registrado - " + accion + " - ID Nota: " + idNota);
+            log.debug(" Historial registrado - {} - ID Nota: {}", accion, idNota);
 
         } catch (SQLException e) {
-            System.err.println(" Error registrando en historial: " + e.getMessage());
+            log.error(" Error registrando en historial: {}", e.getMessage());
         }
     }
 
@@ -1065,6 +1065,6 @@ public class NotaMedicaController {
         notaEnEdicion = null;
         datosCaptura = null;
 
-        System.out.println(" Recursos del controlador limpiados");
+        log.debug(" Recursos del controlador limpiados");
     }
 }

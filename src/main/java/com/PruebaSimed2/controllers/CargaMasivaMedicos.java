@@ -2,10 +2,13 @@ package com.PruebaSimed2.controllers;
 
 import com.PruebaSimed2.database.ConexionBD;
 import com.PruebaSimed2.utils.PasswordUtils;
+import lombok.extern.log4j.Log4j2;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class CargaMasivaMedicos {
 
     // Clase para representar un médico especialista
@@ -71,8 +74,8 @@ public class CargaMasivaMedicos {
 
     // Método principal para ejecutar
     public static void main(String[] args) {
-        System.out.println("=== INICIANDO CARGA MASIVA DE MÉDICOS ESPECIALISTAS ===");
         cargarMedicosEspecialistas();
+        log.info("CARGA MASIVA DE MÉDICOS ESPECIALISTAS");
     }
 
     public static void cargarMedicosEspecialistas() {
@@ -87,20 +90,19 @@ public class CargaMasivaMedicos {
             // Crear lista de médicos
             List<MedicoEspecialista> medicos = crearListaMedicos();
 
-            System.out.println("Total de médicos a procesar: " + medicos.size());
-            System.out.println("---------------------------------------------");
+            log.debug("Total de médicos a procesar: {}", medicos.size());
 
             for (MedicoEspecialista medico : medicos) {
                 try {
                     System.out.println("Procesando: " + medico.nombreCompleto);
-                    System.out.println("  Username: " + medico.username);
-                    System.out.println("  Email: " + medico.email);
-                    System.out.println("  Cédula: " + medico.cedula);
-                    System.out.println("  Universidad: " + medico.universidad);
+                    System.out.println("Username: " + medico.username);
+                    System.out.println("Email: " + medico.email);
+                    System.out.println("Cédula: " + medico.cedula);
+                    System.out.println("Universidad: " + medico.universidad);
 
                     // 1. Verificar si el usuario ya existe
                     if (usuarioExiste(conn, medico.username)) {
-                        System.out.println("  ⚠️  Usuario ya existe, saltando...");
+                        log.warn("⚠️  Usuario ya existe, saltando...");
                         fallidos++;
                         continue;
                     }
@@ -108,27 +110,25 @@ public class CargaMasivaMedicos {
                     // 2. Registrar en tb_usuarios
                     int idUsuario = registrarUsuario(conn, medico);
                     if (idUsuario == -1) {
-                        System.out.println("  ❌ Error al registrar usuario");
+                        log.error("❌ Error al registrar usuario");
                         fallidos++;
                         continue;
                     }
 
                     // 3. Registrar en tb_medesp
                     if (registrarMedicoEspecialista(conn, medico)) {
-                        System.out.println("  ✅ Registrado exitosamente");
+                        log.debug("✅ Registrado exitosamente");
                         exitos++;
                     } else {
-                        System.out.println("  ❌ Error al registrar en tb_medesp");
+                        log.error("❌ Error al registrar en tb_medesp");
                         fallidos++;
                         // Revertir usuario si falla
                         revertirUsuario(conn, idUsuario);
                     }
 
-                    System.out.println("  ---");
-
                 } catch (Exception e) {
-                    System.out.println("  ❌ Error: " + e.getMessage());
-                    e.printStackTrace();
+                    log.error("❌ Error: {}", e.getMessage());
+                    log.error(e);
                     fallidos++;
                 }
             }
@@ -136,27 +136,30 @@ public class CargaMasivaMedicos {
             // Confirmar transacción
             conn.commit();
 
-            System.out.println("=============================================");
-            System.out.println("RESUMEN:");
-            System.out.println("✅ Registrados exitosamente: " + exitos);
-            System.out.println("❌ Fallidos: " + fallidos);
-            System.out.println("Total procesados: " + (exitos + fallidos));
+            log.info("✅ Registrados exitosamente: {}", exitos);
+            log.info("❌ Fallidos: {}", fallidos);
+            log.info("Total procesados: {}", exitos + fallidos);
 
         } catch (SQLException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error de conexión: {}", e.getMessage());
+            log.error(e);
             if (conn != null) {
                 try {
                     conn.rollback();
-                    System.err.println("Transacción revertida");
-                } catch (SQLException ex) {}
+                    log.debug("Transacción revertida");
+                } catch (SQLException ex) {
+                    log.error("Error al revertir la transacción: {}", ex.getMessage());
+                }
             }
         } finally {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (SQLException e) {}
+                    log.debug("Conexión cerrada");
+                } catch (SQLException e) {
+                    log.error("Error al cerrar la conexión: {}", e.getMessage());
+                }
             }
         }
     }
@@ -232,7 +235,7 @@ public class CargaMasivaMedicos {
                 pstmt.executeUpdate();
             }
         } catch (SQLException e) {
-            System.err.println("Error al revertir usuario: " + e.getMessage());
+            log.error("Error al revertir usuario: {}", e.getMessage());
         }
     }
 

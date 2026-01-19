@@ -13,11 +13,13 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.*;
 
+@Log4j2
 public class ConfigurarLogosController {
 
     @FXML private TableView<LogoVO> tablaLogos;
@@ -73,7 +75,7 @@ public class ConfigurarLogosController {
             }
             tablaLogos.setItems(lista);
 
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { log.error("Error al cargar logos: {}", e.getMessage()); }
     }
 
     private void subirImagen(LogoVO logo) {
@@ -92,7 +94,7 @@ public class ConfigurarLogosController {
 
                 new Alert(Alert.AlertType.INFORMATION, "Logo actualizado correctamente").show();
 
-            } catch (Exception ex) { ex.printStackTrace(); }
+            } catch (Exception ex) { log.error("Error al subir imagen: {}", ex.getMessage()); }
         }
     }
 
@@ -109,7 +111,7 @@ public class ConfigurarLogosController {
             }
             ps.executeBatch();
 
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { log.error("Error al guardar y cerrar: {}", e.getMessage()); }
 
         ((Stage) tablaLogos.getScene().getWindow()).close();
     }
