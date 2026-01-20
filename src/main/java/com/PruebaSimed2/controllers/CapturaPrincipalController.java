@@ -537,8 +537,14 @@ public class CapturaPrincipalController {
             try (Connection conn = ConexionBD.conectar()) {
                 var nd = new NotasData();
                 var id = new InterData();
-                Platform.runLater(() -> lblContadorNotas.setText(String.valueOf(nd.obtenerConteoNotas(conn, folioPaciente))));
-                Platform.runLater(() -> lblContadorInterconsultas.setText(String.valueOf(id.obtenerConteoInterconsultas(conn, folioPaciente))));
+                
+                int conteoNotas = nd.obtenerConteoNotas(conn, folioPaciente);
+                int conteoInterconsultas = id.obtenerConteoInterconsultas(conn, folioPaciente);
+                
+                Platform.runLater(() -> {
+                    lblContadorNotas.setText(String.valueOf(conteoNotas));
+                    lblContadorInterconsultas.setText(String.valueOf(conteoInterconsultas));
+                });
             } catch (SQLException e) {
                 log.error(" Error cargando contadores: {}", e.getMessage());
             }
