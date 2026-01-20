@@ -1374,7 +1374,7 @@ public class CapturaPrincipalController {
         boolean pacienteEgresado = pacienteEgresado();
 
         Platform.runLater(() -> {
-            if (pacienteEgresado) {
+            if (pacienteEgresado || !capturaGuardada) {
                 btnNuevaNotaMedica.setDisable(true);
                 btnNuevaInterconsulta.setDisable(true);
                 btnNuevaNotaMedica.setStyle("-fx-background-color: #cccccc; -fx-text-fill: #666666;");
